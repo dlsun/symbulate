@@ -37,7 +37,7 @@ class Table(dict):
             # if we've already printed 19 rows, skip to end
             if i >= 18:
                 table_body += "<tr><td>...</td><td>...</td></tr>"
-                last_key, last_val = self[-1]
+                last_key, last_val = kv_list[-1]
                 table_body += self.row_template % (str(last_key), str(last_val))
                 break
         return self.table_template.format(table_body=table_body)
