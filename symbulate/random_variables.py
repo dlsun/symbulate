@@ -1,21 +1,9 @@
 import matplotlib.pyplot as plt
 
-from numbers import Number
 from copy import deepcopy as copy
 
 from .results import RVResults
-
-def is_scalar(x):
-    if isinstance(x, Number):
-        return True
-    else:
-        return False
-
-def is_vector(x):
-    if hasattr(x, "__iter__") and all(is_scalar(i) for i in x):
-        return True
-    else:
-        return False
+from .utils import is_scalar, is_vector
 
 class RV:
 

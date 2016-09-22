@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from numbers import Number
 
 from .table import Table
+from .utils import is_scalar, is_vector, has_consistent_dimension
 
 def is_hashable(x):
     return x.__hash__ is not None
@@ -105,16 +106,6 @@ class Results(list):
 
 class RVResults(Results):
 
-    def check_single_number(self):
-        for x in self:
-            if not isinstance(x, Number):
-                raise Exception("The output of each simulation must be a single number.")        
-
-    def check_pair(self):
-        for x in self:
-            if not hasattr(x, "__len__") or len(x) != 2:
-                raise Exception("The output of each simulation must be a pair of numbers.")
-
     def hist(self, type="bar", relfreq=False, xlabel=None, ylabel=None, **kwargs):
         self.check_single_number()
         if type == "bar":
@@ -141,19 +132,42 @@ class RVResults(Results):
             ylab = "Relative Frequency" if relfreq else "Count"
             plt.ylabel(ylab)
 
+    def check_pair(self):
+        for x in self:
+            if not is_vector(x) or len(x) != 2:
+                raise Exception("For the operation to make sense, the output of each simulation must be a pair of numbers.")
+            
     def scatter(self, **kwargs):
         self.check_pair()
         x, y = zip(*self)
         plt.scatter(x, y, **kwargs)
 
-    def mean(self):
-        self.check_single_number()
-        return np.array(self).mean()
+    def cov(self, **kwargs):
+        self.check_pair()
+        return np.cov(self, rowvar=False)[0, 1]
 
-    def var(self):
-        self.check_single_number()
-        return np.array(self).var()
+    def mean(self):
+        if all(is_scalar(x) for x in self):
+            return np.array(self).mean()
+        elif has_consistent_dimension(x):
+            return np.array(self).mean(0)
+        else:
+            raise Exception("I don't know how to take the mean of these values.")
 
     def sd(self):
-        self.check_single_number()
-        return np.array(self).std()
+        if all(is_scalar(x) for x in self):
+            return np.array(self).std()
+        elif has_consistent_dimension(self):
+            return np.array(self).std(0)
+        else:
+            raise Exception("I don't know how to take the variance of these values.")
+
+    def var(self):
+        if all(is_scalar(x) for x in self):
+            return np.array(self).var()
+        elif has_consistent_dimension(self):
+            return np.cov(self, rowvar=False)
+        else:
+            raise Exception("I don't know how to take the variance of these values.")
+
+
