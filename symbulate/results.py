@@ -107,7 +107,6 @@ class Results(list):
 class RVResults(Results):
 
     def hist(self, type="bar", relfreq=False, xlabel=None, ylabel=None, **kwargs):
-        self.check_single_number()
         if type == "bar":
             plt.hist(self, alpha=.5, normed=relfreq, **kwargs)
         elif type == "line":
