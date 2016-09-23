@@ -148,7 +148,7 @@ class RVResults(Results):
     def mean(self):
         if all(is_scalar(x) for x in self):
             return np.array(self).mean()
-        elif has_consistent_dimension(x):
+        elif has_consistent_dimension(self):
             return np.array(self).mean(0)
         else:
             raise Exception("I don't know how to take the mean of these values.")
