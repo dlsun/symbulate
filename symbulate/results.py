@@ -149,7 +149,7 @@ class RVResults(Results):
         if all(is_scalar(x) for x in self):
             return np.array(self).mean()
         elif has_consistent_dimension(self):
-            return np.array(self).mean(0)
+            return tuple(np.array(self).mean(0))
         else:
             raise Exception("I don't know how to take the mean of these values.")
 
@@ -157,7 +157,7 @@ class RVResults(Results):
         if all(is_scalar(x) for x in self):
             return np.array(self).std()
         elif has_consistent_dimension(self):
-            return np.array(self).std(0)
+            return tuple(np.array(self).std(0))
         else:
             raise Exception("I don't know how to take the variance of these values.")
 
