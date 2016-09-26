@@ -9,7 +9,8 @@ from .distributions import (
     Poisson,
     Uniform,
     Normal,
-    Exponential
+    Exponential,
+    Gamma
 )
 from .plot import figure, xlabel, ylabel, xlim, ylim
 

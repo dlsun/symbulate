@@ -12,14 +12,15 @@ def is_vector(x):
     else:
         return False
 
-def has_consistent_dimension(x):
-    """Checks if every vector in an iterable has the same dimension
+def get_dimension(x):
+    """Gets the dimension of the vectors in an iterable if it is
+    consistent, otherwise returns -1
     """
     if not all(is_vector(i) for i in x):
-        return False
+        return -1
     else:
         lengths = [len(i) for i in x]
         for l in lengths:
             if l != lengths[0]:
-                return False
-        return True
+                return -1
+        return lengths[0]

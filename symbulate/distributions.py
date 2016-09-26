@@ -90,3 +90,16 @@ class Exponential(ProbabilitySpace):
             return np.random.exponential(scale=self.scale)
         else:
             return np.random.exponential(scale=1. / self.lam)
+
+class Gamma(ProbabilitySpace):
+
+    def __init__(self, shape, scale=1.0, lam=None):
+        self.shape = shape
+        self.scale = scale
+        self.lam = lam
+    
+    def draw(self):
+        if self.lam is None:
+            return np.random.gamma(self.shape, self.scale)
+        else:
+            return np.random.gamma(self.shape, 1. / self.lam)

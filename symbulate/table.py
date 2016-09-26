@@ -11,8 +11,8 @@ class Table(dict):
     table_template = '''
     <table>
       <thead>
-        <th width="80%">Result</th>
-        <th width="20%">Count</th>
+        <th width="80%">Outcome</th>
+        <th width="20%">Value</th>
       </thead>
       <tbody>
         {table_body}
@@ -40,6 +40,7 @@ class Table(dict):
                 last_key, last_val = kv_list[-1]
                 table_body += self.row_template % (str(last_key), str(last_val))
                 break
+        table_body += self.row_template % ("<b>Total</b>", "<b>%s</b>" % str(sum(self.values())))
         return self.table_template.format(table_body=table_body)
 
     def _transform_values(self, f):

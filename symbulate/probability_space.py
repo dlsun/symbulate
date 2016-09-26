@@ -9,7 +9,7 @@ class ProbabilitySpace:
     def __init__(self, draw):
         self.draw = draw
 
-    def sim(self, n=None):
+    def sim(self, n):
         return self.results(self.draw() for _ in range(n))
 
     def __mul__(self, other):
@@ -28,7 +28,7 @@ class BoxModel(ProbabilitySpace):
 
     def __init__(self, box, size=None, replace=True, probs=None):
         self.box = box
-        self.size = size
+        self.size = None if size == 1 else size
         self.replace = replace
         self.probs = probs
 
