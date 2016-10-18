@@ -13,5 +13,4 @@ from .distributions import (
     Gamma
 )
 from .plot import figure, xlabel, ylabel, xlim, ylim
-
-from math import *
+from .math import *
