@@ -913,7 +913,7 @@ RV(Normal(mean = 0, var = 1)).sim(1000).hist()
 ```
 
 
-![png](output_98_0.png)
+![png](plots/output_98_0.png)
 
 
 For a discrete random variable use **.hist(type="line")** for a "spike" plot of the simulated probabilty mass function.
@@ -928,7 +928,7 @@ X.sim(1000).hist(type="line")
 ```
 
 
-![png](output_100_0.png)
+![png](plots/output_100_0.png)
 
 
 Like .tabulate(), use **.hist(relfreq=True)** to get relative frequencies rather than counts.
@@ -941,7 +941,7 @@ RV(Normal(mean = 0, var = 1)).sim(1000).hist(relfreq = True)
 ```
 
 
-![png](output_102_0.png)
+![png](plots/output_102_0.png)
 
 
 
@@ -952,7 +952,7 @@ X.sim(1000).hist(type="line", relfreq = True)
 ```
 
 
-![png](output_103_0.png)
+![png](plots/output_103_0.png)
 
 
 <a id='mean'></a>
@@ -1236,5 +1236,5 @@ XY.scatter()
 ```
 
 
-![png](output_134_0.png)
+![png](plots/output_134_0.png)
 
