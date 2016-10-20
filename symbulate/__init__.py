@@ -3,6 +3,7 @@ from .random_variables import RV
 from .distributions import (
     Bernoulli,
     Binomial,
+    Hypergeometric,
     Geometric,
     NegativeBinomial,
     Pascal,
