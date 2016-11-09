@@ -45,3 +45,14 @@ def tan(x):
         return x.apply(math.tan)
     else:
         return math.tan(x)
+
+def mean(x):
+    return sum(x) / len(x)
+
+def cumsum(x):
+    sums = []
+    total = 0
+    for i in x:
+        total += i
+        sums.append(total)
+    return tuple(sums)

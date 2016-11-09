@@ -106,6 +106,16 @@ class Results(list):
 
 class RVResults(Results):
 
+    def plot_sample_paths(self, alpha=.1, xlabel=None, ylabel=None, **kwargs):
+        for x in self:
+            if not hasattr(x, "__iter__"):
+                x = [x]
+            plt.plot(x, 'k.-', alpha=alpha, **kwargs)
+            if xlabel is not None:
+                plt.xlabel(xlabel)
+            if ylabel is not None:
+                plt.ylabel(ylabel)
+
     def hist(self, type="bar", relfreq=False, xlabel=None, ylabel=None, **kwargs):
         if type == "bar":
             plt.hist(self, alpha=.5, normed=relfreq, **kwargs)
@@ -177,6 +187,3 @@ class RVResults(Results):
             return tuple(np.array(self).std(0))
         else:
             raise Exception("I don't know how to take the variance of these values.")
-
-
-
