@@ -50,8 +50,8 @@ def mean(x):
     return sum(x) / len(x)
 
 def cumsum(x):
-    sums = []
     total = 0
+    sums = [total]
     for i in x:
         total += i
         sums.append(total)
