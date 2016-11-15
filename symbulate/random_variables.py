@@ -29,6 +29,12 @@ class RV:
     def component(self, i):
         return self.apply(lambda x: x[i])
 
+    def __getitem__(self, i):
+        if hasattr(i, "__iter__"):
+            return self.apply(lambda x: tuple(x[j] for j in i))
+        else:
+            return self.apply(lambda x: x[i])
+
     def __add__(self, other):
         if is_scalar(other):
             return self.apply(lambda x: x + other)
