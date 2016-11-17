@@ -28,7 +28,9 @@
   1. [**Component:**](#component) Use **.component()** to refer to the individual RVs
   1. [**Scatter:**](#scatter) Use **.scatter()** to display a scatterplot summary of the simulated values of two random variables.
   1. [**Covariance:**](#cov) Use **.cov()** to compute the covariance between two random variables, or the covariance matrix for three or more random variables
-  1. [**Correlation:**](#cov) Use **.cor()** to compute the correlation between two random variables, or the correlation matrix for three or more random variables
+  1. [**Correlation:**](#cov) Use **.corr()** to compute the correlation between two random variables, or the correlation matrix for three or more random variables
+1. [**Stochastic processes:**](#stochastic)
+  1. [**Plot sample paths:**](#paths) Use **.plot_sample_paths()**
 
 
 <a id='install'></a>
@@ -86,7 +88,7 @@ roll.draw()
 
 
 
-    2
+    1
 
 
 
@@ -105,7 +107,7 @@ BoxModel(die, size = 3).draw()
 
 
 
-    (5, 1, 2)
+    (2, 4, 3)
 
 
 
@@ -121,7 +123,7 @@ BoxModel(['D','R','I'], probs = [0.32, 0.27, 0.41], size = 5).draw()
 
 
 
-    ('R', 'I', 'D', 'I', 'R')
+    ('D', 'D', 'I', 'D', 'I')
 
 
 
@@ -137,7 +139,7 @@ BoxModel(['A','B','F','H','K'], size = 2, replace = False).draw()
 
 
 
-    ('H', 'B')
+    ('A', 'F')
 
 
 
@@ -202,7 +204,7 @@ Bernoulli(p = 0.3).draw()
 
 
 
-    0
+    1
 
 
 
@@ -214,7 +216,7 @@ Binomial(n = 10, p = .5).draw()
 
 
 
-    5
+    3
 
 
 
@@ -226,7 +228,7 @@ Hypergeometric(n = 10, N0 = 50, N1 = 50).draw()
 
 
 
-    6
+    7
 
 
 
@@ -238,7 +240,7 @@ Poisson(lam = 5).draw()
 
 
 
-    1
+    5
 
 
 
@@ -250,7 +252,7 @@ Geometric(p = 0.2).draw()
 
 
 
-    6
+    18
 
 
 
@@ -262,7 +264,7 @@ NegativeBinomial(n = 5, p = 0.2).draw()
 
 
 
-    15
+    28
 
 
 
@@ -274,7 +276,7 @@ Pascal(n = 5, p = 0.2).draw()
 
 
 
-    9
+    18
 
 
 
@@ -295,7 +297,7 @@ Uniform(a = 0, b = 1).draw()
 
 
 
-    0.27943974006774086
+    0.033545155239320334
 
 
 
@@ -307,7 +309,7 @@ Normal(mean = 0, var = 1).draw()
 
 
 
-    -0.005451823152434024
+    -0.06778960298215145
 
 
 
@@ -321,7 +323,7 @@ Exponential(lam = 4).draw()
 
 
 
-    0.1063023948559254
+    0.3230488820629634
 
 
 
@@ -333,7 +335,7 @@ Exponential(scale = 4).draw()
 
 
 
-    1.3611084880748558
+    2.0153913722186627
 
 
 
@@ -345,7 +347,7 @@ Gamma(shape = 2, lam = 4).draw()
 
 
 
-    0.9905358307068215
+    0.42748421507662193
 
 
 
@@ -357,7 +359,7 @@ Gamma(shape = 2, scale = 4).draw()
 
 
 
-    13.477924140229097
+    5.6839717023803376
 
 
 
@@ -381,7 +383,7 @@ rolls.draw()
 
 
 
-    (6, 3)
+    (3, 2)
 
 
 
@@ -396,10 +398,10 @@ P.draw()
 
 
 
-    (-0.8342418680048226,
-     1.7279106507318647,
-     0.1862570399174438,
-     -0.02413693935864512)
+    (-0.14335055576819397,
+     -0.31406581247349863,
+     0.4556534967323367,
+     -0.05755837120888154)
 
 
 
@@ -436,7 +438,7 @@ roll.sim(100)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>(1, 1)</td></tr><tr><td>1</td><td>(6, 6)</td></tr><tr><td>2</td><td>(5, 3)</td></tr><tr><td>3</td><td>(4, 6)</td></tr><tr><td>4</td><td>(2, 5)</td></tr><tr><td>5</td><td>(2, 4)</td></tr><tr><td>6</td><td>(3, 4)</td></tr><tr><td>7</td><td>(3, 6)</td></tr><tr><td>8</td><td>(4, 1)</td></tr><tr><td>...</td><td>...</td></tr><tr><td>99</td><td>(1, 5)</td></tr>
+        <tr><td>0</td><td>(3, 3)</td></tr><tr><td>1</td><td>(1, 6)</td></tr><tr><td>2</td><td>(1, 6)</td></tr><tr><td>3</td><td>(1, 1)</td></tr><tr><td>4</td><td>(5, 3)</td></tr><tr><td>5</td><td>(2, 3)</td></tr><tr><td>6</td><td>(5, 5)</td></tr><tr><td>7</td><td>(3, 6)</td></tr><tr><td>8</td><td>(3, 4)</td></tr><tr><td>...</td><td>...</td></tr><tr><td>99</td><td>(1, 2)</td></tr>
       </tbody>
     </table>
     
@@ -469,7 +471,7 @@ P.sim(1000)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>('not spam', 'no money')</td></tr><tr><td>1</td><td>('not spam', 'no money')</td></tr><tr><td>2</td><td>('not spam', 'no money')</td></tr><tr><td>3</td><td>('spam', 'money')</td></tr><tr><td>4</td><td>('not spam', 'no money')</td></tr><tr><td>5</td><td>('not spam', 'no money')</td></tr><tr><td>6</td><td>('not spam', 'no money')</td></tr><tr><td>7</td><td>('spam', 'money')</td></tr><tr><td>8</td><td>('not spam', 'no money')</td></tr><tr><td>...</td><td>...</td></tr><tr><td>999</td><td>('not spam', 'no money')</td></tr>
+        <tr><td>0</td><td>('not spam', 'no money')</td></tr><tr><td>1</td><td>('not spam', 'no money')</td></tr><tr><td>2</td><td>('not spam', 'no money')</td></tr><tr><td>3</td><td>('not spam', 'no money')</td></tr><tr><td>4</td><td>('spam', 'money')</td></tr><tr><td>5</td><td>('not spam', 'no money')</td></tr><tr><td>6</td><td>('not spam', 'no money')</td></tr><tr><td>7</td><td>('not spam', 'no money')</td></tr><tr><td>8</td><td>('not spam', 'money')</td></tr><tr><td>...</td><td>...</td></tr><tr><td>999</td><td>('not spam', 'no money')</td></tr>
       </tbody>
     </table>
     
@@ -504,7 +506,7 @@ roll.sim(100).apply(sum)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>7</td></tr><tr><td>1</td><td>4</td></tr><tr><td>2</td><td>5</td></tr><tr><td>3</td><td>9</td></tr><tr><td>4</td><td>4</td></tr><tr><td>5</td><td>9</td></tr><tr><td>6</td><td>2</td></tr><tr><td>7</td><td>6</td></tr><tr><td>8</td><td>7</td></tr><tr><td>...</td><td>...</td></tr><tr><td>99</td><td>7</td></tr>
+        <tr><td>0</td><td>5</td></tr><tr><td>1</td><td>4</td></tr><tr><td>2</td><td>5</td></tr><tr><td>3</td><td>5</td></tr><tr><td>4</td><td>6</td></tr><tr><td>5</td><td>5</td></tr><tr><td>6</td><td>5</td></tr><tr><td>7</td><td>12</td></tr><tr><td>8</td><td>9</td></tr><tr><td>...</td><td>...</td></tr><tr><td>99</td><td>8</td></tr>
       </tbody>
     </table>
     
@@ -544,7 +546,7 @@ P.sim(10000).apply(is_match)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>At least one match</td></tr><tr><td>1</td><td>No match</td></tr><tr><td>2</td><td>At least one match</td></tr><tr><td>3</td><td>No match</td></tr><tr><td>4</td><td>At least one match</td></tr><tr><td>5</td><td>At least one match</td></tr><tr><td>6</td><td>At least one match</td></tr><tr><td>7</td><td>At least one match</td></tr><tr><td>8</td><td>At least one match</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>At least one match</td></tr>
+        <tr><td>0</td><td>At least one match</td></tr><tr><td>1</td><td>No match</td></tr><tr><td>2</td><td>No match</td></tr><tr><td>3</td><td>At least one match</td></tr><tr><td>4</td><td>At least one match</td></tr><tr><td>5</td><td>No match</td></tr><tr><td>6</td><td>At least one match</td></tr><tr><td>7</td><td>No match</td></tr><tr><td>8</td><td>At least one match</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>At least one match</td></tr>
       </tbody>
     </table>
     
@@ -578,7 +580,7 @@ rolls.tabulate()
         <th width="20%">Value</th>
       </thead>
       <tbody>
-        <tr><td>(1, 1)</td><td>281</td></tr><tr><td>(1, 2)</td><td>283</td></tr><tr><td>(1, 3)</td><td>276</td></tr><tr><td>(1, 4)</td><td>276</td></tr><tr><td>(1, 5)</td><td>323</td></tr><tr><td>(1, 6)</td><td>262</td></tr><tr><td>(2, 1)</td><td>277</td></tr><tr><td>(2, 2)</td><td>286</td></tr><tr><td>(2, 3)</td><td>268</td></tr><tr><td>(2, 4)</td><td>289</td></tr><tr><td>(2, 5)</td><td>264</td></tr><tr><td>(2, 6)</td><td>294</td></tr><tr><td>(3, 1)</td><td>276</td></tr><tr><td>(3, 2)</td><td>285</td></tr><tr><td>(3, 3)</td><td>276</td></tr><tr><td>(3, 4)</td><td>323</td></tr><tr><td>(3, 5)</td><td>314</td></tr><tr><td>(3, 6)</td><td>264</td></tr><tr><td>(4, 1)</td><td>284</td></tr><tr><td>...</td><td>...</td></tr><tr><td>(6, 6)</td><td>288</td></tr><tr><td><b>Total</b></td><td><b>10000</b></td></tr>
+        <tr><td>(1, 1)</td><td>248</td></tr><tr><td>(1, 2)</td><td>281</td></tr><tr><td>(1, 3)</td><td>261</td></tr><tr><td>(1, 4)</td><td>263</td></tr><tr><td>(1, 5)</td><td>247</td></tr><tr><td>(1, 6)</td><td>296</td></tr><tr><td>(2, 1)</td><td>245</td></tr><tr><td>(2, 2)</td><td>278</td></tr><tr><td>(2, 3)</td><td>288</td></tr><tr><td>(2, 4)</td><td>283</td></tr><tr><td>(2, 5)</td><td>289</td></tr><tr><td>(2, 6)</td><td>283</td></tr><tr><td>(3, 1)</td><td>279</td></tr><tr><td>(3, 2)</td><td>253</td></tr><tr><td>(3, 3)</td><td>283</td></tr><tr><td>(3, 4)</td><td>303</td></tr><tr><td>(3, 5)</td><td>299</td></tr><tr><td>(3, 6)</td><td>272</td></tr><tr><td>(4, 1)</td><td>291</td></tr><tr><td>...</td><td>...</td></tr><tr><td>(6, 6)</td><td>266</td></tr><tr><td><b>Total</b></td><td><b>10000</b></td></tr>
       </tbody>
     </table>
     
@@ -602,7 +604,7 @@ rolls.apply(sum).tabulate(relfreq = True)
         <th width="20%">Value</th>
       </thead>
       <tbody>
-        <tr><td>2</td><td>0.0281</td></tr><tr><td>3</td><td>0.056</td></tr><tr><td>4</td><td>0.0838</td></tr><tr><td>5</td><td>0.1113</td></tr><tr><td>6</td><td>0.1434</td></tr><tr><td>7</td><td>0.1665</td></tr><tr><td>8</td><td>0.1393</td></tr><tr><td>9</td><td>0.1072</td></tr><tr><td>10</td><td>0.0832</td></tr><tr><td>11</td><td>0.0524</td></tr><tr><td>12</td><td>0.0288</td></tr><tr><td><b>Total</b></td><td><b>0.9999999999999999</b></td></tr>
+        <tr><td>2</td><td>0.0248</td></tr><tr><td>3</td><td>0.0526</td></tr><tr><td>4</td><td>0.0818</td></tr><tr><td>5</td><td>0.1095</td></tr><tr><td>6</td><td>0.1378</td></tr><tr><td>7</td><td>0.1737</td></tr><tr><td>8</td><td>0.1414</td></tr><tr><td>9</td><td>0.1106</td></tr><tr><td>10</td><td>0.0847</td></tr><tr><td>11</td><td>0.0565</td></tr><tr><td>12</td><td>0.0266</td></tr><tr><td><b>Total</b></td><td><b>0.9999999999999999</b></td></tr>
       </tbody>
     </table>
     
@@ -619,7 +621,7 @@ rolls.tabulate()[(2,4)]
 
 
 
-    289
+    283
 
 
 
@@ -632,7 +634,7 @@ roll_sum[11] + roll_sum[12]
 
 
 
-    0.0812
+    0.08310000000000001
 
 
 
@@ -659,7 +661,7 @@ Heads
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>H</td></tr><tr><td>1</td><td>H</td></tr><tr><td>2</td><td>H</td></tr><tr><td>3</td><td>H</td></tr><tr><td>4</td><td>H</td></tr><tr><td>5</td><td>H</td></tr><tr><td>6</td><td>H</td></tr><tr><td>7</td><td>H</td></tr><tr><td>8</td><td>H</td></tr><tr><td>...</td><td>...</td></tr><tr><td>5097</td><td>H</td></tr>
+        <tr><td>0</td><td>H</td></tr><tr><td>1</td><td>H</td></tr><tr><td>2</td><td>H</td></tr><tr><td>3</td><td>H</td></tr><tr><td>4</td><td>H</td></tr><tr><td>5</td><td>H</td></tr><tr><td>6</td><td>H</td></tr><tr><td>7</td><td>H</td></tr><tr><td>8</td><td>H</td></tr><tr><td>...</td><td>...</td></tr><tr><td>5096</td><td>H</td></tr>
       </tbody>
     </table>
     
@@ -676,7 +678,7 @@ len(Heads)
 
 
 
-    5098
+    5097
 
 
 
@@ -698,7 +700,7 @@ len(sims.filter_geq(10)) / 1000
 
 
 
-    0.178
+    0.175
 
 
 
@@ -715,7 +717,7 @@ len(sims.filter(greater_than_or_equal_to_10)) / 1000
 
 
 
-    0.178
+    0.175
 
 
 
@@ -759,7 +761,7 @@ values
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>5</td></tr><tr><td>1</td><td>4</td></tr><tr><td>2</td><td>0</td></tr><tr><td>3</td><td>1</td></tr><tr><td>4</td><td>3</td></tr><tr><td>5</td><td>2</td></tr><tr><td>6</td><td>3</td></tr><tr><td>7</td><td>1</td></tr><tr><td>8</td><td>0</td></tr><tr><td>...</td><td>...</td></tr><tr><td>999</td><td>3</td></tr>
+        <tr><td>0</td><td>4</td></tr><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>2</td></tr><tr><td>3</td><td>1</td></tr><tr><td>4</td><td>1</td></tr><tr><td>5</td><td>3</td></tr><tr><td>6</td><td>3</td></tr><tr><td>7</td><td>1</td></tr><tr><td>8</td><td>3</td></tr><tr><td>...</td><td>...</td></tr><tr><td>999</td><td>4</td></tr>
       </tbody>
     </table>
     
@@ -781,7 +783,7 @@ values.tabulate(relfreq=True)
         <th width="20%">Value</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>0.034</td></tr><tr><td>1</td><td>0.143</td></tr><tr><td>2</td><td>0.322</td></tr><tr><td>3</td><td>0.333</td></tr><tr><td>4</td><td>0.141</td></tr><tr><td>5</td><td>0.027</td></tr><tr><td><b>Total</b></td><td><b>1.0</b></td></tr>
+        <tr><td>0</td><td>0.033</td></tr><tr><td>1</td><td>0.158</td></tr><tr><td>2</td><td>0.296</td></tr><tr><td>3</td><td>0.333</td></tr><tr><td>4</td><td>0.151</td></tr><tr><td>5</td><td>0.029</td></tr><tr><td><b>Total</b></td><td><b>1.0</b></td></tr>
       </tbody>
     </table>
     
@@ -796,7 +798,7 @@ len(values.filter_gt(3))/1000
 
 
 
-    0.168
+    0.18
 
 
 
@@ -821,7 +823,7 @@ X.sim(1000)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>1.641229234392505</td></tr><tr><td>1</td><td>-0.459125654762976</td></tr><tr><td>2</td><td>-0.13451910993829214</td></tr><tr><td>3</td><td>0.4767089028952646</td></tr><tr><td>4</td><td>-0.7043859974459955</td></tr><tr><td>5</td><td>-1.031449899454203</td></tr><tr><td>6</td><td>0.30868710375390174</td></tr><tr><td>7</td><td>-0.1727402555891247</td></tr><tr><td>8</td><td>0.06407400283928748</td></tr><tr><td>...</td><td>...</td></tr><tr><td>999</td><td>-0.19030347580045748</td></tr>
+        <tr><td>0</td><td>1.6880814747485318</td></tr><tr><td>1</td><td>0.08794468807869006</td></tr><tr><td>2</td><td>-0.9925200942077124</td></tr><tr><td>3</td><td>-0.16595872962767708</td></tr><tr><td>4</td><td>0.5921888637276367</td></tr><tr><td>5</td><td>0.669255829958515</td></tr><tr><td>6</td><td>-0.980205257807886</td></tr><tr><td>7</td><td>-0.16165432605504224</td></tr><tr><td>8</td><td>0.998751475764726</td></tr><tr><td>...</td><td>...</td></tr><tr><td>999</td><td>-0.1806014916314969</td></tr>
       </tbody>
     </table>
     
@@ -860,7 +862,7 @@ X.sim(10000)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>0</td></tr><tr><td>1</td><td>0</td></tr><tr><td>2</td><td>0</td></tr><tr><td>3</td><td>2</td></tr><tr><td>4</td><td>1</td></tr><tr><td>5</td><td>1</td></tr><tr><td>6</td><td>1</td></tr><tr><td>7</td><td>0</td></tr><tr><td>8</td><td>2</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>1</td></tr>
+        <tr><td>0</td><td>1</td></tr><tr><td>1</td><td>0</td></tr><tr><td>2</td><td>3</td></tr><tr><td>3</td><td>1</td></tr><tr><td>4</td><td>0</td></tr><tr><td>5</td><td>0</td></tr><tr><td>6</td><td>0</td></tr><tr><td>7</td><td>1</td></tr><tr><td>8</td><td>1</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>0</td></tr>
       </tbody>
     </table>
     
@@ -891,7 +893,7 @@ Y.sim(1000)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>12.37303364664991</td></tr><tr><td>1</td><td>1.348956664478362</td></tr><tr><td>2</td><td>2.7860801574231795</td></tr><tr><td>3</td><td>1.1192127011705306</td></tr><tr><td>4</td><td>1.730586362727102</td></tr><tr><td>5</td><td>0.4431535316673459</td></tr><tr><td>6</td><td>19.028934514681804</td></tr><tr><td>7</td><td>0.39725191366025026</td></tr><tr><td>8</td><td>1.5766661760040779</td></tr><tr><td>...</td><td>...</td></tr><tr><td>999</td><td>1.0281445354952117</td></tr>
+        <tr><td>0</td><td>0.9284733982136192</td></tr><tr><td>1</td><td>0.2318365597206448</td></tr><tr><td>2</td><td>0.7310976128068117</td></tr><tr><td>3</td><td>1.7861393157399579</td></tr><tr><td>4</td><td>1.3315875179165464</td></tr><tr><td>5</td><td>0.11189303111979337</td></tr><tr><td>6</td><td>1.5753363005622925</td></tr><tr><td>7</td><td>1.5408644280857013</td></tr><tr><td>8</td><td>0.4775132494868841</td></tr><tr><td>...</td><td>...</td></tr><tr><td>999</td><td>0.6791458965163026</td></tr>
       </tbody>
     </table>
     
@@ -972,7 +974,7 @@ RV(Geometric(p = 0.1)).sim(10000).mean()
 
 
 
-    9.9666999999999994
+    10.0953
 
 
 
@@ -994,7 +996,7 @@ X.sim(10000).var()
 
 
 
-    15.30842079606605
+    16.688739002074371
 
 
 
@@ -1008,7 +1010,7 @@ X.sim(10000).sd()
 
 
 
-    3.9778039811549752
+    4.0416127402952204
 
 
 
@@ -1039,7 +1041,7 @@ Y = RV(P, max)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>(0.46027719498519537, 0.8333366732651852)</td></tr><tr><td>1</td><td>(0.6764847185109701, 0.7453472417695879)</td></tr><tr><td>2</td><td>(0.01657809311934244, 0.33692152117988705)</td></tr><tr><td>3</td><td>(0.3530195026931301, 0.8334438207228971)</td></tr><tr><td>4</td><td>(0.26628257984508175, 0.9630668468745988)</td></tr><tr><td>5</td><td>(0.19597775040221577, 0.5660591688727603)</td></tr><tr><td>6</td><td>(0.030849492926371735, 0.7650500441472756)</td></tr><tr><td>7</td><td>(0.15994479327847977, 0.809958516350921)</td></tr><tr><td>8</td><td>(0.14261778800011826, 0.846513455140759)</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>(0.7289132074617036, 0.9151120326838237)</td></tr>
+        <tr><td>0</td><td>(0.020089821650476236, 0.7928152546780557)</td></tr><tr><td>1</td><td>(0.17427735041828218, 0.2072478714298338)</td></tr><tr><td>2</td><td>(0.3465944662408823, 0.9708957039297257)</td></tr><tr><td>3</td><td>(0.06463925763231027, 0.6043724360090904)</td></tr><tr><td>4</td><td>(0.2949740945148004, 0.6965217749531786)</td></tr><tr><td>5</td><td>(0.18106827286035065, 0.8906712075119437)</td></tr><tr><td>6</td><td>(0.519134277517788, 0.8353433831936623)</td></tr><tr><td>7</td><td>(0.33434373549387175, 0.8991702243633148)</td></tr><tr><td>8</td><td>(0.8483676009615613, 0.9925574380414699)</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>(0.5422246245178244, 0.8869819369069681)</td></tr>
       </tbody>
     </table>
     
@@ -1056,7 +1058,7 @@ When multiple random variables are simulated applying **.mean()**, **.var()**, o
 
 
 
-    (0.33421172705209135, 0.66743395563053043)
+    (0.33733621445175666, 0.66743262950833471)
 
 
 
@@ -1089,7 +1091,7 @@ U1 = RV(P).component(1)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>(0.6004899797682012, 0.5012944645314951)</td></tr><tr><td>1</td><td>(0.4555251834061682, 0.7300492651351047)</td></tr><tr><td>2</td><td>(0.2527025362807447, 0.13810740486480322)</td></tr><tr><td>3</td><td>(0.04895227488607379, 0.06873927353973397)</td></tr><tr><td>4</td><td>(0.41741450721495255, 0.8124772727093038)</td></tr><tr><td>5</td><td>(0.25642023891640475, 0.7048076313438868)</td></tr><tr><td>6</td><td>(0.39543218282129367, 0.8205028493233834)</td></tr><tr><td>7</td><td>(0.8977784489547801, 0.43832098198532954)</td></tr><tr><td>8</td><td>(0.29018374403178326, 0.20987928058373306)</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>(0.8585472410517343, 0.756207724869175)</td></tr>
+        <tr><td>0</td><td>(0.6221466015472019, 0.2993495665343284)</td></tr><tr><td>1</td><td>(0.3432188046215551, 0.784752615148727)</td></tr><tr><td>2</td><td>(0.6795617423740077, 0.8644305952670123)</td></tr><tr><td>3</td><td>(0.637259314686334, 0.6280694443702597)</td></tr><tr><td>4</td><td>(0.9183296534921184, 0.10900339829114924)</td></tr><tr><td>5</td><td>(0.8631052769436984, 0.6453987821358427)</td></tr><tr><td>6</td><td>(0.41902388673718416, 0.22781778224264893)</td></tr><tr><td>7</td><td>(0.7818675829334367, 0.7967376040342018)</td></tr><tr><td>8</td><td>(0.09368441041048803, 0.24657890993186637)</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>(0.6838522527961893, 0.6983089717158101)</td></tr>
       </tbody>
     </table>
     
@@ -1111,7 +1113,7 @@ U1 = RV(P).component(1)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>0.09898017948106819</td></tr><tr><td>1</td><td>0.745504166220306</td></tr><tr><td>2</td><td>0.03869558976573273</td></tr><tr><td>3</td><td>0.7646135757113965</td></tr><tr><td>4</td><td>0.5718696231397215</td></tr><tr><td>5</td><td>0.9984724695810253</td></tr><tr><td>6</td><td>0.9645355985983803</td></tr><tr><td>7</td><td>0.7964777151477195</td></tr><tr><td>8</td><td>0.06299170194993764</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>0.9935221074529478</td></tr>
+        <tr><td>0</td><td>0.7633208420055966</td></tr><tr><td>1</td><td>0.9470924347660601</td></tr><tr><td>2</td><td>0.7814138371498596</td></tr><tr><td>3</td><td>0.9418589503826073</td></tr><tr><td>4</td><td>0.6606088604336358</td></tr><tr><td>5</td><td>0.2017581158019769</td></tr><tr><td>6</td><td>0.6132156062777304</td></tr><tr><td>7</td><td>0.9862410393009581</td></tr><tr><td>8</td><td>0.32332256762635725</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>0.8815433695947712</td></tr>
       </tbody>
     </table>
     
@@ -1133,7 +1135,7 @@ U0.sim(10000)
         <th width="90%">Result</th>
       </thead>
       <tbody>
-        <tr><td>0</td><td>0.7261020356992555</td></tr><tr><td>1</td><td>0.788512216793656</td></tr><tr><td>2</td><td>0.3369509141028809</td></tr><tr><td>3</td><td>0.08472453147068804</td></tr><tr><td>4</td><td>0.7490508418152134</td></tr><tr><td>5</td><td>0.7370049143928038</td></tr><tr><td>6</td><td>0.06906023161644004</td></tr><tr><td>7</td><td>0.8543773724539468</td></tr><tr><td>8</td><td>0.7488007089904654</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>0.35965616383706445</td></tr>
+        <tr><td>0</td><td>0.3360859954362636</td></tr><tr><td>1</td><td>0.8579558961266334</td></tr><tr><td>2</td><td>0.7405803416126394</td></tr><tr><td>3</td><td>0.8165523762579143</td></tr><tr><td>4</td><td>0.7359733488444625</td></tr><tr><td>5</td><td>0.8325191850624817</td></tr><tr><td>6</td><td>0.10094351007036795</td></tr><tr><td>7</td><td>0.6476242150275938</td></tr><tr><td>8</td><td>0.08823137009359938</td></tr><tr><td>...</td><td>...</td></tr><tr><td>9999</td><td>0.4783429245660923</td></tr>
       </tbody>
     </table>
     
@@ -1155,7 +1157,7 @@ XZ.filter(lambda x: x[1] == 5).component(0).mean()
 
 
 
-    2.8275418275418276
+    2.941914191419142
 
 
 
@@ -1179,7 +1181,7 @@ Y = RV(P, max)
 
 
 
-    0.028477564679678026
+    0.028528557061956082
 
 
 
@@ -1193,7 +1195,7 @@ Y = RV(P, max)
 
 
 
-    0.50226835002851211
+    0.50466648215856336
 
 
 
@@ -1207,9 +1209,9 @@ When simulating more than two random variables, applying **.cov()** returns the 
 
 
 
-    array([[ 0.05610576,  0.02785121,  0.08395698],
-           [ 0.02785121,  0.05505138,  0.08290259],
-           [ 0.08395698,  0.08290259,  0.16685957]])
+    array([[ 0.05633912,  0.02918478,  0.0855239 ],
+           [ 0.02918478,  0.05675668,  0.08594146],
+           [ 0.0855239 ,  0.08594146,  0.17146536]])
 
 
 
@@ -1227,14 +1229,190 @@ Use **.scatter()** to display a plot summary of the simulated pairs of values of
 P = Normal(mean = 0, var = 1)**2
 Z0 = RV(P).component(0)
 Z1 = RV(P).component(1)
-muX = 1; muY = 2; sigmaX = 3; sigmaY = 4; rho = 0.5
+muX = 0; muY = 0; sigmaX = 1; sigmaY = 1; rho = 0.5
 X = muX + sigmaX * Z0
-Y = muY + rho**2 * sigmaY * Z0 + sqrt(1 - rho**2) * sigmaY * Z1
+Y = muY + rho * sigmaY * Z0 + sqrt(1 - rho**2) * sigmaY * Z1
 XY = (X & Y).sim(1000)
-XY.cov()
 XY.scatter()
+XY.corr()
 ```
 
 
-![png](output_134_0.png)
 
+
+    0.4666461997458155
+
+
+
+
+![png](output_134_1.png)
+
+
+<a id='stochastic'></a>
+[Back to contents](#contents)
+
+## Stochastic processes
+
+A **stochastic process** is an indexed collection of random variables defined on some probability space.  The index often represents "time", which can be either discrete or continuous.
+  - A **discrete time stochastic process** is a collection of countably many random variables, e.g. $X_n$ for $n=0 ,1, 2,\ldots$.  For each outcome in the probability space, the outcome of a discrete time stochastic process is a *sequence* (in $n$).
+  - A **continuous time stochastic process** is a collection of uncountably many random variables, e.g. $X_t$ for $t\ge0$.  For each outcome in the probability space, the outcome of a discrete time stochastic process is a *function* (of $t$).
+
+Since a stochastic process is a collection of random variables, many of the commands in the previous sections ([Random variables](#random_variables) and [Multiple random variables](#joint)) are useful when simulating stochastic processes.  (Note that it is appropriate to consider the RV class as "random vector" instead of "random variable" as RV can be used to define multiple random variables on the same probability space.)
+
+*Example*.  At each point in time $n=0, 1, 2, \ldots$ a certain type of "event" either occurs or not.  Suppose the probability that the event occurs at any particular time is $p$, and occurrences are independent from time to time.  Let $X_n=1$ if an event occurs at time $n$, and $X_n=0$ otherwise.  Then $X_0, X_1, X_2,\ldots$ is a **Bernoulli process**.
+
+
+```python
+P = Bernoulli(p = 0.3)**10
+Xn = RV(P)
+Xn.sim(1)
+```
+
+
+
+
+
+    <table>
+      <thead>
+        <th width="10%">Index</th>
+        <th width="90%">Result</th>
+      </thead>
+      <tbody>
+        <tr><td>0</td><td>(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)</td></tr>
+      </tbody>
+    </table>
+    
+
+
+
+
+```python
+Xn.sim(1000)
+```
+
+
+
+
+
+    <table>
+      <thead>
+        <th width="10%">Index</th>
+        <th width="90%">Result</th>
+      </thead>
+      <tbody>
+        <tr><td>0</td><td>(0, 1, 0, 0, 0, 0, 0, 0, 0, 0)</td></tr><tr><td>1</td><td>(1, 0, 0, 0, 1, 0, 0, 0, 0, 1)</td></tr><tr><td>2</td><td>(1, 0, 1, 1, 0, 1, 0, 0, 1, 1)</td></tr><tr><td>3</td><td>(0, 1, 0, 0, 0, 1, 1, 0, 0, 0)</td></tr><tr><td>4</td><td>(1, 0, 0, 0, 1, 0, 1, 1, 0, 1)</td></tr><tr><td>5</td><td>(0, 0, 0, 0, 0, 0, 0, 0, 1, 0)</td></tr><tr><td>6</td><td>(1, 0, 0, 0, 0, 0, 0, 1, 0, 0)</td></tr><tr><td>7</td><td>(0, 0, 0, 1, 0, 0, 0, 1, 0, 0)</td></tr><tr><td>8</td><td>(0, 1, 0, 1, 0, 0, 1, 0, 0, 0)</td></tr><tr><td>...</td><td>...</td></tr><tr><td>999</td><td>(1, 0, 0, 0, 1, 0, 0, 1, 0, 1)</td></tr>
+      </tbody>
+    </table>
+    
+
+
+
+The value $X_n$ (or $X_t$) of a stochastic process at any particular point in time $n$ (or $t$) is a random variable.  For a discrete time stochastic process, the value at a particular point in time can be obtained using [.component()](#component).  
+
+**Note:** Remember Python starts indexing at 0, so .component(0) is the first component.  The zero-based-index is often natural in stochastic process contexts in which there is a time 0, i.e. $X_0$ is the initial value of the process, so .component(n) represents the process value at time $n$.
+
+
+```python
+X3 = Xn[3]
+X3.sim(1000).hist(type = "line", relfreq = True)
+```
+
+
+    ---------------------------------------------------------------------------
+
+    TypeError                                 Traceback (most recent call last)
+
+    <ipython-input-4-b025017ef9e9> in <module>()
+    ----> 1 X3 = Xn[3]
+          2 X3.sim(1000).hist(type = "line", relfreq = True)
+
+
+    TypeError: 'RV' object does not support indexing
+
+
+While a sequence of independent random variables (like in a Bernoulli process) can be thought of as a stochastic process, the process values at different points in time are typically *not* independent.
+
+*Example.* In a Bernoulli process, let $S_n$ count the number of events that have occurred up to and including time $n$, starting with 0 events at time 0.  Recalling that $X_n=1$ if an event occurs at time $n$ and $X_n=0$ otherwise, $S_n$ is equal to $S_n= X_1 + \cdots + X_n$ for $n = 1, 2, \ldots$.  Note the use of the **cumsum** (cumulative sum) function below; the cumsum function starts from an initial value of 0 and successively adds values.
+
+
+```python
+P = Bernoulli(p = 0.3)**10
+Sn = RV(P, cumsum)
+Sn.sim(100)
+```
+
+
+
+
+
+    <table>
+      <thead>
+        <th width="10%">Index</th>
+        <th width="90%">Result</th>
+      </thead>
+      <tbody>
+        <tr><td>0</td><td>(0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 3)</td></tr><tr><td>1</td><td>(0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 3)</td></tr><tr><td>2</td><td>(0, 1, 1, 1, 2, 2, 2, 2, 2, 3, 4)</td></tr><tr><td>3</td><td>(0, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3)</td></tr><tr><td>4</td><td>(0, 0, 1, 1, 2, 2, 3, 4, 4, 4, 4)</td></tr><tr><td>5</td><td>(0, 0, 0, 0, 1, 2, 2, 3, 4, 4, 5)</td></tr><tr><td>6</td><td>(0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2)</td></tr><tr><td>7</td><td>(0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2)</td></tr><tr><td>8</td><td>(0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2)</td></tr><tr><td>...</td><td>...</td></tr><tr><td>99</td><td>(0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2)</td></tr>
+      </tbody>
+    </table>
+    
+
+
+
+<a id='paths'></a>
+[Back to contents](#contents)
+
+### Plot sample paths
+
+For a given outcome in the sample space of the random phenomenon, a stochastic process outputs a **sample path** which describes how the value of the process evolves over time for that particular outcome, which can be plotted using **.plot_sample_paths()**.  The parameter alpha controls the weight of the line drawn in the plot.
+
+
+```python
+P = Bernoulli(p = 0.3)**10
+Sn = RV(P, cumsum)
+Sn.sim(1).plot_sample_paths(alpha = 1)
+```
+
+
+![png](output_144_0.png)
+
+
+The collection of all possible sample paths is the **ensemble** of the stochastic process, which can be visualized by simulating and plotting many sample paths.
+
+
+```python
+P = Bernoulli(p = 0.3)**10
+Sn = RV(P, cumsum)
+Sn.sim(1000).plot_sample_paths(alpha = 1/100)
+```
+
+
+![png](output_146_0.png)
+
+
+The process values at any two points in time have a joint distribution which can be simulated and summarized using the commands in the [Multiple random variables](#joint) section.
+
+
+```python
+P = Bernoulli(p = 0.3)**10
+Sn = RV(P, cumsum)
+S4 = Sn.component(4)
+S8 = Sn.component(8)
+(S4 & S8).sim(1000).scatter()
+(S4 & S8).sim(1000).cov()
+```
+
+
+
+
+    0.82987687687687606
+
+
+
+
+![png](output_148_1.png)
+
+
+
+```python
+
+```
