@@ -915,7 +915,7 @@ RV(Normal(mean = 0, var = 1)).sim(1000).hist()
 ```
 
 
-![png](output_98_0.png)
+![png](plots/plots/output_98_0.png)
 
 
 For a discrete random variable use **.hist(type="line")** for a "spike" plot of the simulated probabilty mass function.
@@ -930,7 +930,7 @@ X.sim(1000).hist(type="line")
 ```
 
 
-![png](output_100_0.png)
+![png](plots/output_100_0.png)
 
 
 Like .tabulate(), use **.hist(relfreq=True)** to get relative frequencies rather than counts.
@@ -943,7 +943,7 @@ RV(Normal(mean = 0, var = 1)).sim(1000).hist(relfreq = True)
 ```
 
 
-![png](output_102_0.png)
+![png](plots/output_102_0.png)
 
 
 
@@ -954,7 +954,7 @@ X.sim(1000).hist(type="line", relfreq = True)
 ```
 
 
-![png](output_103_0.png)
+![png](plots/output_103_0.png)
 
 
 <a id='mean'></a>
@@ -1245,7 +1245,7 @@ XY.corr()
 
 
 
-![png](output_134_1.png)
+![png](plots/output_134_1.png)
 
 
 <a id='stochastic'></a>
@@ -1373,7 +1373,7 @@ Sn.sim(1).plot_sample_paths(alpha = 1)
 ```
 
 
-![png](output_144_0.png)
+![png](plots/output_144_0.png)
 
 
 The collection of all possible sample paths is the **ensemble** of the stochastic process, which can be visualized by simulating and plotting many sample paths.
@@ -1386,7 +1386,7 @@ Sn.sim(1000).plot_sample_paths(alpha = 1/100)
 ```
 
 
-![png](output_146_0.png)
+![png](plots/output_146_0.png)
 
 
 The process values at any two points in time have a joint distribution which can be simulated and summarized using the commands in the [Multiple random variables](#joint) section.
@@ -1409,7 +1409,7 @@ S8 = Sn.component(8)
 
 
 
-![png](output_148_1.png)
+![png](plots/output_148_1.png)
 
 
 
