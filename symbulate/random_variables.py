@@ -71,6 +71,9 @@ class RV:
     def __rsub__(self, other):
         return -1 * self.__sub__(other)
 
+    def __neg__(self):
+        return -1 * self
+
     def __mul__(self, other):
         if is_scalar(other):
             return self.apply(lambda x: x * other)
