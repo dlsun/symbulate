@@ -36,6 +36,12 @@ class ProbabilitySpace:
             return tuple(self.draw() for _ in range(exponent))
         return ProbabilitySpace(draw)
 
+class Event:
+
+    def __init__(self, probSpace, fun):
+        self.probSpace = probSpace
+        self.fun = fun
+
 class BoxModel(ProbabilitySpace):
     """Defines a probability space from a box model.
 

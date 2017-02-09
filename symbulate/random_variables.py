@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 
 from copy import deepcopy as copy
 
+from .probability_space import Event
 from .results import RVResults
 from .utils import is_scalar, is_vector
 
@@ -161,3 +162,66 @@ class RV:
             b = tuple(b) if is_vector(b) else (b, )
             return a + b
         return RV(self.probSpace, fun)
+
+    def __lt__(self, other):
+        if is_scalar(other):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) < other)
+        else:
+            raise NotImplementedError
+
+    def __le__(self, other):
+        if is_scalar(other):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) <= other)
+        else:
+            raise NotImplementedError
+
+    def __gt__(self, other):
+        if is_scalar(other):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) > other)
+        else:
+            raise NotImplementedError
+
+    def __ge__(self, other):
+        if is_scalar(other):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) >= other)
+        else:
+            raise NotImplementedError
+
+    def __eq__(self, other):
+        if is_scalar(other):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) == other)
+        else:
+            raise NotImplementedError
+
+    def __neq__(self, other):
+        if is_scalar(other):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) != other)
+        else:
+            raise NotImplementedError
+
+    def __or__(self, condition_event):
+        self.check_same_probSpace(condition_event)        
+        if isinstance(condition_event, Event):
+            return RVConditional(self, condition_event)
+        else:
+            raise NotImplementedError
+
+class RVConditional(RV):
+
+    def __init__(self, random_variable, condition_event):
+        self.condition_event = condition_event
+        super().__init__(random_variable.probSpace,
+                         random_variable.fun)
+        
+    def draw(self):
+        probSpace = self.probSpace
+        while True:
+            outcome = probSpace.draw()
+            if self.condition_event.fun(outcome):
+                return self.fun(outcome)
