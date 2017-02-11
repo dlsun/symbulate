@@ -4,7 +4,7 @@ from copy import deepcopy as copy
 
 from .probability_space import Event
 from .results import RVResults
-from .utils import is_scalar, is_vector
+from .utils import is_scalar, is_vector, get_dimension
 
 class RV:
 
@@ -26,6 +26,13 @@ class RV:
         def f_new(outcome):
             return function(self.fun(outcome))
         return RV(self.probSpace, copy(f_new))
+
+    # This allows us to unpack a random vector,
+    # e.g., X, Y = RV(BoxModel([0, 1], size=2))
+    def __iter__(self):
+        test = self.sim(10)
+        for i in range(get_dimension(test)):
+            yield self[i]
 
     def __getitem__(self, i):
         # if the indices are a list, return a random vector
