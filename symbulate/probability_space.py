@@ -42,6 +42,35 @@ class Event:
         self.probSpace = probSpace
         self.fun = fun
 
+    def check_same_probSpace(self, other):
+        if self.probSpace != other.probSpace:
+            raise Exception("Events must be defined on same probability space.")
+
+    # define the event (A & B)
+    def __and__(self, other):
+        self.check_same_probSpace(other)
+        if isinstance(other, Event):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) and other.fun(x))
+
+    # define the event (A | B)
+    def __or__(self, other):
+        self.check_same_probSpace(other)
+        if isinstance(other, Event):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) or other.fun(x))
+
+    # This prevents users from writing expressions like 2 < X < 5,
+    # which evaluate to ((2 < X) and (X < 5)). This unfortunately
+    # is not well-defined in Python and cannot be overloaded.
+    def __bool__(self):
+        raise Exception("I do not know how to cast " + 
+                        "an event to a boolean. " +
+                        "If you wrote an expression " +
+                        "like (2 < X < 5), try writing " +
+                        "((2 < X) & (X < 5)) instead."
+                    )
+
 class BoxModel(ProbabilitySpace):
     """Defines a probability space from a box model.
 
