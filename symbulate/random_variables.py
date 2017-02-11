@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 
-from copy import deepcopy as copy
-
 from .probability_space import Event
 from .results import RVResults
 from .utils import is_scalar, is_vector, get_dimension
@@ -25,7 +23,7 @@ class RV:
     def apply(self, function):
         def f_new(outcome):
             return function(self.fun(outcome))
-        return RV(self.probSpace, copy(f_new))
+        return RV(self.probSpace, f_new)
 
     # This allows us to unpack a random vector,
     # e.g., X, Y = RV(BoxModel([0, 1], size=2))
