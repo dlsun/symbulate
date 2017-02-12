@@ -3,7 +3,7 @@ import numpy as np
 from .results import Results
 
 class ProbabilitySpace:
-    """Defines a probability space
+    """Defines a probability space.
 
     Attributes:
       draw (function): A function explaining how to draw one 
@@ -24,6 +24,10 @@ class ProbabilitySpace:
         """
         return Results(self.draw() for _ in range(n))
 
+    def check_same(self, other):
+        if self != other:
+            raise Exception("Events must be defined on same probability space.")
+
     def __mul__(self, other):
         def draw():
             a = self.draw() if type(self.draw()) == tuple else (self.draw(),)
@@ -36,6 +40,20 @@ class ProbabilitySpace:
             return tuple(self.draw() for _ in range(exponent))
         return ProbabilitySpace(draw)
 
+
+class ArbitrarySpace(ProbabilitySpace):
+    """Defines an arbitrary probability space for 
+         deterministic phenomena, which is
+         compatible with any other probability space.
+    """
+
+    def __init__(self):
+        self.draw = lambda: 1
+
+    def check_same(self, other):
+        pass
+    
+
 class Event:
 
     def __init__(self, probSpace, fun):
@@ -43,8 +61,7 @@ class Event:
         self.fun = fun
 
     def check_same_probSpace(self, other):
-        if self.probSpace != other.probSpace:
-            raise Exception("Events must be defined on same probability space.")
+        self.probSpace.check_same(other.probSpace)
 
     # define the event (A & B)
     def __and__(self, other):
