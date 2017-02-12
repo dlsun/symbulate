@@ -17,8 +17,10 @@ class RV:
         return RVResults(self.draw() for _ in range(n))
 
     def check_same_probSpace(self, other):
-        if self.probSpace != other.probSpace:
-            raise Exception("Random variables must be defined on same probability space.")
+        if is_scalar(other):
+            return
+        else:
+            self.probSpace.check_same(other.probSpace)
 
     def apply(self, function):
         def f_new(outcome):
@@ -40,21 +42,36 @@ class RV:
         else:
             return self.apply(lambda x: x[i])
 
+    # The code for most operations (+, -, *, /, ...) is the
+    # same, except for the operation itself. The following 
+    # factory function takes in the the operation and 
+    # generates the code to perform that operation.
+    def _operation_factory(self, op):
+
+        def op_fun(self, other):
+            self.check_same_probSpace(other)
+            if is_scalar(other):
+                return self.apply(lambda x: op(x, other))
+            elif isinstance(other, RV):
+                def fun(outcome):
+                    a = self.fun(outcome)
+                    b = other.fun(outcome)
+                    if is_vector(a) and is_vector(b) and len(a) == len(b):
+                        return tuple(op(i, j) for i, j in zip(a, b))
+                    elif is_scalar(a) and is_scalar(b):
+                        return op(a, b)
+                    else:
+                        raise Exception("Could not perform operation on the outcomes %s and %s." % (str(a), str(b)))
+                return RV(self.probSpace, fun)
+            else:
+                raise Exception("Operations between RV and %s is not defined." % str(type(other)))
+
+        return op_fun
+
     # e.g., X + Y or X + 3
     def __add__(self, other):
-        if is_scalar(other):
-            return self.apply(lambda x: x + other)
-        self.check_same_probSpace(other)
-        def fun(outcome):
-            a = self.fun(outcome)
-            b = other.fun(outcome)
-            if is_vector(a) and is_vector(b) and len(a) == len(b):
-                return tuple(i + j for i, j in zip(a, b))
-            elif is_scalar(a) and is_scalar(b):
-                return a + b
-            else:
-                raise Exception("I don't know how to add those two random variables.")
-        return RV(self.probSpace, fun)
+        op_fun = self._operation_factory(lambda x, y: x + y)
+        return op_fun(self, other)
 
     # e.g., 3 + X
     def __radd__(self, other):
@@ -62,19 +79,8 @@ class RV:
 
     # e.g., X - Y or X - 3
     def __sub__(self, other):
-        if is_scalar(other):
-            return self.apply(lambda x: x - other)
-        self.check_same_probSpace(other)
-        def fun(outcome):
-            a = self.fun(outcome)
-            b = other.fun(outcome)
-            if is_vector(a) and is_vector(b) and len(a) == len(b):
-                return tuple(i - j for i, j in zip(a, b))
-            elif is_scalar(a) and is_scalar(b):
-                return a - b
-            else:
-                raise Exception("I don't know how to subtract those two random variables.")
-        return RV(self.probSpace, fun)
+        op_fun = self._operation_factory(lambda x, y: x - y)
+        return op_fun(self, other)
 
     # e.g., 3 - X
     def __rsub__(self, other):
@@ -86,87 +92,32 @@ class RV:
 
     # e.g., X * Y or X * 2
     def __mul__(self, other):
-        if is_scalar(other):
-            return self.apply(lambda x: x * other)
-        self.check_same_probSpace(other)
-        def fun(outcome):
-            a = self.fun(outcome)
-            b = other.fun(outcome)
-            if is_vector(a) and is_vector(b) and len(a) == len(b):
-                return tuple(i * j for i, j in zip(a, b))
-            elif is_scalar(a) and is_scalar(b):
-                return a * b
-            else:
-                raise Exception("I don't know how to multiply those two random variables.")
-        return RV(self.probSpace, fun)
-
+        op_fun = self._operation_factory(lambda x, y: x * y)
+        return op_fun(self, other)
+            
     # e.g., 2 * X
     def __rmul__(self, other):
         return self.__mul__(other)
 
     # e.g., X / Y or X / 2
     def __truediv__(self, other):
-        if is_scalar(other):
-            return self.apply(lambda x: x / other)
-        self.check_same_probSpace(other)
-        def fun(outcome):
-            a = self.fun(outcome)
-            b = other.fun(outcome)
-            if is_vector(a) and is_vector(b) and len(a) == len(b):
-                return tuple(i / j for i, j in zip(a, b))
-            elif is_scalar(a) and is_scalar(b):
-                return a / b
-            else:
-                raise Exception("I don't know how to divide those two random variables.")
-        return RV(self.probSpace, fun)
+        op_fun = self._operation_factory(lambda x, y: x / y)
+        return op_fun(self, other)
 
     # e.g., 2 / X
     def __rtruediv__(self, other):
-        if is_scalar(other):
-            return self.apply(lambda x: other / x)
-        self.check_same_probSpace(other)
-        def fun(outcome):
-            a = self.fun(outcome)
-            b = other.fun(outcome)
-            if is_vector(a) and is_vector(b) and len(a) == len(b):
-                return tuple(j / i for i, j in zip(a, b))
-            elif is_scalar(a) and is_scalar(b):
-                return b / a
-            else:
-                raise Exception("I don't know how to divide those two random variables.")
-        return RV(self.probSpace, fun)
+        op_fun = self._operation_factory(lambda x, y: y / x)
+        return op_fun(self, other)
 
     # e.g., X ** 2
     def __pow__(self, other):
-        if is_scalar(other):
-            return self.apply(lambda x: x ** other)
-        self.check_same_probSpace(other)
-        def fun(outcome):
-            a = self.fun(outcome)
-            b = other.fun(outcome)
-            if is_vector(a) and is_vector(b) and len(a) == len(b):
-                return tuple(i ** j for i, j in zip(a, b))
-            elif is_scalar(a) and is_scalar(b):
-                return a ** b
-            else:
-                raise Exception("I don't know how to raise that random variable to that power.")
-        return RV(self.probSpace, fun)
+        op_fun = self._operation_factory(lambda x, y: x ** y)
+        return op_fun(self, other)
 
     # e.g., 2 ** X
     def __rpow__(self, other):
-        if is_scalar(other):
-            return self.apply(lambda x: other ** x)
-        self.check_same_probSpace(other)
-        def fun(outcome):
-            a = self.fun(outcome)
-            b = other.fun(outcome)
-            if is_vector(a) and is_vector(b) and len(a) == len(b):
-                return tuple(j ** i for i, j in zip(a, b))
-            elif is_scalar(a) and is_scalar(b):
-                return b ** a
-            else:
-                raise Exception("I don't know how to raise that random variable to that power.")
-        return RV(self.probSpace, fun)
+        op_fun = self._operation_factory(lambda x, y: y ** x)
+        return op_fun(self, other)
 
     # Alternative notation for powers: e.g., X ^ 2
     def __xor__(self, other):
@@ -179,13 +130,16 @@ class RV:
     # Define a joint distribution of two random variables: e.g., X & Y
     def __and__(self, other):
         self.check_same_probSpace(other)
-        def fun(outcome):
-            a = self.fun(outcome)
-            b = other.fun(outcome)
-            a = tuple(a) if is_vector(a) else (a, )
-            b = tuple(b) if is_vector(b) else (b, )
-            return a + b
-        return RV(self.probSpace, fun)
+        if isinstance(other, RV):
+            def fun(outcome):
+                a = self.fun(outcome)
+                b = other.fun(outcome)
+                a = tuple(a) if is_vector(a) else (a, )
+                b = tuple(b) if is_vector(b) else (b, )
+                return a + b
+            return RV(self.probSpace, fun)
+        else:
+            raise Exception("Joint distributions are only defined for RVs.")
 
     ## The following function all return Events
     ## (Events are used to define conditional distributions)
