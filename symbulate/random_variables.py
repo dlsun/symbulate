@@ -231,7 +231,7 @@ class RV:
             raise NotImplementedError
 
     # e.g., X != 3
-    def __neq__(self, other):
+    def __ne__(self, other):
         if is_scalar(other):
             return Event(self.probSpace,
                          lambda x: self.fun(x) != other)

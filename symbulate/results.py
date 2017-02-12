@@ -19,48 +19,36 @@ def is_hashable(x):
 
 class Results(list):
 
-    table_template = '''
-    <table>
-      <thead>
-        <th width="10%">Index</th>
-        <th width="90%">Result</th>
-      </thead>
-      <tbody>
-        {table_body}
-      </tbody>
-    </table>
-    '''
-    row_template = "<tr><td>%s</td><td>%s</td></tr>"
-
     def __init__(self, results):
         for result in results:
             self.append(result)
 
-    def filter(self, fun):
-        return type(self)(x for x in self if fun(x))
-
-    def filter_eq(self, value):
-        return self.filter(lambda x: x == value)
-
-    def filter_neq(self, value):
-        return self.filter(lambda x: x != value)
-
-    def filter_leq(self, value):
-        return self.filter(lambda x: x <= value)
-
-    def filter_geq(self, value):
-        return self.filter(lambda x: x >= value)
-
-    def filter_lt(self, value):
-        return self.filter(lambda x: x < value)
-
-    def filter_gt(self, value):
-        return self.filter(lambda x: x > value)
-
     def apply(self, fun):
+        """Apply a function to each outcome of a simulation.
+
+        Args:
+          fun: A function to apply to each outcome.
+
+        Returns:
+          Results: A Results object of the same length,
+            where each outcome is the result of applying
+            the function to each outcome from the original
+            Results object.
+        """
         return type(self)(fun(x) for x in self)
 
     def component(self, i):
+        """Returns the ith component of each outcome.
+             Used when each outcome consists of several values.
+
+        Args:
+          i (int): The component to extract from each outcome.
+
+        Returns:
+          Results: A Results object of the same length,
+            where each outcome is the ith component of
+            an outcome from the original Results object.
+        """
         return self.apply(lambda x: x[i])
 
     def _get_counts(self):
@@ -79,13 +67,143 @@ class Results(list):
         return counts
 
     def tabulate(self, relfreq=False):
+        """Counts up how much of each outcome there were.
+
+        Args:
+          relfreq (bool): If True, return the relative
+            frequency, instead of counts. Defaults to
+            False.
+
+        Returns:
+          Table: A Table with each of the observed
+            outcomes and their freuencies.
+        """
         table = Table(self._get_counts())
         if relfreq:
             return table / len(self)
         else:
             return table
 
+
+    # The following functions return a Results object
+    # with the outcomes that satisfy a given criterion.
+
+    def filter(self, fun):
+        """Filters the results of a simulation and
+             returns only those outcomes that satisfy
+             a given criterion.
+
+        Args:
+          fun (outcome -> bool): A function that
+            takes in an outcome and returns a
+            True / False. Only the outcomes that
+            return True will be kept; the others
+            will be filtered out.
+
+        Returns:
+          Results: Another Results object containing
+            only those outcomes for which the function
+            returned True.
+        """
+        return type(self)(x for x in self if fun(x))
+
+    def filter_eq(self, value):
+        return self.filter(lambda x: x == value)
+
+    def filter_neq(self, value):
+        return self.filter(lambda x: x != value)
+
+    def filter_lt(self, value):
+        return self.filter(lambda x: x < value)
+
+    def filter_leq(self, value):
+        return self.filter(lambda x: x <= value)
+
+    def filter_gt(self, value):
+        return self.filter(lambda x: x > value)
+
+    def filter_geq(self, value):
+        return self.filter(lambda x: x >= value)
+
+
+    # The following functions return an integer indicating
+    # how many outcomes passed a given criterion.
+
+    def count(self, fun=lambda x: True):
+        """Counts the number of outcomes that satisfied
+             a given criterion.
+
+        Args:
+          fun (outcome -> bool): A function that
+            takes in an outcome and returns a
+            True / False. Only the outcomes that
+            return True will be counted.
+
+        Returns:
+          int: The number of outcomes for which
+            the function returned True.
+        """
+        return len(self.filter(fun))
+
+    def count_eq(self, value):
+        return len(self.filter_eq(value))
+
+    def count_neq(self, value):
+        return len(self.filter_neq(value))
+
+    def count_lt(self, value):
+        return len(self.filter_lt(value))
+
+    def count_leq(self, value):
+        return len(self.filter_leq(value))
+
+    def count_gt(self, value):
+        return len(self.filter_gt(value))
+
+    def count_geq(self, value):
+        return len(self.filter_geq(value))
+
+
+    # The following functions define vectorized operations
+    # on the Results object.
+
+    def __eq__(self, other):
+        return self.apply(lambda x: x == other)
+
+    def __ne__(self, other):
+        return self.apply(lambda x: x != other)
+
+    def __lt__(self, other):
+        return self.apply(lambda x: x < other)
+
+    def __le__(self, other):
+        return self.apply(lambda x: x <= other)
+
+    def __gt__(self, other):
+        return self.apply(lambda x: x > other)
+
+    def __ge__(self, other):
+        return self.apply(lambda x: x >= other)
+
+
     def _repr_html_(self):
+
+        table_template = '''
+    <table>
+      <thead>
+        <th width="10%">Index</th>
+        <th width="90%">Result</th>
+      </thead>
+      <tbody>
+        {table_body}
+      </tbody>
+    </table>
+    '''
+        row_template = '''
+        <tr>
+          <td>%s</td><td>%s</td>
+        </tr>
+        '''
 
         def truncate(result):
             if len(result) > 100:
@@ -95,13 +213,13 @@ class Results(list):
 
         table_body = ""
         for i, x in enumerate(self):
-            table_body += self.row_template % (i, truncate(str(x)))
+            table_body += row_template % (i, truncate(str(x)))
             # if we've already printed 9 rows, skip to end
             if i >= 8:
                 table_body += "<tr><td>...</td><td>...</td></tr>"
-                table_body += self.row_template % (len(self) - 1, truncate(str(self[-1])))
+                table_body += row_template % (len(self) - 1, truncate(str(self[-1])))
                 break
-        return self.table_template.format(table_body=table_body)
+        return table_template.format(table_body=table_body)
 
 
 class RVResults(Results):
