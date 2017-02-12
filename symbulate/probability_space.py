@@ -25,7 +25,9 @@ class ProbabilitySpace:
         return Results(self.draw() for _ in range(n))
 
     def check_same(self, other):
-        if self != other:
+        if isinstance(other, ArbitrarySpace):
+            return
+        elif self != other:
             raise Exception("Events must be defined on same probability space.")
 
     def __mul__(self, other):

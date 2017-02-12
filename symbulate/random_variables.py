@@ -64,7 +64,7 @@ class RV:
                         raise Exception("Could not perform operation on the outcomes %s and %s." % (str(a), str(b)))
                 return RV(self.probSpace, fun)
             else:
-                raise Exception("Operations between RV and %s is not defined." % str(type(other)))
+                return NotImplemented
 
         return op_fun
 

@@ -305,3 +305,11 @@ class RVResults(Results):
             return tuple(np.array(self).std(0))
         else:
             raise Exception("I don't know how to take the variance of these values.")
+
+
+class RandomProcessResults(Results):
+
+    def plot(self, t=range(10), alpha=.1, **kwargs):
+        for f in self:
+            y = [f(i) for i in t]
+            plt.plot(t, y, 'k-', alpha=alpha, **kwargs)

@@ -1,5 +1,6 @@
 from .probability_space import ProbabilitySpace, BoxModel, DeckOfCards
 from .random_variables import RV
+from .random_processes import TimeIndex, RandomProcess
 from .distributions import (
     Bernoulli,
     Binomial,
