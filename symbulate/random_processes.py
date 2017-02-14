@@ -1,5 +1,8 @@
 import numpy as np
 
+from math import floor
+from copy import deepcopy
+
 from .probability_space import ArbitrarySpace
 from .random_variables import RV
 from .results import RandomProcessResults
@@ -7,27 +10,50 @@ from .utils import is_scalar, is_vector, get_dimension
 
 class RandomProcess:
 
-    def __init__(self, probSpace, time_fun):
+    def __init__(self, probSpace, fs=1, time_fun=lambda t: None):
         self.probSpace = probSpace
+        self.fs = fs
         self.time_fun = time_fun
 
     def draw(self):
         seed = np.random.randint(1e9)
         def f(t):
             np.random.seed(seed)
-            return self[t].draw()
+            if self[t] is None:
+                raise Exception("RandomProcess is not defined at time %s." % str(t))
+            elif is_scalar(self[t]):
+                return self[t]
+            elif isinstance(self[t], RV):
+                return self[t].draw()
+            else:
+                raise Exception("RandomProcess at time t must be a RV.")
         return f
 
     def sim(self, n):
-        return RandomProcessResults(self.draw() for _ in range(n))
+        return RandomProcessResults([self.draw() for _ in range(n)], self.fs)
 
     def __getitem__(self, t):
         return self.time_fun(t)
     
+    def __setitem__(self, t, value):
+        if isinstance(value, RV) or is_scalar(value):
+            # copy existing function to use inside redefined function
+            time_fun_copy = deepcopy(self.time_fun)
+            # define new function which returns a RV at t
+            def time_fun_new(s):
+                if s == t:
+                    return value
+                else:
+                    return time_fun_copy(s)
+            # update self.time_fun
+            self.time_fun = time_fun_new
+        else:
+            raise Exception("The value of the process at any time t must be a RV.")
+
     def apply(self, function):
         def time_fun(t):
             return function(self.time_fun(t))
-        return RandomProcess(self.probSpace, time_fun)
+        return RandomProcess(self.probSpace, self.fs, time_fun)
 
     def check_same_probSpace(self, other):
         if is_scalar(other):
@@ -52,7 +78,7 @@ class RandomProcess:
             elif isinstance(other, RandomProcess):
                 def time_fun(t):
                     return op(self.time_fun(t), other.time_fun(t))
-            return RandomProcess(self.probSpace, time_fun)
+            return RandomProcess(self.probSpace, self.fs, time_fun)
 
         return op_fun
 
@@ -109,5 +135,9 @@ class RandomProcess:
     def __rxor__(self, other):
         return self.__rpow__(other)
 
-TimeIndex = RandomProcess(ArbitrarySpace(), lambda t: t)
+
+class TimeIndex(RandomProcess):
+
+    def __init__(self, fs):
+        super().__init__(ArbitrarySpace(), fs, lambda t: t)
 

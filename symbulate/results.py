@@ -14,6 +14,8 @@ from numbers import Number
 from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
 
+plt.style.use('ggplot')
+
 def is_hashable(x):
     return x.__hash__ is not None
 
@@ -309,7 +311,16 @@ class RVResults(Results):
 
 class RandomProcessResults(Results):
 
-    def plot(self, t=range(10), alpha=.1, **kwargs):
+    def __init__(self, results, fs):
+        self.fs = fs
+        super().__init__(results)
+
+    def plot(self, tmin=0, tmax=10, alpha=.1, **kwargs):
+        if self.fs == float("inf"):
+            ts = np.linspace(tmin, tmax, 200)
+        else:
+            ts = np.arange(tmin, tmax, 1 / self.fs)
         for f in self:
-            y = [f(i) for i in t]
-            plt.plot(t, y, 'k-', alpha=alpha, **kwargs)
+            y = [f(i) for i in ts]
+            plt.plot(ts, y, 'k-', alpha=alpha, **kwargs)
+            plt.xlabel("Time (t)")
