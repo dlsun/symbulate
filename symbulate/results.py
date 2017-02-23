@@ -311,15 +311,15 @@ class RVResults(Results):
 
 class RandomProcessResults(Results):
 
-    def __init__(self, results, fs):
-        self.fs = fs
+    def __init__(self, results, timeIndex):
+        self.timeIndex = timeIndex
         super().__init__(results)
 
     def plot(self, tmin=0, tmax=10, alpha=.1, **kwargs):
-        if self.fs == float("inf"):
+        if self.timeIndex.fs == float("inf"):
             ts = np.linspace(tmin, tmax, 200)
         else:
-            ts = np.arange(tmin, tmax, 1 / self.fs)
+            ts = np.arange(tmin, tmax, 1 / self.timeIndex.fs)
         for f in self:
             y = [f(i) for i in ts]
             plt.plot(ts, y, 'k-', alpha=alpha, **kwargs)
