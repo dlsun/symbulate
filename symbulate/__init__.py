@@ -14,5 +14,6 @@ from .distributions import (
     Exponential,
     Gamma
 )
+from .markov_chains import MarkovChain
 from .plot import figure, xlabel, ylabel, xlim, ylim
 from .math import *
