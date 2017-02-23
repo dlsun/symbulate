@@ -39,7 +39,10 @@ class RandomProcess:
 
     def __getitem__(self, t):
         fun_copy = deepcopy(self.fun)
-        return RV(self.probSpace, lambda x: fun_copy(x, t))
+        if is_scalar(t):
+            return RV(self.probSpace, lambda x: fun_copy(x, t))
+        elif isinstance(t, RV):
+            return RV(self.probSpace, lambda x: fun_copy(x, t.fun(x)))
     
     def __setitem__(self, t, value):
         # copy existing function to use inside redefined function
