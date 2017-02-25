@@ -6,12 +6,9 @@ from copy import deepcopy
 from .probability_space import ArbitrarySpace
 from .random_variables import RV
 from .results import RandomProcessResults
+from .sequences import InfiniteSequence
+from .time_index import TimeIndex
 from .utils import is_scalar, is_vector, get_dimension
-
-class TimeIndex:
-
-    def __init__(self, fs=1):
-        self.fs = fs
 
 class RandomProcess:
 
@@ -22,7 +19,7 @@ class RandomProcess:
 
     def draw(self):
         seed = np.random.randint(1e9)
-        def f(t):
+        def x(t):
             if self[t] is None:
                 raise Exception("RandomProcess is not defined at time %s." % str(t))
             elif is_scalar(self[t]):
@@ -32,7 +29,7 @@ class RandomProcess:
                 return self[t].draw()
             else:
                 raise Exception("RandomProcess at time t must be a RV.")
-        return f
+        return InfiniteSequence(x, self.timeIndex)
 
     def sim(self, n):
         return RandomProcessResults([self.draw() for _ in range(n)], self.timeIndex)

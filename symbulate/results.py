@@ -39,6 +39,15 @@ class Results(list):
         """
         return type(self)(fun(x) for x in self)
 
+    def __getitem__(self, i):
+        return self.apply(lambda x: x[i])
+
+    def get(self, i):
+        for j, x in enumerate(self):
+            if j == i:
+                return x
+
+    ## TODO: Remove .component(i). Use X[i] instead.
     def component(self, i):
         """Returns the ith component of each outcome.
              Used when each outcome consists of several values.
@@ -219,7 +228,8 @@ class Results(list):
             # if we've already printed 9 rows, skip to end
             if i >= 8:
                 table_body += "<tr><td>...</td><td>...</td></tr>"
-                table_body += row_template % (len(self) - 1, truncate(str(self[-1])))
+                i_last = len(self) - 1
+                table_body += row_template % (i_last, truncate(str(self.get(i_last))))
                 break
         return table_template.format(table_body=table_body)
 
@@ -315,12 +325,17 @@ class RandomProcessResults(Results):
         self.timeIndex = timeIndex
         super().__init__(results)
 
+    def __getitem__(self, i):
+        return Results(x[i] for x in self)
+
     def plot(self, tmin=0, tmax=10, alpha=.1, **kwargs):
         if self.timeIndex.fs == float("inf"):
             ts = np.linspace(tmin, tmax, 200)
         else:
-            ts = np.arange(tmin, tmax, 1 / self.timeIndex.fs)
-        for f in self:
-            y = [f(i) for i in ts]
+            nmin = int(np.floor(tmin * self.timeIndex.fs))
+            nmax = int(np.ceil(tmax * self.timeIndex.fs))
+            ts = [self.timeIndex[n] for n in range(nmin, nmax)]
+        for x in self:
+            y = [x[t] for t in ts]
             plt.plot(ts, y, 'k-', alpha=alpha, **kwargs)
             plt.xlabel("Time (t)")
