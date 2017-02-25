@@ -71,6 +71,10 @@ class RandomProcess:
         else:
             self.probSpace.check_same(other.probSpace)
 
+    # e.g., abs(X)
+    def __abs__(self):
+        return self.apply(lambda x: abs(x))
+
     # The code for most operations (+, -, *, /, ...) is the
     # same, except for the operation itself. The following 
     # factory function takes in the the operation and 
