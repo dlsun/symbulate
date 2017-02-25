@@ -144,6 +144,8 @@ class RV:
     ## The following function all return Events
     ## (Events are used to define conditional distributions)
 
+    ## TODO: Implement random 
+
     # e.g., X < 3
     def __lt__(self, other):
         if is_scalar(other):
@@ -178,7 +180,7 @@ class RV:
 
     # e.g., X == 3
     def __eq__(self, other):
-        if is_scalar(other):
+        if is_scalar(other) or type(other) == str:
             return Event(self.probSpace,
                          lambda x: self.fun(x) == other)
         else:
@@ -186,7 +188,7 @@ class RV:
 
     # e.g., X != 3
     def __ne__(self, other):
-        if is_scalar(other):
+        if is_scalar(other) or type(other) == str:
             return Event(self.probSpace,
                          lambda x: self.fun(x) != other)
         else:

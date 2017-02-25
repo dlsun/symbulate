@@ -7,20 +7,20 @@ class MarkovChain(RandomProcess):
 
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         n = len(initial_dist)
-        def sim():
-            def generator():
-                i = np.random.choice(range(n), p=initial_dist)
-                while True:
-                    if state_labels is None:
-                        yield i
-                    else:
-                        yield state_labels[i]
-                    i = np.random.choice(range(n), p=transition_matrix[i])
-            return generator()
+        def draw():
+            seed = np.random.randint(1e9)
+            def x(t):
+                np.random.seed(seed)
+                state = np.random.choice(range(n), p=initial_dist)
+                for i in range(t):
+                    state = np.random.choice(range(n), p=transition_matrix[state])
+                if state_labels is None:
+                    return state
+                else:
+                    return state_labels[state]
+            return x
 
         def fun(x, t):
-            for i, state in enumerate(x):
-                if i == t:
-                    return state
+            return x(t)
                 
-        super().__init__(ProbabilitySpace(sim), TimeIndex(), fun)
+        super().__init__(ProbabilitySpace(draw), TimeIndex(), fun)

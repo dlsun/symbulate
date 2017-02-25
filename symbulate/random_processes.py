@@ -23,12 +23,12 @@ class RandomProcess:
     def draw(self):
         seed = np.random.randint(1e9)
         def f(t):
-            np.random.seed(seed)
             if self[t] is None:
                 raise Exception("RandomProcess is not defined at time %s." % str(t))
             elif is_scalar(self[t]):
                 return self[t]
             elif isinstance(self[t], RV):
+                np.random.seed(seed)
                 return self[t].draw()
             else:
                 raise Exception("RandomProcess at time t must be a RV.")
