@@ -16,5 +16,6 @@ from .distributions import (
     Gamma
 )
 from .markov_chains import MarkovChain
+from .poisson_process import PoissonProcess
 from .plot import figure, xlabel, ylabel, xlim, ylim
 from .math import *
