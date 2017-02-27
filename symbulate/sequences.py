@@ -13,5 +13,5 @@ class InfiniteSequence:
         if self.timeIndex.fs == float("inf"):
             return "(function)"
         else:
-            return str([self.fun(self.timeIndex[i]) 
-                        for i in range(50)])
+            return str(tuple([self.fun(self.timeIndex[i]) 
+                              for i in range(50)]))

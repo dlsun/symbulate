@@ -1,6 +1,7 @@
 import numpy as np
 
 from .results import Results
+from .sequences import InfiniteSequence
 
 class ProbabilitySpace:
     """Defines a probability space.
@@ -38,8 +39,18 @@ class ProbabilitySpace:
         return ProbabilitySpace(draw)
 
     def __pow__(self, exponent):
-        def draw():
-            return tuple(self.draw() for _ in range(exponent))
+        if exponent == float("inf"):
+            def draw():
+                seed = np.random.randint(1e9)
+                def x(t):
+                    np.random.seed(seed)
+                    for _ in range(int(t)):
+                        self.draw()
+                    return self.draw()
+                return InfiniteSequence(x)
+        else:
+            def draw():
+                return tuple(self.draw() for _ in range(exponent))
         return ProbabilitySpace(draw)
 
 
