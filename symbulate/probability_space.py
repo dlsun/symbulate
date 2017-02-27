@@ -129,6 +129,8 @@ class BoxModel(ProbabilitySpace):
         if self.size is None:
             return self.box[draw_inds(None)]
         elif self.size == float("inf"):
+            if self.replace == False:
+                raise Exception("Cannot draw an infinite number of tickets without replacement.")
             seed = np.random.randint(1e9)
             def x(t):
                 np.random.seed(seed)
