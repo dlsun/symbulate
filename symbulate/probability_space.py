@@ -124,11 +124,20 @@ class BoxModel(ProbabilitySpace):
         self.order_matters = order_matters
 
     def draw(self):
-        inds = np.random.choice(len(self.box), self.size, self.replace, self.probs)
+        def draw_inds(size):
+            return np.random.choice(len(self.box), size, self.replace, self.probs)
         if self.size is None:
-            return self.box[inds]
+            return self.box[draw_inds(None)]
+        elif self.size == float("inf"):
+            seed = np.random.randint(1e9)
+            def x(t):
+                np.random.seed(seed)
+                for _ in range(int(t)):
+                    draw_inds(None)
+                return self.box[draw_inds(None)]
+            return InfiniteSequence(x)
         else:
-            draws = [self.box[i] for i in inds]
+            draws = [self.box[i] for i in draw_inds(self.size)]
             if not self.order_matters:
                 draws.sort()
             return tuple(draws)
