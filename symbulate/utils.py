@@ -14,13 +14,10 @@ def is_vector(x):
 
 def get_dimension(x):
     """Gets the dimension of the vectors in an iterable if it is
-    consistent, otherwise returns -1
+    consistent, otherwise returns None
     """
-    if not all(is_vector(i) for i in x):
-        return -1
-    else:
-        lengths = [len(i) for i in x]
-        for l in lengths:
-            if l != lengths[0]:
-                return -1
-        return lengths[0]
+    lengths = [1 if is_scalar(i) else len(i) for i in x]
+    for l in lengths:
+        if l != lengths[0]:
+            return None
+    return lengths[0]

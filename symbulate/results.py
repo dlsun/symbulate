@@ -236,6 +236,53 @@ class Results(list):
 
 class RVResults(Results):
 
+    def plot(self, type=None, alpha=None, normalize=True, jitter=False, **kwargs):
+        dim = get_dimension(self)
+        if dim == 1:
+            counts = self._get_counts()
+            if type is None:
+                heights = counts.values()
+                if sum([(i > 1) for i in heights]) > .8 * len(heights):
+                    type = "impulse"
+                else:
+                    type = "bar"
+            if alpha is None:
+                alpha = .5
+            if type == "bar":
+                plt.hist(self, normed=normalize, alpha=alpha, **kwargs)
+            elif type == "impulse":
+                x = list(counts.keys())
+                y = list(counts.values())
+                if normalize:
+                    y_tot = sum(y)
+                    y = [i / y_tot for i in y]
+                if jitter:
+                    noise = np.random.normal(loc=0, scale=.01 * (max(x) - min(x)))
+                    x = [i + noise for i in x]
+                plt.vlines(x, 0, y, alpha=alpha, **kwargs)
+                # create 5% buffer on either end of plot so that leftmost and rightmost lines are visible
+                buff = .05 * (max(x) - min(x))
+                plt.xlim(min(x) - buff, max(x) + buff)
+                plt.ylim(0, 1.05 * max(y))
+            else:
+                raise Exception("Histogram must have type='impulse' or 'bar'.")
+            plt.ylabel("Relative Frequency" if normalize else "Count")
+        elif dim == 2:
+            x, y = zip(*self)
+            if alpha is None:
+                alpha = .5
+            if jitter:
+                x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
+                y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
+            plt.scatter(x, y, alpha=alpha, **kwargs)
+        else:
+            if alpha is None:
+                alpha = .1
+            for x in self:
+                if not hasattr(x, "__iter__"):
+                    x = [x]
+                plt.plot(x, 'k.-', alpha=alpha, **kwargs)
+
     def plot_sample_paths(self, alpha=.1, xlabel=None, ylabel=None, **kwargs):
         for x in self:
             if not hasattr(x, "__iter__"):
