@@ -2,6 +2,7 @@ import numpy as np
 
 from .probability_space import ProbabilitySpace
 from .random_processes import RandomProcess, TimeIndex
+from .seed import get_seed
 from .sequences import InfiniteSequence
 
 class MarkovChain(RandomProcess):
@@ -9,7 +10,7 @@ class MarkovChain(RandomProcess):
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         n = len(initial_dist)
         def draw():
-            seed = np.random.randint(1e9)
+            seed = get_seed()
             def x(t):
                 np.random.seed(seed)
                 state = np.random.choice(range(n), p=initial_dist)

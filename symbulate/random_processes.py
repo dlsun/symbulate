@@ -6,6 +6,7 @@ from copy import deepcopy
 from .probability_space import ArbitrarySpace
 from .random_variables import RV
 from .results import RandomProcessResults
+from .seed import get_seed
 from .sequences import InfiniteSequence
 from .time_index import TimeIndex
 from .utils import is_scalar, is_vector, get_dimension
@@ -18,7 +19,7 @@ class RandomProcess:
         self.fun = fun
 
     def draw(self):
-        seed = np.random.randint(1e9)
+        seed = get_seed()
         def x(t):
             if self[t] is None:
                 raise Exception("RandomProcess is not defined at time %s." % str(t))

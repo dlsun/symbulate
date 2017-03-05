@@ -2,6 +2,7 @@ import numpy as np
 
 from .results import Results
 from .sequences import InfiniteSequence
+from .seed import get_seed
 
 class ProbabilitySpace:
     """Defines a probability space.
@@ -41,7 +42,7 @@ class ProbabilitySpace:
     def __pow__(self, exponent):
         if exponent == float("inf"):
             def draw():
-                seed = np.random.randint(1e9)
+                seed = get_seed()
                 def x(t):
                     np.random.seed(seed)
                     for _ in range(int(t)):
@@ -131,7 +132,7 @@ class BoxModel(ProbabilitySpace):
         elif self.size == float("inf"):
             if self.replace == False:
                 raise Exception("Cannot draw an infinite number of tickets without replacement.")
-            seed = np.random.randint(1e9)
+            seed = get_seed()
             def x(t):
                 np.random.seed(seed)
                 for _ in range(int(t)):
