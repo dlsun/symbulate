@@ -19,3 +19,16 @@ class PoissonProcess(RandomProcess):
                     n += 1
             return n
         self.fun = fun
+
+    def ArrivalTimes(self):
+        def fun(x, t):
+            total = 0
+            for i in range(t):
+                total += x[i]
+            return total
+        return RandomProcess(self.probSpace, TimeIndex(1), fun)
+
+    def InterarrivalTimes(self):
+        def fun(x, t):
+            return x[t]
+        return RandomProcess(self.probSpace, TimeIndex(1), fun)
