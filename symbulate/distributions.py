@@ -136,14 +136,19 @@ class Normal(ProbabilitySpace):
     Attributes:
       mean (float): mean parameter of the normal distribution
       var (float): variance parameter of the normal distribution
+      sd (float): standard deviation parameter of the normal 
+        distribution (if specified, var parameter will be ignored)
     """
 
-    def __init__(self, mean, var):
+    def __init__(self, mean=0.0, var=1.0, sd=None):
         self.mean = mean
-        self.var = var
+        if sd is None:
+            self.scale = np.sqrt(var)
+        else:
+            self.scale = sd
     
     def draw(self):
-        return np.random.normal(loc=self.mean, scale=np.sqrt(self.var))
+        return np.random.normal(loc=self.mean, scale=self.scale)
 
 class Exponential(ProbabilitySpace):
     """Defines a probability space for an exponential distribution.
@@ -191,3 +196,26 @@ class Gamma(ProbabilitySpace):
             return np.random.gamma(self.shape, 1. / self.rate)
         else:
             return np.random.gamma(self.shape, self.scale)
+
+
+## Multivariate Distributions
+
+class MultivariateNormal(ProbabilitySpace):
+    """Defines a probability space for a multivariate normal 
+       distribution.
+
+    Attributes:
+      mean (1-D array_like, of length n): mean vector
+      cov (2-D array_like, of shape (n, n)): covariance matrix
+    """
+
+    def __init__(self, mean, cov):
+        if len(mean) != len(cov):
+            raise Exception("The dimension of the mean vector" +
+                            "is not compatible with the dimensions" +
+                            "of the covariance matrix.")
+        self.mean = mean
+        self.cov = cov
+
+    def draw(self):
+        return tuple(np.random.multivariate_normal(self.mean, self.cov))

@@ -13,7 +13,8 @@ from .distributions import (
     Uniform,
     Normal,
     Exponential,
-    Gamma
+    Gamma,
+    MultivariateNormal
 )
 from .markov_chains import MarkovChain
 from .poisson_process import PoissonProcess
