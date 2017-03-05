@@ -77,20 +77,25 @@ class Results(list):
                 counts[y] = 1
         return counts
 
-    def tabulate(self, relfreq=False):
+    def tabulate(self, outcomes=None, normalize=False):
         """Counts up how much of each outcome there were.
 
         Args:
-          relfreq (bool): If True, return the relative
-            frequency, instead of counts. Defaults to
-            False.
+          outcomes (list): A list of outcomes to tabulate.
+            By default, will tabulate all outcomes that
+            appear in the Results.  Use this option if
+            you want to include outcomes that could
+            potentially not appear in the Results.
+          normalize (bool): If True, return the relative
+            frequency. Otherwise, return the counts.
+            Defaults to False.
 
         Returns:
           Table: A Table with each of the observed
             outcomes and their freuencies.
         """
-        table = Table(self._get_counts())
-        if relfreq:
+        table = Table(self._get_counts(), outcomes)
+        if normalize:
             return table / len(self)
         else:
             return table
@@ -283,6 +288,7 @@ class RVResults(Results):
                     x = [x]
                 plt.plot(x, 'k.-', alpha=alpha, **kwargs)
 
+    ## TODO: Deprecated, remove
     def plot_sample_paths(self, alpha=.1, xlabel=None, ylabel=None, **kwargs):
         for x in self:
             if not hasattr(x, "__iter__"):
@@ -293,6 +299,7 @@ class RVResults(Results):
             if ylabel is not None:
                 plt.ylabel(ylabel)
 
+    ## TODO: Deprecated, remove
     def hist(self, type="bar", relfreq=False, xlabel=None, ylabel=None, **kwargs):
         if type == "bar":
             plt.hist(self, alpha=.5, normed=relfreq, **kwargs)
@@ -318,6 +325,7 @@ class RVResults(Results):
             ylab = "Relative Frequency" if relfreq else "Count"
             plt.ylabel(ylab)
             
+    ## TODO: Deprecated, remove
     def scatter(self, **kwargs):
         if get_dimension(self) == 2:
             x, y = zip(*self)
