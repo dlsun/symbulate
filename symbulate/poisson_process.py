@@ -23,7 +23,7 @@ class PoissonProcess(RandomProcess):
     def ArrivalTimes(self):
         def fun(x, t):
             total = 0
-            for i in range(t):
+            for i in range(int(t)):
                 total += x[i]
             return total
         return RandomProcess(self.probSpace, TimeIndex(1), fun)
