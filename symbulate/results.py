@@ -251,20 +251,26 @@ class RVResults(Results):
                     type = "impulse"
                 else:
                     type = "bar"
-            if alpha is None:
-                alpha = .5
             if type == "bar":
+                if alpha is None:
+                    alpha = .5
                 plt.hist(self, normed=normalize, alpha=alpha, **kwargs)
             elif type == "impulse":
                 x = list(counts.keys())
                 y = list(counts.values())
+                if alpha is None:
+                    alpha = .7
                 if normalize:
                     y_tot = sum(y)
                     y = [i / y_tot for i in y]
                 if jitter:
                     noise = np.random.normal(loc=0, scale=.01 * (max(x) - min(x)))
                     x = [i + noise for i in x]
-                plt.vlines(x, 0, y, alpha=alpha, **kwargs)
+                # get next color in cycle
+                color_cycle = plt.gca()._get_lines.prop_cycler
+                color = next(color_cycle)["color"]
+                # plot the impulses
+                plt.vlines(x, 0, y, color=color, alpha=alpha, **kwargs)
                 # create 5% buffer on either end of plot so that leftmost and rightmost lines are visible
                 buff = .05 * (max(x) - min(x))
                 plt.xlim(min(x) - buff, max(x) + buff)
