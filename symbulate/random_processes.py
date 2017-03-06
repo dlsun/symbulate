@@ -19,18 +19,10 @@ class RandomProcess:
         self.fun = fun
 
     def draw(self):
-        seed = get_seed()
-        def x(t):
-            if self[t] is None:
-                raise Exception("RandomProcess is not defined at time %s." % str(t))
-            elif is_scalar(self[t]):
-                return self[t]
-            elif isinstance(self[t], RV):
-                np.random.seed(seed)
-                return self[t].draw()
-            else:
-                raise Exception("RandomProcess at time t must be a RV.")
-        return InfiniteSequence(x, self.timeIndex)
+        outcome = self.probSpace.draw()
+        def f(t):
+            return self.fun(outcome, t)
+        return InfiniteSequence(f, self.timeIndex)
 
     def sim(self, n):
         return RandomProcessResults([self.draw() for _ in range(n)], self.timeIndex)
