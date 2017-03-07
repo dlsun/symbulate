@@ -10,24 +10,24 @@ from .sequences import InfiniteSequence
 class MarkovChain(RandomProcess):
 
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
-        n = len(initial_dist)
+        m = len(initial_dist)
         T = TimeIndex(fs=1)
         
         def draw():
             seed = get_seed()
-            def x(t):
+            def x(n):
                 np.random.seed(seed)
-                state = np.random.choice(range(n), p=initial_dist)
-                for _ in range(int(t)):
-                    state = np.random.choice(range(n), p=transition_matrix[state])
+                state = np.random.choice(range(m), p=initial_dist)
+                for _ in range(int(n)):
+                    state = np.random.choice(range(m), p=transition_matrix[state])
                 if state_labels is None:
                     return state
                 else:
                     return state_labels[state]
             return InfiniteSequence(x, T)
         
-        def fun(x, t):
-            return x[t]
+        def fun(x, n):
+            return x[n]
                 
         super().__init__(ProbabilitySpace(draw), T, fun)
 
@@ -35,7 +35,7 @@ class MarkovChain(RandomProcess):
 class ContinuousTimeMarkovChain(RandomProcess):
 
     def __init__(self, generator_matrix, initial_dist, state_labels=None):
-        n = len(initial_dist)
+        m = len(initial_dist)
         T = TimeIndex(fs=float("inf"))
 
         # check that generator_matrix is valid
@@ -54,9 +54,10 @@ class ContinuousTimeMarkovChain(RandomProcess):
 
         def draw():
             seed = get_seed()
-            def x(t):
+            
+            def states(t):
                 np.random.seed(seed)
-                state = np.random.choice(range(n), p=initial_dist)
+                state = np.random.choice(range(m), p=initial_dist)
                 total_time = 0
                 while True:
                     row = generator_matrix[state]
@@ -65,15 +66,37 @@ class ContinuousTimeMarkovChain(RandomProcess):
                     if total_time > t:
                         break
                     probs = [p / rate if p >= 0 else 0 for p in row]
-                    state = np.random.choice(range(n), p=probs)
+                    state = np.random.choice(range(m), p=probs)
                 if state_labels is None:
                     return state
                 else:
                     return state_labels[state]
-            return InfiniteSequence(x, T)
+                
+            def jump_times(n):
+                np.random.seed(seed)
+                state = np.random.choice(range(m), p=initial_dist)
+                total_time = 0
+                for _ in range(int(n)):
+                    row = generator_matrix[state]
+                    rate = -row[state]
+                    total_time += Exponential(rate).draw()
+                    probs = [p / rate if p >= 0 else 0 for p in row]
+                    state = np.random.choice(range(m), p=probs)
+                return total_time
+                
+            return InfiniteSequence(states, T), InfiniteSequence(jump_times, TimeIndex(1))
 
         def fun(x, t):
-            return x[t]
+            return x[0][t]
 
         super().__init__(ProbabilitySpace(draw), T, fun)
         
+    def JumpTimes(self):
+        def fun(x, n):
+            return x[1][n]
+        return RandomProcess(self.probSpace, TimeIndex(1), fun)
+
+    def InterjumpTimes(self):
+        def fun(x, n):
+            return x[1][n + 1] - x[1][n]
+        return RandomProcess(self.probSpace, TimeIndex(1), fun)
