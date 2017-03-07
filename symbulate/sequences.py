@@ -9,6 +9,9 @@ class InfiniteSequence:
     def __getitem__(self, t):
         return self.fun(t)
 
+    def __call__(self, t):
+        return self.fun(t)
+
     def __str__(self):
         if self.timeIndex.fs == float("inf"):
             return "(function)"
