@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 from numbers import Number
 
+from .sequences import InfiniteSequence
 from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
 
@@ -386,8 +387,8 @@ class RandomProcessResults(Results):
         self.timeIndex = timeIndex
         super().__init__(results)
 
-    def __getitem__(self, i):
-        return Results(x[i] for x in self)
+    def __getitem__(self, t):
+        return RVResults(x[t] for x in self)
 
     def plot(self, tmin=0, tmax=10, alpha=.1, **kwargs):
         if self.timeIndex.fs == float("inf"):
@@ -400,3 +401,19 @@ class RandomProcessResults(Results):
             y = [x[t] for t in ts]
             plt.plot(ts, y, 'k-', alpha=alpha, **kwargs)
             plt.xlabel("Time (t)")
+
+    def mean(self):
+        def fun(t):
+            return self[t].mean()
+        return InfiniteSequence(fun, self.timeIndex)
+
+    def var(self):
+        def fun(t):
+            return self[t].var()
+        return InfiniteSequence(fun, self.timeIndex)
+
+    def sd(self):
+        def fun(t):
+            return self[t].sd()
+        return InfiniteSequence(fun, self.timeIndex)
+
