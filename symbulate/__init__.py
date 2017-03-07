@@ -16,7 +16,7 @@ from .distributions import (
     Gamma,
     MultivariateNormal
 )
-from .markov_chains import MarkovChain
+from .markov_chains import MarkovChain, ContinuousTimeMarkovChain
 from .poisson_process import PoissonProcess
 from .plot import figure, xlabel, ylabel, xlim, ylim
 from .math import *
