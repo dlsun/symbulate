@@ -6,7 +6,7 @@ class InfiniteSequence:
         self.fun = fun
 
     def __getitem__(self, n):
-        if type(n) == int:
+        if n == int(n):
             return self.fun(n)
         else:
             raise Exception("Index to a sequence must be an integer.")
