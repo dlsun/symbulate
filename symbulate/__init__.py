@@ -18,5 +18,5 @@ from .distributions import (
 )
 from .markov_chains import MarkovChain, ContinuousTimeMarkovChain
 from .poisson_process import PoissonProcess
-from .plot import figure, xlabel, ylabel, xlim, ylim
+from .plot import figure, xlabel, ylabel, xlim, ylim, plot
 from .math import *
