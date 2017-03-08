@@ -61,7 +61,7 @@ class ContinuousTimeMarkovChain(RandomProcess):
 
         # determine transition matrix
         transition_matrix = []
-        for i, row in enumerate(generator_matrix):
+        for i, row in enumerate(self.generator_matrix):
             rate = -row[i]
             transition_matrix.append(
                 [p / rate if j != i else 0 for j, p in enumerate(row)]
@@ -81,25 +81,39 @@ class ContinuousTimeMarkovChain(RandomProcess):
             n = 0
             while True:
                 state = states[n]
-                rate = -generator_matrix[state][state]
+                rate = -self.generator_matrix[state][state]
                 total_time += times[n] / rate
                 if total_time > t:
                     break
                 n += 1
-            
-            return state
+
+            if state_labels is None:
+                return state
+            else:
+                return state_labels[state]
 
         super().__init__(P_states * P_times, T, fun)
         
     def JumpTimes(self):
         def fun(x, n):
+            states, times = x[0], x[1]
+
             total_time = 0
             for i in range(n):
-                total_time += x[1][i]
+                state = states[n]
+                rate = -self.generator_matrix[state][state]
+                total_time += times[n] / rate
+                
             return total_time
+        
         return RandomProcess(self.probSpace, TimeIndex(1), fun)
 
     def InterjumpTimes(self):
         def fun(x, n):
-            return x[1][n]
+            states, times = x[0], x[1]
+
+            state = states[n]
+            rate = -self.generator_matrix[state][state]
+            return times[n] / rate
+        
         return RandomProcess(self.probSpace, TimeIndex(1), fun)
