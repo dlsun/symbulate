@@ -11,7 +11,6 @@ class MarkovChain(RandomProcess):
 
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         m = len(initial_dist)
-        T = TimeIndex(fs=1)
         
         def draw():
             seed = get_seed()
@@ -24,12 +23,12 @@ class MarkovChain(RandomProcess):
                     return state
                 else:
                     return state_labels[state]
-            return InfiniteSequence(x, T)
+            return InfiniteSequence(x)
         
         def fun(x, n):
             return x[n]
                 
-        super().__init__(ProbabilitySpace(draw), T, fun)
+        super().__init__(ProbabilitySpace(draw), TimeIndex(fs=1), fun)
 
         
 class ContinuousTimeMarkovChain(RandomProcess):

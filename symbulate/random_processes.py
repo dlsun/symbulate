@@ -7,13 +7,13 @@ from .probability_space import ArbitrarySpace
 from .random_variables import RV
 from .results import RandomProcessResults
 from .seed import get_seed
-from .sequences import InfiniteSequence
+from .sequences import TimeFunction
 from .time_index import TimeIndex
 from .utils import is_scalar, is_vector, get_dimension
 
 class RandomProcess:
 
-    def __init__(self, probSpace, timeIndex, fun=lambda x, t: None):
+    def __init__(self, probSpace, timeIndex=TimeIndex(fs=1), fun=lambda x, t: None):
         self.probSpace = probSpace
         self.timeIndex = timeIndex
         self.fun = fun
@@ -22,7 +22,7 @@ class RandomProcess:
         outcome = self.probSpace.draw()
         def f(t):
             return self.fun(outcome, t)
-        return InfiniteSequence(f, self.timeIndex)
+        return TimeFunction(f, self.timeIndex)
 
     def sim(self, n):
         return RandomProcessResults([self.draw() for _ in range(n)], self.timeIndex)

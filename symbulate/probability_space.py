@@ -43,9 +43,9 @@ class ProbabilitySpace:
         if exponent == float("inf"):
             def draw():
                 seed = get_seed()
-                def x(t):
+                def x(n):
                     np.random.seed(seed)
-                    for _ in range(int(t)):
+                    for _ in range(int(n)):
                         self.draw()
                     return self.draw()
                 return InfiniteSequence(x)
@@ -133,9 +133,9 @@ class BoxModel(ProbabilitySpace):
             if self.replace == False:
                 raise Exception("Cannot draw an infinite number of tickets without replacement.")
             seed = get_seed()
-            def x(t):
+            def x(n):
                 np.random.seed(seed)
-                for _ in range(int(t)):
+                for _ in range(int(n)):
                     draw_inds(None)
                 return self.box[draw_inds(None)]
             return InfiniteSequence(x)

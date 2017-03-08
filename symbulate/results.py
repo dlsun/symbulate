@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from numbers import Number
 
-from .sequences import InfiniteSequence
+from .sequences import TimeFunction
 from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
 
@@ -405,15 +405,15 @@ class RandomProcessResults(Results):
     def mean(self):
         def fun(t):
             return self[t].mean()
-        return InfiniteSequence(fun, self.timeIndex)
+        return TimeFunction(fun, self.timeIndex)
 
     def var(self):
         def fun(t):
             return self[t].var()
-        return InfiniteSequence(fun, self.timeIndex)
+        return TimeFunction(fun, self.timeIndex)
 
     def sd(self):
         def fun(t):
             return self[t].sd()
-        return InfiniteSequence(fun, self.timeIndex)
+        return TimeFunction(fun, self.timeIndex)
 
