@@ -92,6 +92,16 @@ class ContinuousTimeMarkovChain(RandomProcess):
                 return state_labels[state]
 
         super().__init__(P_states * P_times, T, fun)
+
+    def States(self):
+        def fun(x, n):
+            state = x[0][n]
+            if self.state_labels is None:
+                return state
+            else:
+                return self.state_labels[state]            
+
+        return RandomProcess(self.probSpace, TimeIndex(1), fun)
         
     def JumpTimes(self):
         def fun(x, n):
