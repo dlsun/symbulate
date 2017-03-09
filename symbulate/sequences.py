@@ -42,9 +42,12 @@ class TimeFunction:
     def plot(self, *args, **kwargs):
         axes = plt.gca()
         tmin, tmax = axes.get_xlim()
-        nmin = int(np.floor(tmin * self.timeIndex.fs))
-        nmax = int(np.ceil(tmax * self.timeIndex.fs))
-        ts = [self.timeIndex[n] for n in range(nmin, nmax + 1)]
+        if self.timeIndex.fs == float("inf"):
+            ts = np.linspace(tmin, tmax, 200)
+        else:
+            nmin = int(np.floor(tmin * self.timeIndex.fs))
+            nmax = int(np.ceil(tmax * self.timeIndex.fs))
+            ts = [self.timeIndex[n] for n in range(nmin, nmax + 1)]
         y = [self[t] for t in ts]
         plt.plot(ts, y, *args, **kwargs)
 
