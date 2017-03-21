@@ -64,6 +64,14 @@ class RandomProcess:
         else:
             self.probSpace.check_same(other.probSpace)
 
+    def check_same_timeIndex(self, other):
+        if is_scalar(other) or isinstance(other, RV):
+            return
+        elif isinstance(other, RandomProcess):
+            self.timeIndex.check_same(other.timeIndex)
+        else:
+            raise Exception("Cannot add object to random process.")
+
     # e.g., abs(X)
     def __abs__(self):
         return self.apply(lambda x: abs(x))
@@ -76,12 +84,13 @@ class RandomProcess:
 
         def op_fun(self, other):
             self.check_same_probSpace(other)
+            self.check_same_timeIndex(other)
             if is_scalar(other):
                 def fun(x, t):
                     return op(self.fun(x, t), other)
             elif isinstance(other, RV):
                 def fun(x, t):
-                    return op(self.fun(x, t), other)
+                    return op(self.fun(x, t), other.fun(x))
             elif isinstance(other, RandomProcess):
                 def fun(x, t):
                     return op(self.fun(x, t), other.fun(x, t))
@@ -142,4 +151,19 @@ class RandomProcess:
     def __rxor__(self, other):
         return self.__rpow__(other)
 
+    # Define a joint distribution of two random processes
+    def __and__(self, other):
+        self.check_same_probSpace(other)
+        self.check_same_timeIndex(other)
+
+        if isinstance(other, RandomProcess):
+            def fun(x, t):
+                a = self.fun(x, t)
+                b = other.fun(x, t)
+                a = tuple(a) if is_vector(a) else (a, )
+                b = tuple(b) if is_vector(b) else (b, )
+                return a + b
+            return RandomProcess(self.probSpace, self.timeIndex, fun)
+        else:
+            raise Exception("Joint distributions are only defined for random processes.")
 
