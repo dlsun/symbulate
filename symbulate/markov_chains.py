@@ -110,9 +110,9 @@ class ContinuousTimeMarkovChain(RandomProcess):
             total_time = 0
             n = int(n)
             for i in range(n):
-                state = states[n]
+                state = states[i]
                 rate = -self.generator_matrix[state][state]
-                total_time += times[n] / rate
+                total_time += times[i] / rate
                 
             return total_time
         
