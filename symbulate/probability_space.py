@@ -153,11 +153,13 @@ class DeckOfCards(BoxModel):
       replace (bool): Sample with replacement or without?
     """
     
-    def __init__(self, size=None, replace=False):
+    def __init__(self, size=None, replace=False, order_matters=True):
         self.box = []
         for rank in list(range(2, 11)) + ["J", "Q", "K", "A"]:
             for suit in ["Diamonds", "Hearts", "Clubs", "Spades"]:
                 self.box.append((rank, suit))
-        self.size = size
+        self.size = None if size == 1 else size
         self.replace = replace
         self.probs = None
+        self.order_matters = order_matters
+
