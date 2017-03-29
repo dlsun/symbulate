@@ -256,6 +256,7 @@ class RVResults(Results):
                 if alpha is None:
                     alpha = .5
                 plt.hist(self, normed=normalize, alpha=alpha, **kwargs)
+                plt.ylabel("Density")
             elif type == "impulse":
                 x = list(counts.keys())
                 y = list(counts.values())
@@ -286,9 +287,9 @@ class RVResults(Results):
                 _, ymax = axes.get_ylim()
                 ymax = max(ymax, 1.05 * max(y))
                 plt.ylim(0, ymax)
+                plt.ylabel("Relative Frequency" if normalize else "Count")
             else:
                 raise Exception("Histogram must have type='impulse' or 'bar'.")
-            plt.ylabel("Density" if normalize else "Count")
         elif dim == 2:
             x, y = zip(*self)
             if alpha is None:
