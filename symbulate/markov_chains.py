@@ -7,11 +7,23 @@ from .random_variables import RV
 from .seed import get_seed
 from .sequences import InfiniteSequence
 
+EPS = 1e-15
 
 class MarkovChain(RandomProcess):
 
+    def check_transition_matrix(self, transition_matrix):
+        for i, row in enumerate(transition_matrix):
+            if abs(sum(row) - 1) > EPS:
+                raise Exception("Rows of a transition matrix must sum to 1.")
+            for j, q in enumerate(row):
+                if q < 0:
+                    raise Exception("Probabilities cannot be negative.")
+
+
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         m = len(initial_dist)
+
+        self.check_transition_matrix(transition_matrix)
         
         def draw():
             seed = get_seed()
@@ -36,7 +48,7 @@ class ContinuousTimeMarkovChain(RandomProcess):
 
     def check_generator(self):
         for i, row in enumerate(self.generator_matrix):
-            if sum(row) != 0:
+            if abs(sum(row)) > EPS:
                 raise Exception("Rows of a generator matrix must sum to 0.")
             for j, q in enumerate(row):
                 if j == i:
