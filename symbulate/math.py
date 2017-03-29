@@ -38,3 +38,9 @@ def cumsum(x):
         total += i
         sums.append(total)
     return tuple(sums)
+
+def var(x):
+    return mean([(i - mean(x)) ** 2 for i in x])
+
+def sd(x):
+    return math.sqrt(var(x))

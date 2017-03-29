@@ -14,7 +14,8 @@ from .distributions import (
     Normal,
     Exponential,
     Gamma,
-    MultivariateNormal
+    MultivariateNormal,
+    BivariateNormal
 )
 from .markov_chains import MarkovChain, ContinuousTimeMarkovChain
 from .poisson_process import PoissonProcess

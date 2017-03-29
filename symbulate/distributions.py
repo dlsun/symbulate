@@ -95,9 +95,24 @@ class NegativeBinomial(ProbabilitySpace):
         self.p = p
 
     def draw(self):
-        return np.random.negative_binomial(n=self.r, p=self.p)
+        # Numpy's negative binomial returns numbers in [0, inf),
+        # but we want numbers in [r, inf).
+        return self.r + np.random.negative_binomial(n=self.r, p=self.p)
 
-Pascal = NegativeBinomial
+class Pascal(NegativeBinomial):
+    """Defines a probability space for a Pascal
+         distribution (which represents the number
+         of trials until r successes), not including
+         the r successes.
+
+    Attributes:
+      r (int): desired number of successes
+      p (float): probability (number between 0 and 1)
+        that each trial results in a "success" (i.e., 1)
+    """
+    def draw(self):
+        # Numpy's negative binomial returns numbers in [0, inf).
+        return np.random.negative_binomial(n=self.r, p=self.p)
 
 class Poisson(ProbabilitySpace):
     """Defines a probability space for a Poisson distribution.
@@ -219,3 +234,41 @@ class MultivariateNormal(ProbabilitySpace):
 
     def draw(self):
         return tuple(np.random.multivariate_normal(self.mean, self.cov))
+
+class BivariateNormal(MultivariateNormal):
+    """Defines a probability space for a bivariate normal 
+       distribution.
+
+    Attributes:
+      mean1 (float): mean parameter of X
+      mean2 (float): mean parameter of Y
+      sd1 (float): standard deviation parameter of X
+      sd2 (float): standard deviation parameter of Y
+      corr (float): correlation between X and Y
+      var1 (float): variance parameter of X
+        (if specified, sd1 will be ignored)
+      var2 (float): variance parameter of Y
+        (if specified, sd2 will be ignored)
+      cov (float): covariance between X and Y
+        (if specified, corr parameter will be ignored)
+    """
+
+    def __init__(self,
+                 mean1=0.0, mean2=0.0,
+                 sd1=1.0, sd2=1.0, corr=0.0,
+                 var1=None, var2=None, cov=None):
+
+        if corr is not None and not (-1 <= corr < 1):
+            raise Exception("Correlation must be "
+                            "between -1 and 1.")
+
+        self.mean = [mean1, mean2]
+
+        if var1 is None:
+            var1 = sd1 ** 2
+        if var2 is None:
+            var2 = sd2 ** 2
+        if cov is None:
+            cov = corr * np.sqrt(var1 * var2)
+        self.cov = [[var1, cov], [cov, var2]]
+        
