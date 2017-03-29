@@ -265,20 +265,30 @@ class RVResults(Results):
                     y_tot = sum(y)
                     y = [i / y_tot for i in y]
                 if jitter:
-                    noise = np.random.normal(loc=0, scale=.01 * (max(x) - min(x)))
+                    a = .02 * (max(x) - min(x))
+                    noise = np.random.uniform(low=-a, high=a)
                     x = [i + noise for i in x]
                 # get next color in cycle
-                color_cycle = plt.gca()._get_lines.prop_cycler
+                axes = plt.gca()
+                color_cycle = axes._get_lines.prop_cycler
                 color = next(color_cycle)["color"]
                 # plot the impulses
                 plt.vlines(x, 0, y, color=color, alpha=alpha, **kwargs)
-                # create 5% buffer on either end of plot so that leftmost and rightmost lines are visible
+                # Create 5% buffer on either end of plot so that leftmost and rightmost
+                # lines are visible. However, if current axes are already bigger,
+                # keep current axes.
                 buff = .05 * (max(x) - min(x))
-                plt.xlim(min(x) - buff, max(x) + buff)
-                plt.ylim(0, 1.05 * max(y))
+                xmin, xmax = axes.get_xlim()
+                xmin = min(xmin, min(x) - buff)
+                xmax = max(xmax, max(x) + buff)
+                plt.xlim(xmin, xmax)
+
+                _, ymax = axes.get_ylim()
+                ymax = max(ymax, 1.05 * max(y))
+                plt.ylim(0, ymax)
             else:
                 raise Exception("Histogram must have type='impulse' or 'bar'.")
-            plt.ylabel("Relative Frequency" if normalize else "Count")
+            plt.ylabel("Density" if normalize else "Count")
         elif dim == 2:
             x, y = zip(*self)
             if alpha is None:
@@ -286,7 +296,10 @@ class RVResults(Results):
             if jitter:
                 x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
                 y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
-            plt.scatter(x, y, alpha=alpha, **kwargs)
+            # get next color in cycle
+            color_cycle = plt.gca()._get_lines.prop_cycler
+            color = next(color_cycle)["color"]
+            plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
         else:
             if alpha is None:
                 alpha = .1
@@ -393,13 +406,15 @@ class RandomProcessResults(Results):
     def plot(self, tmin=0, tmax=10, alpha=.1, **kwargs):
         if self.timeIndex.fs == float("inf"):
             ts = np.linspace(tmin, tmax, 200)
+            style = "k-"
         else:
             nmin = int(np.floor(tmin * self.timeIndex.fs))
             nmax = int(np.ceil(tmax * self.timeIndex.fs))
             ts = [self.timeIndex[n] for n in range(nmin, nmax)]
+            style = "k.-"
         for x in self:
             y = [x[t] for t in ts]
-            plt.plot(ts, y, 'k-', alpha=alpha, **kwargs)
+            plt.plot(ts, y, style, alpha=alpha, **kwargs)
             plt.xlabel("Time (t)")
 
     def mean(self):
