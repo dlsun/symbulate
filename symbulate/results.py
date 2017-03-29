@@ -416,7 +416,13 @@ class RandomProcessResults(Results):
         for x in self:
             y = [x[t] for t in ts]
             plt.plot(ts, y, style, alpha=alpha, **kwargs)
-            plt.xlabel("Time (t)")
+        plt.xlabel("Time (t)")
+
+        # expand the y-axis slightly
+        axes = plt.gca()
+        ymin, ymax = axes.get_ylim()
+        buff = .05 * (ymax - ymin)
+        plt.ylim(ymin - buff, ymax + buff)
 
     def mean(self):
         def fun(t):
