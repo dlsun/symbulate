@@ -3,6 +3,7 @@ import numpy as np
 from .distributions import Exponential
 from .probability_space import ProbabilitySpace
 from .random_processes import RandomProcess, TimeIndex
+from .random_variables import RV
 from .seed import get_seed
 from .sequences import InfiniteSequence
 
@@ -94,37 +95,41 @@ class ContinuousTimeMarkovChain(RandomProcess):
         super().__init__(P_states * P_times, T, fun)
 
     def States(self):
-        def fun(x, n):
-            state = x[0][n]
-            if self.state_labels is None:
-                return state
-            else:
-                return self.state_labels[state]            
+        def fun(x):
+            def f(n):
+                state = x[0][n]
+                if self.state_labels is None:
+                    return state
+                else:
+                    return self.state_labels[state]
+            return InfiniteSequence(f)
 
-        return RandomProcess(self.probSpace, TimeIndex(1), fun)
+        return RV(self.probSpace, fun)
         
     def JumpTimes(self):
-        def fun(x, n):
-            states, times = x[0], x[1]
-
-            total_time = 0
-            n = int(n)
-            for i in range(n):
-                state = states[i]
-                rate = -self.generator_matrix[state][state]
-                total_time += times[i] / rate
-                
-            return total_time
+        def fun(x):
+            def f(n):
+                states, times = x[0], x[1]
+                total_time = 0
+                n = int(n)
+                for i in range(n):
+                    state = states[i]
+                    rate = -self.generator_matrix[state][state]
+                    total_time += times[i] / rate                    
+                return total_time
+            return InfiniteSequence(f)
         
-        return RandomProcess(self.probSpace, TimeIndex(1), fun)
+        return RV(self.probSpace, fun)
 
     def InterjumpTimes(self):
-        def fun(x, n):
-            states, times = x[0], x[1]
 
-            n = int(n)
-            state = states[n]
-            rate = -self.generator_matrix[state][state]
-            return times[n] / rate
-        
-        return RandomProcess(self.probSpace, TimeIndex(1), fun)
+        def fun(x):
+            def f(n):
+                states, times = x[0], x[1]
+                n = int(n)
+                state = states[n]
+                rate = -self.generator_matrix[state][state]
+                return times[n] / rate
+            return InfiniteSequence(f)
+
+        return RV(self.probSpace, fun)
