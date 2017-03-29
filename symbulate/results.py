@@ -411,7 +411,7 @@ class RandomProcessResults(Results):
             nmin = int(np.floor(tmin * self.timeIndex.fs))
             nmax = int(np.ceil(tmax * self.timeIndex.fs))
             ts = [self.timeIndex[n] for n in range(nmin, nmax)]
-            style = "k.-"
+            style = "k.--"
         for x in self:
             y = [x[t] for t in ts]
             plt.plot(ts, y, style, alpha=alpha, **kwargs)
