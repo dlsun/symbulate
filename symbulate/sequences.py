@@ -19,7 +19,7 @@ class InfiniteSequence:
         return self.__getitem__(n)
 
     def __repr__(self):
-        return "InfiniteSequence"
+        return self.__str__()
 
     def __str__(self):
         return str(tuple([self.fun(n) for n in range(10)] + ["..."]))
