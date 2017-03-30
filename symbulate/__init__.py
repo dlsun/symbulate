@@ -14,6 +14,7 @@ from .distributions import (
     Normal,
     Exponential,
     Gamma,
+    Beta,
     MultivariateNormal,
     BivariateNormal
 )

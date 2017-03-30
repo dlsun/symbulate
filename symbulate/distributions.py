@@ -212,6 +212,21 @@ class Gamma(ProbabilitySpace):
         else:
             return np.random.gamma(self.shape, self.scale)
 
+class Beta(ProbabilitySpace):
+    """Defines a probability space for a beta distribution.
+
+    Attributes:
+      a (float): alpha parameter for beta distribution
+      b (float): beta parameter for beta distribution
+    """
+
+    def __init__(self, a, b, scale=None):
+        self.a = a
+        self.b = b
+    
+    def draw(self):
+        return np.random.beta(self.a, self.b)
+
 
 ## Multivariate Distributions
 
