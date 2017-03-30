@@ -148,13 +148,14 @@ class RV:
     ## The following function all return Events
     ## (Events are used to define conditional distributions)
 
-    ## TODO: Implement random 
-
     # e.g., X < 3
     def __lt__(self, other):
         if is_scalar(other):
             return Event(self.probSpace,
                          lambda x: self.fun(x) < other)
+        elif isinstance(other, RV):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) < other.fun(x))
         else:
             raise NotImplementedError
 
@@ -163,6 +164,9 @@ class RV:
         if is_scalar(other):
             return Event(self.probSpace,
                          lambda x: self.fun(x) <= other)
+        elif isinstance(other, RV):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) <= other.fun(x))
         else:
             raise NotImplementedError
 
@@ -171,6 +175,9 @@ class RV:
         if is_scalar(other):
             return Event(self.probSpace,
                          lambda x: self.fun(x) > other)
+        elif isinstance(other, RV):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) > other.fun(x))
         else:
             raise NotImplementedError
 
@@ -179,6 +186,9 @@ class RV:
         if is_scalar(other):
             return Event(self.probSpace,
                          lambda x: self.fun(x) >= other)
+        elif isinstance(other, RV):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) >= other.fun(x))
         else:
             raise NotImplementedError
 
@@ -187,6 +197,9 @@ class RV:
         if is_scalar(other) or type(other) == str:
             return Event(self.probSpace,
                          lambda x: self.fun(x) == other)
+        elif isinstance(other, RV):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) == other.fun(x))
         else:
             raise NotImplementedError
 
@@ -195,6 +208,9 @@ class RV:
         if is_scalar(other) or type(other) == str:
             return Event(self.probSpace,
                          lambda x: self.fun(x) != other)
+        elif isinstance(other, RV):
+            return Event(self.probSpace,
+                         lambda x: self.fun(x) != other.fun(x))
         else:
             raise NotImplementedError
 
