@@ -48,21 +48,6 @@ class Results(list):
             if j == i:
                 return x
 
-    ## TODO: Remove .component(i). Use X[i] instead.
-    def component(self, i):
-        """Returns the ith component of each outcome.
-             Used when each outcome consists of several values.
-
-        Args:
-          i (int): The component to extract from each outcome.
-
-        Returns:
-          Results: A Results object of the same length,
-            where each outcome is the ith component of
-            an outcome from the original Results object.
-        """
-        return self.apply(lambda x: x[i])
-
     def _get_counts(self):
         counts = {}
         for x in self:
@@ -308,51 +293,6 @@ class RVResults(Results):
                 if not hasattr(x, "__iter__"):
                     x = [x]
                 plt.plot(x, 'k.-', alpha=alpha, **kwargs)
-
-    ## TODO: Deprecated, remove
-    def plot_sample_paths(self, alpha=.1, xlabel=None, ylabel=None, **kwargs):
-        for x in self:
-            if not hasattr(x, "__iter__"):
-                x = [x]
-            plt.plot(x, 'k.-', alpha=alpha, **kwargs)
-            if xlabel is not None:
-                plt.xlabel(xlabel)
-            if ylabel is not None:
-                plt.ylabel(ylabel)
-
-    ## TODO: Deprecated, remove
-    def hist(self, type="bar", relfreq=False, xlabel=None, ylabel=None, **kwargs):
-        if type == "bar":
-            plt.hist(self, alpha=.5, normed=relfreq, **kwargs)
-        elif type == "line":
-            heights = self._get_counts()
-            x = list(heights.keys())
-            y = list(heights.values())
-            if relfreq:
-                y_tot = sum(y)
-                y = [i / y_tot for i in y]
-            plt.vlines(x, 0, y)
-            # create 5% buffer on either end of plot so that leftmost and rightmost lines are visible
-            buff = .05 * (max(x) - min(x))
-            plt.xlim(min(x) - buff, max(x) + buff)
-        else:
-            raise Exception("Histogram must have type='line' or 'bar'.")
-        # other plot features
-        if xlabel is not None:
-            plt.xlabel(xlabel)
-        if ylabel is not None:
-            plt.ylabel(ylabel)
-        else:
-            ylab = "Relative Frequency" if relfreq else "Count"
-            plt.ylabel(ylab)
-            
-    ## TODO: Deprecated, remove
-    def scatter(self, **kwargs):
-        if get_dimension(self) == 2:
-            x, y = zip(*self)
-            plt.scatter(x, y, **kwargs)
-        else:
-            raise Exception("I don't know how to make a scatterplot of more than two variables.")
 
     def cov(self, **kwargs):
         if get_dimension(self) == 2:
