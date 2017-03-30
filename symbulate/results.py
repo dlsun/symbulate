@@ -256,7 +256,7 @@ class RVResults(Results):
                 if alpha is None:
                     alpha = .5
                 plt.hist(self, normed=normalize, alpha=alpha, **kwargs)
-                plt.ylabel("Density")
+                plt.ylabel("Density" if normalize else "Count")
             elif type == "impulse":
                 x = list(counts.keys())
                 y = list(counts.values())
