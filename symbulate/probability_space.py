@@ -106,11 +106,15 @@ class BoxModel(ProbabilitySpace):
     """Defines a probability space from a box model.
 
     Attributes:
-      box (list): The box to sample from.
+      box (list-like or dict-like): The box to sample from.
+        The box can be specified either directly as a list
+        of objects or indirectly as a dict of objects and
+        their counts.
       size (int): How many draws to make.
-      replace (bool): Sample with replacement or without?
+      replace (bool-like): Sample with replacement or without?
       probs (list): Probabilities of sampling each ticket
-        (by default, all tickets are equally likely)
+        (by default, all tickets are equally likely). Note
+        that this is ignored if box is specified as a dict.
       order_matters (bool): Should we count different
         orderings of the same tickets as different outcomes?
         Essentially, this determines whether the draws are
@@ -118,10 +122,19 @@ class BoxModel(ProbabilitySpace):
     """
 
     def __init__(self, box, size=None, replace=True, probs=None, order_matters=True):
-        self.box = box
+        if isinstance(box, list):
+            self.box = box
+            self.probs = probs
+        elif isinstance(box, dict):
+            self.box = []
+            self.probs = []
+            for k, v in box.items():
+                self.box.append(k)
+                self.probs.append(v / sum(box.values()))
+        else:
+            raise Exception("Box must be specified either as a list or a dict.")
         self.size = None if size == 1 else size
         self.replace = replace
-        self.probs = probs
         self.order_matters = order_matters
 
     def draw(self):
