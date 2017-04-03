@@ -127,10 +127,9 @@ class BoxModel(ProbabilitySpace):
             self.probs = probs
         elif isinstance(box, dict):
             self.box = []
-            self.probs = []
             for k, v in box.items():
-                self.box.append(k)
-                self.probs.append(v / sum(box.values()))
+                self.box.extend([k] * v)
+            self.probs = None
         else:
             raise Exception("Box must be specified either as a list or a dict.")
         self.size = None if size == 1 else size
