@@ -56,7 +56,10 @@ class ProbabilitySpace:
 		
         color_cycle = plt.gca()._get_lines.prop_cycler
         color = next(color_cycle)["color"]
-        plt.scatter(xvals, yvals, color=color, alpha=alpha, **kwargs)
+        if (self.discrete):
+            plt.scatter(xvals, yvals, s = 40, color = color, alpha = alpha, **kwargs)
+        else:
+            plt.plot(xvals, yvals, color = color, alpha = alpha, **kwargs)
         
     def check_same(self, other):
         if isinstance(other, ArbitrarySpace):
@@ -184,7 +187,7 @@ class BoxModel(ProbabilitySpace):
 			
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
-            super().plot(type, alpha, xlim = [min(self.box), max(self.box)], **kwargs)
+            super().plot(type, alpha, [min(self.box), max(self.box)], **kwargs)
         else:
             super().plot(type, alpha, xlim, **kwargs)
         
