@@ -1,7 +1,17 @@
 import numpy as np
 import scipy.stats as sp
+import operator as op
+from functools import reduce
 
 from .probability_space import ProbabilitySpace
+
+# Helper function for combinations
+def ncr(n, r):
+    r = min(r, n-r)
+    if r == 0: return 1
+    numer = reduce(op.mul, list(range(n, n-r, -1)))
+    denom = reduce(op.mul, list(range(1, r+1)))
+    return numer//denom
 
 ## Discrete Distributions
 
@@ -20,7 +30,15 @@ class Bernoulli(ProbabilitySpace):
         else:
             # TODO: implement error handling
             pass
+        self.discrete = True
+        self.pf = lambda x: sp.bernoulli.pmf(x, p)
 
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [0,1], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+ 
     def draw(self):
         return np.random.binomial(n=1, p=self.p)
 
@@ -37,7 +55,15 @@ class Binomial(ProbabilitySpace):
     def __init__(self, n, p):
         self.n = n
         self.p = p
+        self.discrete = True
+        self.pf = lambda x: sp.binom.pmf(x, self.n, self.p)
 
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [0,self.n], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+ 
     def draw(self):
         return np.random.binomial(n=self.n, p=self.p)
 
@@ -58,7 +84,15 @@ class Hypergeometric(ProbabilitySpace):
         self.n = n
         self.N0 = N0
         self.N1 = N1
+        self.discrete = True
+        self.pf = lambda x: sp.hypergeom.pmf(x, self.N0 + self.N1, self.N1, self.n)
 
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [0,self.n], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+ 
     def draw(self):
         return np.random.hypergeometric(ngood=self.N1, nbad=self.N0, nsample=self.n)
 
@@ -75,7 +109,15 @@ class Geometric(ProbabilitySpace):
 
     def __init__(self, p):
         self.p = p
-
+        self.discrete = True
+        self.pf = lambda x: sp.geom.pmf(x, self.p)
+         
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [1,15], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+ 
     def draw(self):
         return np.random.geometric(p=self.p)
 
@@ -94,7 +136,15 @@ class NegativeBinomial(ProbabilitySpace):
     def __init__(self, r, p):
         self.r = r
         self.p = p
+        self.discrete = True
+        self.pf = lambda x: ncr(x-1, r-1)*((1-p)**(x-r))*(p**r)
 
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [self.r,20], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+ 
     def draw(self):
         # Numpy's negative binomial returns numbers in [0, inf),
         # but we want numbers in [r, inf).
@@ -111,6 +161,20 @@ class Pascal(NegativeBinomial):
       p (float): probability (number between 0 and 1)
         that each trial results in a "success" (i.e., 1)
     """
+    
+    def __init__(self, r, p):
+        self.r = r
+        self.p = p
+        self.discrete = True
+        self.pf = lambda x: ncr(x+r-1, r-1)*((1-p)**(x))*(p**r)
+
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [0,20], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+ 
+    
     def draw(self):
         # Numpy's negative binomial returns numbers in [0, inf).
         return np.random.negative_binomial(n=self.r, p=self.p)
@@ -124,7 +188,15 @@ class Poisson(ProbabilitySpace):
 
     def __init__(self, lam):
         self.lam = lam
+        self.discrete = True
+        self.pf = lambda x: sp.poisson.pmf(x, lam)
 
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [0,10], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+ 
     def draw(self):
         return np.random.poisson(lam=self.lam)
 
@@ -142,7 +214,15 @@ class Uniform(ProbabilitySpace):
     def __init__(self, a=0.0, b=1.0):
         self.a = a
         self.b = b
+        self.discrete = False
+        self.pf = lambda x: sp.uniform.pdf(x, a, b-a)
 
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [self.a,self.b], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+ 
     def draw(self):
         return np.random.uniform(low=self.a, high=self.b)
 
@@ -162,10 +242,10 @@ class Normal(ProbabilitySpace):
             self.scale = np.sqrt(var)
         else:
             self.scale = sd
-			
+            
         self.pf = lambda x: sp.norm.pdf(x, self.mean, self.scale)
         self.discrete = False
-		
+        
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
             super().plot(type, alpha, [(self.mean - 3*self.scale), (self.mean + 3*self.scale)], **kwargs)
@@ -190,7 +270,15 @@ class Exponential(ProbabilitySpace):
     def __init__(self, rate=1.0, scale=None):
         self.scale = scale
         self.rate = rate
+        self.discrete = False
+        self.pf = lambda x: sp.expon.pdf(x, scale = 1. / self.rate if self.scale is None else self.scale)
 
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [0, 6], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+    
     def draw(self):
         if self.scale is None:
             return np.random.exponential(scale=1. / self.rate)
@@ -215,7 +303,15 @@ class Gamma(ProbabilitySpace):
         self.shape = shape
         self.scale = scale
         self.rate = rate
-    
+        self.discrete = False
+        self.pf = lambda x: sp.gamma.pdf(x, a = shape, scale = 1. / self.rate if self.scale is None else self.scale)
+
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [0, 10], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
+            
     def draw(self):
         if self.scale is None:
             return np.random.gamma(self.shape, 1. / self.rate)
@@ -233,7 +329,9 @@ class Beta(ProbabilitySpace):
     def __init__(self, a, b, scale=None):
         self.a = a
         self.b = b
-    
+        self.discrete = False
+        self.pf = lambda x: sp.beta.pdf(x, a, b)
+
     def draw(self):
         return np.random.beta(self.a, self.b)
 
@@ -256,7 +354,10 @@ class MultivariateNormal(ProbabilitySpace):
                             "of the covariance matrix.")
         self.mean = mean
         self.cov = cov
-
+        self.discrete = False
+        # Ugly work around for not natively being able to raise exceptions in lambda functions
+        self.pf = lambda x: (_ for _ in ()).throw(Exception("MultivariateNormal distribution not supported for plotting."))
+        
     def draw(self):
         return tuple(np.random.multivariate_normal(self.mean, self.cov))
 
@@ -296,4 +397,6 @@ class BivariateNormal(MultivariateNormal):
         if cov is None:
             cov = corr * np.sqrt(var1 * var2)
         self.cov = [[var1, cov], [cov, var2]]
-        
+        self.discrete = False
+        # Ugly work around for not natively being able to raise exceptions in lambda functions
+        self.pf = lambda x: (_ for _ in ()).throw(Exception("BivariateNormal distribution not supported for plotting."))
