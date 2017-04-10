@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.stats as sp
 
 from .probability_space import ProbabilitySpace
 
@@ -161,6 +162,15 @@ class Normal(ProbabilitySpace):
             self.scale = np.sqrt(var)
         else:
             self.scale = sd
+			
+        self.pf = lambda x: sp.norm.pdf(x, self.mean, self.scale)
+        self.discrete = False
+		
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, [(self.mean - 3*self.scale), (self.mean + 3*self.scale)], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
     
     def draw(self):
         return np.random.normal(loc=self.mean, scale=self.scale)
