@@ -51,6 +51,9 @@ class ProbabilitySpace:
         
         yvals = list(map(self.pf, xvals))
         
+        max_y = max(yvals) * 1.05 # have a small buffer for spacing purposes when setting y axis limits
+        plt.ylim(0, max(max_y, max(plt.ylim())))
+		
         color_cycle = plt.gca()._get_lines.prop_cycler
         color = next(color_cycle)["color"]
         plt.scatter(xvals, yvals, color=color, alpha=alpha, **kwargs)
@@ -178,6 +181,12 @@ class BoxModel(ProbabilitySpace):
             return(self.probs[i])
         else:
             return(0)
+			
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim is None):
+            super().plot(type, alpha, xlim = [min(self.box), max(self.box)], **kwargs)
+        else:
+            super().plot(type, alpha, xlim, **kwargs)
         
     def draw(self):
         def draw_inds(size):
