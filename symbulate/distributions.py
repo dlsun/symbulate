@@ -7,9 +7,20 @@ from .probability_space import ProbabilitySpace
 class Distribution(ProbabilitySpace):
     def __init__(self, params, scipy, discrete = True):
         self.params = params
-        self.pdf = lambda x: scipy.pdf(x, **self.params)
+        
+        if discrete:
+            self.pdf = lambda x: scipy.pmf(x, **self.params)
+        else:
+            self.pdf = lambda x: scipy.pdf(x, **self.params)
+        
         self.cdf = lambda x: scipy.cdf(x, **self.params)
         self.quantile = lambda x: scipy.ppf(x, **self.params)
+        
+        self.median = lambda : scipy.median(**self.params)
+        self.mean = lambda : scipy.mean(**self.params)
+        self.var = lambda : scipy.var(**self.params)
+        self.sd = lambda : scipy.std(**self.params)
+        
         self.discrete = discrete
     
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
@@ -161,8 +172,12 @@ class NegativeBinomial(Distribution):
     def __init__(self, r, p):
         self.r = r
         self.p = p
-        self.discrete = True
-        self.pdf = lambda x: stats.nbinom.pmf(x-r, r, p)
+        params = {
+            "n" : r,
+            "p" : p,
+            "loc" : r
+            }
+        super().__init__(params, stats.nbinom, True)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
