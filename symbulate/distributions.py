@@ -30,7 +30,7 @@ class Distribution(ProbabilitySpace):
     
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if xlim is None: # if no limits for x-axis are specified, then use the default from plt
-            xlower, xupper = plt.xlim()
+            xlower, xupper = self.xlim
         else:
             xlower, xupper = xlim
         
@@ -71,14 +71,12 @@ class Bernoulli(Distribution):
         else:
             # TODO: implement error handling
             pass
-        self.discrete = True
-        self.pdf = lambda x: stats.bernoulli.pmf(x, p)
-
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [0,1], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
+        
+        params = {
+            "p" : p
+            }
+        super().__init__(params, stats.bernoulli, True)
+        self.xlim = [0, 1] # Bernoulli distributions are not defined for x < 0 and x > 1
  
     def draw(self):
         return np.random.binomial(n=1, p=self.p)
@@ -96,15 +94,14 @@ class Binomial(Distribution):
     def __init__(self, n, p):
         self.n = n
         self.p = p
-        self.discrete = True
-        self.pdf = lambda x: stats.binom.pmf(x, self.n, self.p)
+        
+        params = {
+            "n" : n,
+            "p" : p
+            }
+        super().__init__(params, stats.binom, True)
+        self.xlim = [0, n] # Binomial distributions are not defined for x < 0 and x > n
 
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [0,self.n], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
- 
     def draw(self):
         return np.random.binomial(n=self.n, p=self.p)
 
@@ -125,15 +122,15 @@ class Hypergeometric(Distribution):
         self.n = n
         self.N0 = N0
         self.N1 = N1
-        self.discrete = True
-        self.pdf = lambda x: stats.hypergeom.pmf(x, self.N0 + self.N1, self.N1, self.n)
-
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [0,self.n], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
- 
+        
+        params = {
+            "M" : N0 + N1,
+            "n" : N1,
+            "N" : n
+            }
+        super().__init__(params, stats.hypergeom, True)
+        self.xlim = [0, n] # Hypergeometric distributions are not defined for x < 0 and x > n
+        
     def draw(self):
         return np.random.hypergeometric(ngood=self.N1, nbad=self.N0, nsample=self.n)
 
@@ -150,15 +147,13 @@ class Geometric(Distribution):
 
     def __init__(self, p):
         self.p = p
-        self.discrete = True
-        self.pdf = lambda x: stats.geom.pmf(x, self.p)
-         
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [1,15], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
- 
+        
+        params = {
+            "p" : p
+            }
+        super().__init__(params, stats.geom, True)
+        self.xlim[0] = 1 # Geometric distributions are not defined for x < 1
+        
     def draw(self):
         return np.random.geometric(p=self.p)
 
@@ -177,19 +172,15 @@ class NegativeBinomial(Distribution):
     def __init__(self, r, p):
         self.r = r
         self.p = p
+        
         params = {
             "n" : r,
             "p" : p,
             "loc" : r
             }
         super().__init__(params, stats.nbinom, True)
+        self.xlim[0] = r # Negative Binomial distributions are not defined for x < r
 
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [self.r,20], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
- 
     def draw(self):
         # Numpy's negative binomial returns numbers in [0, inf),
         # but we want numbers in [r, inf).
@@ -210,15 +201,13 @@ class Pascal(Distribution):
     def __init__(self, r, p):
         self.r = r
         self.p = p
-        self.discrete = True
-        self.pdf = lambda x: stats.nbinom.pmf(x, r, p)
-
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [0,20], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
- 
+        
+        params = {
+            "n" : r,
+            "p" : p
+            }
+        super().__init__(params, stats.nbinom, True)
+        self.xlim[0] = 0 # Pascal distributions are not defined for x < 0
     
     def draw(self):
         # Numpy's negative binomial returns numbers in [0, inf).
@@ -233,15 +222,13 @@ class Poisson(Distribution):
 
     def __init__(self, lam):
         self.lam = lam
-        self.discrete = True
-        self.pdf = lambda x: stats.poisson.pmf(x, lam)
+        
+        params = {
+            "mu" : lam
+            }
+        super().__init__(params, stats.poisson, True)
+        self.xlim[0] = 0 # Poisson distributions are not defined for x < 0
 
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [0,10], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
- 
     def draw(self):
         return np.random.poisson(lam=self.lam)
 
@@ -259,15 +246,14 @@ class Uniform(Distribution):
     def __init__(self, a=0.0, b=1.0):
         self.a = a
         self.b = b
-        self.discrete = False
-        self.pdf = lambda x: stats.uniform.pdf(x, a, b-a)
-
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [self.a,self.b], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
- 
+        
+        params = {
+            "loc" : a,
+            "scale" : b - a
+            }
+        super().__init__(params, stats.uniform, False)
+        self.xlim = [a, b] # Uniform distributions are not defined for x < a and x > b
+        
     def draw(self):
         return np.random.uniform(low=self.a, high=self.b)
 
@@ -282,23 +268,19 @@ class Normal(Distribution):
     """
 
     def __init__(self, mean=0.0, var=1.0, sd=None):
-        self.mean = mean
         if sd is None:
             self.scale = np.sqrt(var)
         else:
             self.scale = sd
-            
-        self.pdf = lambda x: stats.norm.pdf(x, self.mean, self.scale)
-        self.discrete = False
         
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [(self.mean - 3*self.scale), (self.mean + 3*self.scale)], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
+        params = {
+            "loc" : mean,
+            "scale" : self.scale
+            }
+        super().__init__(params, stats.norm, False)
     
     def draw(self):
-        return np.random.normal(loc=self.mean, scale=self.scale)
+        return np.random.normal(loc=self.mean(), scale=self.scale)
 
 class Exponential(Distribution):
     """Defines a probability space for an exponential distribution.
@@ -315,15 +297,13 @@ class Exponential(Distribution):
     def __init__(self, rate=1.0, scale=None):
         self.scale = scale
         self.rate = rate
-        self.discrete = False
-        self.pdf = lambda x: stats.expon.pdf(x, scale = 1. / self.rate if self.scale is None else self.scale)
-
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [0, 6], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
-    
+        
+        params = {
+            "scale" : 1. / rate if scale is None else scale
+            }
+        super().__init__(params, stats.expon, False)
+        self.xlim[0] = 0 # Exponential distributions are not defined for x < 0
+        
     def draw(self):
         if self.scale is None:
             return np.random.exponential(scale=1. / self.rate)
@@ -348,14 +328,13 @@ class Gamma(Distribution):
         self.shape = shape
         self.scale = scale
         self.rate = rate
-        self.discrete = False
-        self.pdf = lambda x: stats.gamma.pdf(x, a = shape, scale = 1. / self.rate if self.scale is None else self.scale)
-
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [0, 10], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
+        
+        params = {
+            "a" : shape,
+            "scale" : 1. / rate if scale is None else scale
+            }
+        super().__init__(params, stats.gamma, False)
+        self.xlim[0] = 0 # Gamma distributions are not defined for x < 0
             
     def draw(self):
         if self.scale is None:
@@ -374,8 +353,13 @@ class Beta(Distribution):
     def __init__(self, a, b, scale=None):
         self.a = a
         self.b = b
-        self.discrete = False
-        self.pdf = lambda x: stats.beta.pdf(x, a, b)
+        
+        params = {
+            "a" : a,
+            "b" : b
+            }
+        super().__init__(params, stats.beta, False)
+        self.xlim = [0, 1] # Beta distributions are not defined for x < 0 and x > 1
 
     def draw(self):
         return np.random.beta(self.a, self.b)
@@ -400,13 +384,15 @@ class MultivariateNormal(Distribution):
         self.mean = mean
         self.cov = cov
         self.discrete = False
-        # Ugly work around for not natively being able to raise exceptions in lambda functions
-        self.pdf = lambda x: (_ for _ in ()).throw(Exception("MultivariateNormal distribution not supported for plotting."))
-        
+        self.pdf = lambda x: stats.multivariate_normal(x, mean, cov)
+ 
+    def plot():
+        raise Exception("This is not defined for Multivariate Normal distributions.")
+    
     def draw(self):
         return tuple(np.random.multivariate_normal(self.mean, self.cov))
 
-class BivariateNormal(Distribution):
+class BivariateNormal(MultivariateNormal):
     """Defines a probability space for a bivariate normal 
        distribution.
 
@@ -443,5 +429,4 @@ class BivariateNormal(Distribution):
             cov = corr * np.sqrt(var1 * var2)
         self.cov = [[var1, cov], [cov, var2]]
         self.discrete = False
-        # Ugly work around for not natively being able to raise exceptions in lambda functions
-        self.pdf = lambda x: (_ for _ in ()).throw(Exception("BivariateNormal distribution not supported for plotting."))
+        self.pdf = lambda x: stats.multivariate_normal(x, self.mean, self.cov)
