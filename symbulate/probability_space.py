@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 from .results import Results
 from .sequences import InfiniteSequence
@@ -17,10 +16,8 @@ class ProbabilitySpace:
       discrete (boolean): Describes if the probability space is discrete or not.
     """
 
-    def __init__(self, draw, pf = None, discrete = False):
+    def __init__(self, draw):
         self.draw = draw
-        self.pf = pf
-        self.discrete = discrete
 
     def sim(self, n):
         """Simulate n draws from probability space.
@@ -32,34 +29,6 @@ class ProbabilitySpace:
           Results: A list-like object containing the simulation results.
         """
         return Results(self.draw() for _ in range(n))
-
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (self.pf == None):
-            raise Exception("Probabiltiy Space is not supported for plotting probability distribution.")
-
-        if (xlim == None): # if no limits for x-axis are specified, then use the default from plt
-            xlower,xupper = plt.xlim()
-        else:
-            xlower,xupper = xlim
-        
-        if (self.discrete):
-            xlower = int(xlower)
-            xupper = int(xupper)        
-            xvals = list(np.arange(xlower, xupper+1, 1))
-        else:
-            xvals = list(np.linspace(xlower, xupper, 100))
-        
-        yvals = list(map(self.pf, xvals))
-        
-        max_y = max(yvals) * 1.05 # have a small buffer for spacing purposes when setting y axis limits
-        plt.ylim(0, max(max_y, max(plt.ylim())))
-		
-        color_cycle = plt.gca()._get_lines.prop_cycler
-        color = next(color_cycle)["color"]
-        if (self.discrete):
-            plt.scatter(xvals, yvals, s = 40, color = color, alpha = alpha, **kwargs)
-        else:
-            plt.plot(xvals, yvals, color = color, alpha = alpha, **kwargs)
         
     def check_same(self, other):
         if isinstance(other, ArbitrarySpace):
@@ -171,26 +140,7 @@ class BoxModel(ProbabilitySpace):
         self.size = None if size == 1 else size
         self.replace = replace
         self.order_matters = order_matters
-        self.discrete = True
-        
-    def pf(self, x):
-        if (self.size is not None):
-            raise Exception("Plotting not supported for box models that draw more than one sample at a time.")
-        
-        if (self.probs == None):
-            return(self.box.count(x) / len(self.box)) # Returns how many elements in the box are equal to x
-        elif (x in self.box):
-            i = self.box.index(x)
-            return(self.probs[i])
-        else:
-            return(0)
-			
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim is None):
-            super().plot(type, alpha, [min(self.box), max(self.box)], **kwargs)
-        else:
-            super().plot(type, alpha, xlim, **kwargs)
-        
+
     def draw(self):
         def draw_inds(size):
             return np.random.choice(len(self.box), size, self.replace, self.probs)

@@ -1,21 +1,46 @@
 import numpy as np
-import scipy.stats as sp
-import operator as op
-from functools import reduce
+import scipy.stats as stats
+import matplotlib.pyplot as plt
 
 from .probability_space import ProbabilitySpace
 
-# Helper function for combinations
-def ncr(n, r):
-    r = min(r, n-r)
-    if r == 0: return 1
-    numer = reduce(op.mul, list(range(n, n-r, -1)))
-    denom = reduce(op.mul, list(range(1, r+1)))
-    return numer//denom
+class Distribution(ProbabilitySpace):
+    def __init__(self, params, scipy, discrete = True):
+        self.params = params
+        self.pdf = lambda x: scipy.pdf(x, **self.params)
+        self.cdf = lambda x: scipy.cdf(x, **self.params)
+        self.quantile = lambda x: scipy.ppf(x, **self.params)
+        self.discrete = discrete
+    
+    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
+        if (xlim == None): # if no limits for x-axis are specified, then use the default from plt
+            xlower,xupper = plt.xlim()
+        else:
+            xlower,xupper = xlim
+        
+        if (self.discrete):
+            xlower = int(xlower)
+            xupper = int(xupper)        
+            xvals = list(np.arange(xlower, xupper+1, 1))
+        else:
+            xvals = list(np.linspace(xlower, xupper, 100))
+        
+        yvals = list(map(self.pdf, xvals))
+        
+        max_y = max(yvals) * 1.05 # have a small buffer for spacing purposes when setting y axis limits
+        plt.ylim(0, max(max_y, max(plt.ylim())))
+		
+        color_cycle = plt.gca()._get_lines.prop_cycler
+        color = next(color_cycle)["color"]
+        
+        if (self.discrete):
+            plt.scatter(xvals, yvals, s = 40, color = color, alpha = alpha, **kwargs)
+        
+        plt.plot(xvals, yvals, color = color, alpha = alpha, **kwargs)
 
 ## Discrete Distributions
 
-class Bernoulli(ProbabilitySpace):
+class Bernoulli(Distribution):
     """Defines a probability space for a Bernoulli
          distribution.
 
@@ -31,7 +56,7 @@ class Bernoulli(ProbabilitySpace):
             # TODO: implement error handling
             pass
         self.discrete = True
-        self.pf = lambda x: sp.bernoulli.pmf(x, p)
+        self.pdf = lambda x: stats.bernoulli.pmf(x, p)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -42,7 +67,7 @@ class Bernoulli(ProbabilitySpace):
     def draw(self):
         return np.random.binomial(n=1, p=self.p)
 
-class Binomial(ProbabilitySpace):
+class Binomial(Distribution):
     """Defines a probability space for a binomial
          distribution.
 
@@ -56,7 +81,7 @@ class Binomial(ProbabilitySpace):
         self.n = n
         self.p = p
         self.discrete = True
-        self.pf = lambda x: sp.binom.pmf(x, self.n, self.p)
+        self.pdf = lambda x: stats.binom.pmf(x, self.n, self.p)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -67,7 +92,7 @@ class Binomial(ProbabilitySpace):
     def draw(self):
         return np.random.binomial(n=self.n, p=self.p)
 
-class Hypergeometric(ProbabilitySpace):
+class Hypergeometric(Distribution):
     """Defines a probability space for a hypergeometric
          distribution (which represents the number of
          ones in n draws without replacement from a box
@@ -85,7 +110,7 @@ class Hypergeometric(ProbabilitySpace):
         self.N0 = N0
         self.N1 = N1
         self.discrete = True
-        self.pf = lambda x: sp.hypergeom.pmf(x, self.N0 + self.N1, self.N1, self.n)
+        self.pdf = lambda x: stats.hypergeom.pmf(x, self.N0 + self.N1, self.N1, self.n)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -96,7 +121,7 @@ class Hypergeometric(ProbabilitySpace):
     def draw(self):
         return np.random.hypergeometric(ngood=self.N1, nbad=self.N0, nsample=self.n)
 
-class Geometric(ProbabilitySpace):
+class Geometric(Distribution):
     """Defines a probability space for a geometric
          distribution (which represents the number
          of trials until the first success), including
@@ -110,7 +135,7 @@ class Geometric(ProbabilitySpace):
     def __init__(self, p):
         self.p = p
         self.discrete = True
-        self.pf = lambda x: sp.geom.pmf(x, self.p)
+        self.pdf = lambda x: stats.geom.pmf(x, self.p)
          
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -121,7 +146,7 @@ class Geometric(ProbabilitySpace):
     def draw(self):
         return np.random.geometric(p=self.p)
 
-class NegativeBinomial(ProbabilitySpace):
+class NegativeBinomial(Distribution):
     """Defines a probability space for a negative
          binomial distribution (which represents the 
          number of trials until r successes), including
@@ -137,7 +162,7 @@ class NegativeBinomial(ProbabilitySpace):
         self.r = r
         self.p = p
         self.discrete = True
-        self.pf = lambda x: ncr(x-1, r-1)*((1-p)**(x-r))*(p**r)
+        self.pdf = lambda x: stats.nbinom.pmf(x-r, r, p)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -150,7 +175,7 @@ class NegativeBinomial(ProbabilitySpace):
         # but we want numbers in [r, inf).
         return self.r + np.random.negative_binomial(n=self.r, p=self.p)
 
-class Pascal(NegativeBinomial):
+class Pascal(Distribution):
     """Defines a probability space for a Pascal
          distribution (which represents the number
          of trials until r successes), not including
@@ -166,7 +191,7 @@ class Pascal(NegativeBinomial):
         self.r = r
         self.p = p
         self.discrete = True
-        self.pf = lambda x: ncr(x+r-1, r-1)*((1-p)**(x))*(p**r)
+        self.pdf = lambda x: stats.nbinom.pmf(x, r, p)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -179,7 +204,7 @@ class Pascal(NegativeBinomial):
         # Numpy's negative binomial returns numbers in [0, inf).
         return np.random.negative_binomial(n=self.r, p=self.p)
 
-class Poisson(ProbabilitySpace):
+class Poisson(Distribution):
     """Defines a probability space for a Poisson distribution.
 
     Attributes:
@@ -189,7 +214,7 @@ class Poisson(ProbabilitySpace):
     def __init__(self, lam):
         self.lam = lam
         self.discrete = True
-        self.pf = lambda x: sp.poisson.pmf(x, lam)
+        self.pdf = lambda x: stats.poisson.pmf(x, lam)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -203,7 +228,7 @@ class Poisson(ProbabilitySpace):
 
 ## Continuous Distributions
 
-class Uniform(ProbabilitySpace):
+class Uniform(Distribution):
     """Defines a probability space for a uniform distribution.
 
     Attributes:
@@ -215,7 +240,7 @@ class Uniform(ProbabilitySpace):
         self.a = a
         self.b = b
         self.discrete = False
-        self.pf = lambda x: sp.uniform.pdf(x, a, b-a)
+        self.pdf = lambda x: stats.uniform.pdf(x, a, b-a)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -226,7 +251,7 @@ class Uniform(ProbabilitySpace):
     def draw(self):
         return np.random.uniform(low=self.a, high=self.b)
 
-class Normal(ProbabilitySpace):
+class Normal(Distribution):
     """Defines a probability space for a normal distribution.
 
     Attributes:
@@ -243,7 +268,7 @@ class Normal(ProbabilitySpace):
         else:
             self.scale = sd
             
-        self.pf = lambda x: sp.norm.pdf(x, self.mean, self.scale)
+        self.pdf = lambda x: stats.norm.pdf(x, self.mean, self.scale)
         self.discrete = False
         
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
@@ -255,7 +280,7 @@ class Normal(ProbabilitySpace):
     def draw(self):
         return np.random.normal(loc=self.mean, scale=self.scale)
 
-class Exponential(ProbabilitySpace):
+class Exponential(Distribution):
     """Defines a probability space for an exponential distribution.
        Only one of scale or rate should be set. (The scale is the
        inverse of the rate.)
@@ -271,7 +296,7 @@ class Exponential(ProbabilitySpace):
         self.scale = scale
         self.rate = rate
         self.discrete = False
-        self.pf = lambda x: sp.expon.pdf(x, scale = 1. / self.rate if self.scale is None else self.scale)
+        self.pdf = lambda x: stats.expon.pdf(x, scale = 1. / self.rate if self.scale is None else self.scale)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -285,7 +310,7 @@ class Exponential(ProbabilitySpace):
         else:
             return np.random.exponential(scale=self.scale)
 
-class Gamma(ProbabilitySpace):
+class Gamma(Distribution):
     """Defines a probability space for a gamma distribution.
        Only one of scale or rate should be set. (The scale is the
        inverse of the rate.)
@@ -304,7 +329,7 @@ class Gamma(ProbabilitySpace):
         self.scale = scale
         self.rate = rate
         self.discrete = False
-        self.pf = lambda x: sp.gamma.pdf(x, a = shape, scale = 1. / self.rate if self.scale is None else self.scale)
+        self.pdf = lambda x: stats.gamma.pdf(x, a = shape, scale = 1. / self.rate if self.scale is None else self.scale)
 
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
         if (xlim is None):
@@ -318,7 +343,7 @@ class Gamma(ProbabilitySpace):
         else:
             return np.random.gamma(self.shape, self.scale)
 
-class Beta(ProbabilitySpace):
+class Beta(Distribution):
     """Defines a probability space for a beta distribution.
 
     Attributes:
@@ -330,7 +355,7 @@ class Beta(ProbabilitySpace):
         self.a = a
         self.b = b
         self.discrete = False
-        self.pf = lambda x: sp.beta.pdf(x, a, b)
+        self.pdf = lambda x: stats.beta.pdf(x, a, b)
 
     def draw(self):
         return np.random.beta(self.a, self.b)
@@ -338,7 +363,7 @@ class Beta(ProbabilitySpace):
 
 ## Multivariate Distributions
 
-class MultivariateNormal(ProbabilitySpace):
+class MultivariateNormal(Distribution):
     """Defines a probability space for a multivariate normal 
        distribution.
 
@@ -356,12 +381,12 @@ class MultivariateNormal(ProbabilitySpace):
         self.cov = cov
         self.discrete = False
         # Ugly work around for not natively being able to raise exceptions in lambda functions
-        self.pf = lambda x: (_ for _ in ()).throw(Exception("MultivariateNormal distribution not supported for plotting."))
+        self.pdf = lambda x: (_ for _ in ()).throw(Exception("MultivariateNormal distribution not supported for plotting."))
         
     def draw(self):
         return tuple(np.random.multivariate_normal(self.mean, self.cov))
 
-class BivariateNormal(MultivariateNormal):
+class BivariateNormal(Distribution):
     """Defines a probability space for a bivariate normal 
        distribution.
 
@@ -399,4 +424,4 @@ class BivariateNormal(MultivariateNormal):
         self.cov = [[var1, cov], [cov, var2]]
         self.discrete = False
         # Ugly work around for not natively being able to raise exceptions in lambda functions
-        self.pf = lambda x: (_ for _ in ()).throw(Exception("BivariateNormal distribution not supported for plotting."))
+        self.pdf = lambda x: (_ for _ in ()).throw(Exception("BivariateNormal distribution not supported for plotting."))
