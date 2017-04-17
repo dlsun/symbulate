@@ -22,12 +22,17 @@ class Distribution(ProbabilitySpace):
         self.sd = lambda : scipy.std(**self.params)
         
         self.discrete = discrete
+        
+        self.xlim = [
+            self.mean() - 3 * self.sd(), 
+            self.mean() + 3 * self.sd()
+            ]
     
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if (xlim == None): # if no limits for x-axis are specified, then use the default from plt
-            xlower,xupper = plt.xlim()
+        if xlim is None: # if no limits for x-axis are specified, then use the default from plt
+            xlower, xupper = plt.xlim()
         else:
-            xlower,xupper = xlim
+            xlower, xupper = xlim
         
         if (self.discrete):
             xlower = int(xlower)
