@@ -3,6 +3,7 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 
 from .probability_space import ProbabilitySpace
+from .plot import configure_axes
 
 class Distribution(ProbabilitySpace):
     def __init__(self, params, scipy, discrete = True):
@@ -43,16 +44,17 @@ class Distribution(ProbabilitySpace):
         
         yvals = list(map(self.pdf, xvals))
         
-        max_y = max(yvals) * 1.05 # have a small buffer for spacing purposes when setting y axis limits
-        plt.ylim(0, max(max_y, max(plt.ylim())))
-		
-        color_cycle = plt.gca()._get_lines.prop_cycler
+        # get next color in cycle
+        axes = plt.gca()
+        color_cycle = axes._get_lines.prop_cycler
         color = next(color_cycle)["color"]
         
         if (self.discrete):
             plt.scatter(xvals, yvals, s = 40, color = color, alpha = alpha, **kwargs)
         
         plt.plot(xvals, yvals, color = color, alpha = alpha, **kwargs)
+        
+        configure_axes(axes, xvals, yvals)
 
 ## Discrete Distributions
 
