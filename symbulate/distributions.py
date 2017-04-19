@@ -35,7 +35,7 @@ class Distribution(ProbabilitySpace):
         else:
             xlower, xupper = xlim
         
-        if (self.discrete):
+        if self.discrete:
             xlower = int(xlower)
             xupper = int(xupper)        
             xvals = list(np.arange(xlower, xupper+1, 1))
@@ -48,7 +48,7 @@ class Distribution(ProbabilitySpace):
         axes = plt.gca()
         color = get_next_color(axes)
         
-        if (self.discrete):
+        if self.discrete:
             plt.scatter(xvals, yvals, s = 40, color = color, alpha = alpha, **kwargs)
         
         plt.plot(xvals, yvals, color = color, alpha = alpha, **kwargs)
