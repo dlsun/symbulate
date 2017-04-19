@@ -14,7 +14,7 @@ from numbers import Number
 from .sequences import TimeFunction
 from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
-from .plot import configure_axes
+from .plot import configure_axes, get_next_color
 
 plt.style.use('ggplot')
 
@@ -257,8 +257,7 @@ class RVResults(Results):
                     x = [i + noise for i in x]
                 # get next color in cycle
                 axes = plt.gca()
-                color_cycle = axes._get_lines.prop_cycler
-                color = next(color_cycle)["color"]
+                color = get_next_color(axes)
                 # plot the impulses
                 plt.vlines(x, 0, y, color=color, alpha=alpha, **kwargs)
                 
@@ -273,8 +272,8 @@ class RVResults(Results):
                 x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
                 y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
             # get next color in cycle
-            color_cycle = plt.gca()._get_lines.prop_cycler
-            color = next(color_cycle)["color"]
+            axes = plt.gca()
+            color = get_next_color(axes)
             plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
         else:
             if alpha is None:

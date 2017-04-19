@@ -3,7 +3,7 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 
 from .probability_space import ProbabilitySpace
-from .plot import configure_axes
+from .plot import configure_axes, get_next_color
 
 class Distribution(ProbabilitySpace):
     def __init__(self, params, scipy, discrete = True):
@@ -46,8 +46,7 @@ class Distribution(ProbabilitySpace):
         
         # get next color in cycle
         axes = plt.gca()
-        color_cycle = axes._get_lines.prop_cycler
-        color = next(color_cycle)["color"]
+        color = get_next_color(axes)
         
         if (self.discrete):
             plt.scatter(xvals, yvals, s = 40, color = color, alpha = alpha, **kwargs)

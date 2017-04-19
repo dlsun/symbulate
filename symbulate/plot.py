@@ -10,6 +10,11 @@ ylabel = plt.ylabel
 xlim = plt.xlim
 ylim = plt.ylim
 
+def get_next_color(axes):
+    color_cycle = axes._get_lines.prop_cycler
+    color = next(color_cycle)["color"]
+    return color
+
 def configure_axes(axes, xdata, ydata, xlabel = None, ylabel = None):
     # Create 5% buffer on either end of plot so that leftmost and rightmost
     # lines are visible. However, if current axes are already bigger,
