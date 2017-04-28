@@ -10,10 +10,6 @@ class ProbabilitySpace:
     Attributes:
       draw (function): A function explaining how to draw one 
         outcome from the probability space.
-      pf (function): A function giving the exact probability
-        density (if continuous) or mass (if discrete) from the probability space 
-        for a given input.
-      discrete (boolean): Describes if the probability space is discrete or not.
     """
 
     def __init__(self, draw):

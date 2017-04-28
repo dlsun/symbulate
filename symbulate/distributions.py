@@ -24,25 +24,23 @@ class Distribution(ProbabilitySpace):
         
         self.discrete = discrete
         
-        self.xlim = [
+        self.xlim = (
             self.mean() - 3 * self.sd(), 
             self.mean() + 3 * self.sd()
-            ]
+            )
     
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        if xlim is None: # if no limits for x-axis are specified, then use the default from plt
-            xlower, xupper = self.xlim
-        else:
-            xlower, xupper = xlim
+        # if no limits for x-axis are specified, then use the default from plt        
+        xlower, xupper = xlim if xlim is not None else self.xlim
         
         if self.discrete:
             xlower = int(xlower)
             xupper = int(xupper)        
-            xvals = list(np.arange(xlower, xupper+1, 1))
+            xvals = np.arange(xlower, xupper+1)
         else:
-            xvals = list(np.linspace(xlower, xupper, 100))
+            xvals = np.linspace(xlower, xupper, 100)
         
-        yvals = list(map(self.pdf, xvals))
+        yvals = self.pdf(xvals)
         
         # get next color in cycle
         axes = plt.gca()
@@ -77,7 +75,7 @@ class Bernoulli(Distribution):
             "p" : p
             }
         super().__init__(params, stats.bernoulli, True)
-        self.xlim = [0, 1] # Bernoulli distributions are not defined for x < 0 and x > 1
+        self.xlim = (0, 1) # Bernoulli distributions are not defined for x < 0 and x > 1
  
     def draw(self):
         return np.random.binomial(n=1, p=self.p)
@@ -101,7 +99,7 @@ class Binomial(Distribution):
             "p" : p
             }
         super().__init__(params, stats.binom, True)
-        self.xlim = [0, n] # Binomial distributions are not defined for x < 0 and x > n
+        self.xlim = (0, n) # Binomial distributions are not defined for x < 0 and x > n
 
     def draw(self):
         return np.random.binomial(n=self.n, p=self.p)
@@ -130,7 +128,7 @@ class Hypergeometric(Distribution):
             "N" : n
             }
         super().__init__(params, stats.hypergeom, True)
-        self.xlim = [0, n] # Hypergeometric distributions are not defined for x < 0 and x > n
+        self.xlim = (0, n) # Hypergeometric distributions are not defined for x < 0 and x > n
         
     def draw(self):
         return np.random.hypergeometric(ngood=self.N1, nbad=self.N0, nsample=self.n)
@@ -153,7 +151,7 @@ class Geometric(Distribution):
             "p" : p
             }
         super().__init__(params, stats.geom, True)
-        self.xlim[0] = 1 # Geometric distributions are not defined for x < 1
+        self.xlim = (1, self.xlim[1]) # Geometric distributions are not defined for x < 1
         
     def draw(self):
         return np.random.geometric(p=self.p)
@@ -180,7 +178,7 @@ class NegativeBinomial(Distribution):
             "loc" : r
             }
         super().__init__(params, stats.nbinom, True)
-        self.xlim[0] = r # Negative Binomial distributions are not defined for x < r
+        self.xlim = (r, self.xlim[1]) # Negative Binomial distributions are not defined for x < r
 
     def draw(self):
         # Numpy's negative binomial returns numbers in [0, inf),
@@ -208,7 +206,7 @@ class Pascal(Distribution):
             "p" : p
             }
         super().__init__(params, stats.nbinom, True)
-        self.xlim[0] = 0 # Pascal distributions are not defined for x < 0
+        self.xlim = (0, self.xlim[1]) # Pascal distributions are not defined for x < 0
     
     def draw(self):
         # Numpy's negative binomial returns numbers in [0, inf).
@@ -228,7 +226,7 @@ class Poisson(Distribution):
             "mu" : lam
             }
         super().__init__(params, stats.poisson, True)
-        self.xlim[0] = 0 # Poisson distributions are not defined for x < 0
+        self.xlim = (0, self.xlim[1]) # Poisson distributions are not defined for x < 0
 
     def draw(self):
         return np.random.poisson(lam=self.lam)
@@ -253,7 +251,7 @@ class Uniform(Distribution):
             "scale" : b - a
             }
         super().__init__(params, stats.uniform, False)
-        self.xlim = [a, b] # Uniform distributions are not defined for x < a and x > b
+        self.xlim = (a, b) # Uniform distributions are not defined for x < a and x > b
         
     def draw(self):
         return np.random.uniform(low=self.a, high=self.b)
@@ -303,7 +301,7 @@ class Exponential(Distribution):
             "scale" : 1. / rate if scale is None else scale
             }
         super().__init__(params, stats.expon, False)
-        self.xlim[0] = 0 # Exponential distributions are not defined for x < 0
+        self.xlim = (0, self.xlim[1]) # Exponential distributions are not defined for x < 0
         
     def draw(self):
         if self.scale is None:
@@ -335,7 +333,7 @@ class Gamma(Distribution):
             "scale" : 1. / rate if scale is None else scale
             }
         super().__init__(params, stats.gamma, False)
-        self.xlim[0] = 0 # Gamma distributions are not defined for x < 0
+        self.xlim = (0, self.xlim[1]) # Gamma distributions are not defined for x < 0
             
     def draw(self):
         if self.scale is None:
@@ -360,7 +358,7 @@ class Beta(Distribution):
             "b" : b
             }
         super().__init__(params, stats.beta, False)
-        self.xlim = [0, 1] # Beta distributions are not defined for x < 0 and x > 1
+        self.xlim = (0, 1) # Beta distributions are not defined for x < 0 and x > 1
 
     def draw(self):
         return np.random.beta(self.a, self.b)
