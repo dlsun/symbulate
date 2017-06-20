@@ -14,6 +14,7 @@ from numbers import Number
 from .sequences import TimeFunction
 from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
+from .plot import configure_axes, get_next_color
 
 plt.style.use('ggplot')
 
@@ -256,23 +257,11 @@ class RVResults(Results):
                     x = [i + noise for i in x]
                 # get next color in cycle
                 axes = plt.gca()
-                color_cycle = axes._get_lines.prop_cycler
-                color = next(color_cycle)["color"]
+                color = get_next_color(axes)
                 # plot the impulses
                 plt.vlines(x, 0, y, color=color, alpha=alpha, **kwargs)
-                # Create 5% buffer on either end of plot so that leftmost and rightmost
-                # lines are visible. However, if current axes are already bigger,
-                # keep current axes.
-                buff = .05 * (max(x) - min(x))
-                xmin, xmax = axes.get_xlim()
-                xmin = min(xmin, min(x) - buff)
-                xmax = max(xmax, max(x) + buff)
-                plt.xlim(xmin, xmax)
-
-                _, ymax = axes.get_ylim()
-                ymax = max(ymax, 1.05 * max(y))
-                plt.ylim(0, ymax)
-                plt.ylabel("Relative Frequency" if normalize else "Count")
+                
+                configure_axes(axes, x, y, ylabel = "Relative Frequency" if normalize else "Count")
             else:
                 raise Exception("Histogram must have type='impulse' or 'bar'.")
         elif dim == 2:
@@ -283,8 +272,8 @@ class RVResults(Results):
                 x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
                 y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
             # get next color in cycle
-            color_cycle = plt.gca()._get_lines.prop_cycler
-            color = next(color_cycle)["color"]
+            axes = plt.gca()
+            color = get_next_color(axes)
             plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
         else:
             if alpha is None:

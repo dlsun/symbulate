@@ -25,7 +25,7 @@ class ProbabilitySpace:
           Results: A list-like object containing the simulation results.
         """
         return Results(self.draw() for _ in range(n))
-
+        
     def check_same(self, other):
         if isinstance(other, ArbitrarySpace):
             return
@@ -53,6 +53,7 @@ class ProbabilitySpace:
             def draw():
                 return tuple(self.draw() for _ in range(exponent))
         return ProbabilitySpace(draw)
+        
 
 
 class ArbitrarySpace(ProbabilitySpace):
