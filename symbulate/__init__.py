@@ -15,6 +15,9 @@ from .distributions import (
     Exponential,
     Gamma,
     Beta,
+    StudentT,
+    ChiSquare,
+    F,
     MultivariateNormal,
     BivariateNormal
 )
