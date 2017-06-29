@@ -231,7 +231,6 @@ class Poisson(Distribution):
     def draw(self):
         return np.random.poisson(lam=self.lam)
 
-
 ## Continuous Distributions
 
 class Uniform(Distribution):
@@ -363,7 +362,7 @@ class Beta(Distribution):
     def draw(self):
         return np.random.beta(self.a, self.b)
 
-class t(Distribution):
+class StudentT(Distribution):
     """Defines a probability space for Student's t distribution.
 
     Attributes:
@@ -395,6 +394,7 @@ class ChiSquare(Distribution):
             "df" : df 
             }
         super().__init__(params, stats.chi2, False)
+        self.xlim = (0, self.xlim[1]) # Chi-Square distributions are not defined for x < 0
     
     def draw(self):
         return np.random.chisquare(self.df)
@@ -412,10 +412,11 @@ class F(Distribution):
         self.dfD = dfD
         
         params = {
-            "df1" : dfN,
-            "df2" : dfD
+            "dfn" : dfN,
+            "dfd" : dfD
             }
         super().__init__(params, stats.f, False)
+        self.xlim = (0, self.xlim[1]) # F distributions are not defined for x < 0
     
     def draw(self):
         return np.random.f(self.dfN, self.dfD)
