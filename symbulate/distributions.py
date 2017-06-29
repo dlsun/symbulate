@@ -231,7 +231,6 @@ class Poisson(Distribution):
     def draw(self):
         return np.random.poisson(lam=self.lam)
 
-
 ## Continuous Distributions
 
 class Uniform(Distribution):
@@ -363,6 +362,64 @@ class Beta(Distribution):
     def draw(self):
         return np.random.beta(self.a, self.b)
 
+class StudentT(Distribution):
+    """Defines a probability space for Student's t distribution.
+
+    Attributes:
+      df (int): degrees of freedom  
+    """
+
+    def __init__(self, df):
+        self.df = df
+        
+        params = {
+            "df" : df 
+            }
+        super().__init__(params, stats.t, False)
+    
+    def draw(self):
+        return np.random.standard_t(self.df)
+
+class ChiSquare(Distribution):
+    """Defines a probability space for a chi-square distribution
+
+    Attributes:
+      df (int): degrees of freedom  
+    """
+
+    def __init__(self, df):
+        self.df = df
+        
+        params = {
+            "df" : df 
+            }
+        super().__init__(params, stats.chi2, False)
+        self.xlim = (0, self.xlim[1]) # Chi-Square distributions are not defined for x < 0
+    
+    def draw(self):
+        return np.random.chisquare(self.df)
+
+class F(Distribution):
+    """Defines a probability space for an F distribution
+
+    Attributes:
+      dfN (int): degrees of freedom in the numerator  
+      dfD (int): degrees of freedom in the denominator
+    """
+
+    def __init__(self, dfN, dfD):
+        self.dfN = dfN
+        self.dfD = dfD
+        
+        params = {
+            "dfn" : dfN,
+            "dfd" : dfD
+            }
+        super().__init__(params, stats.f, False)
+        self.xlim = (0, self.xlim[1]) # F distributions are not defined for x < 0
+    
+    def draw(self):
+        return np.random.f(self.dfN, self.dfD)
 
 ## Multivariate Distributions
 
