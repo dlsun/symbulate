@@ -138,6 +138,10 @@ class BoxModel(ProbabilitySpace):
         self.order_matters = order_matters
 
     def draw(self):
+        """A function, that takes no arguments, explaining how to draw one 
+        outcome from the probability space.
+        """
+
         def draw_inds(size):
             return np.random.choice(len(self.box), size, self.replace, self.probs)
         if self.size is None:

@@ -11,9 +11,22 @@ class RV:
         self.fun = fun
 
     def draw(self):
+        """A function, that takes no arguments, explaining how to draw one 
+        outcome from the Probability Space described by the random variable.
+        """
+
         return self.fun(self.probSpace.draw())
 
     def sim(self, n):
+        """Simulate n draws from probability space described by the random variable.
+
+        Args:
+          n (int): How many draws to make.
+
+        Returns:
+          Results: A list-like object containing the simulation results.
+        """
+
         return RVResults(self.draw() for _ in range(n))
 
     def check_same_probSpace(self, other):
@@ -23,6 +36,13 @@ class RV:
             self.probSpace.check_same(other.probSpace)
 
     def apply(self, function):
+        """
+        Args:
+            function: function being used on results (addition, subtractions, etc.)
+        
+        Input function is applied to the output results.
+        """
+        
         def f_new(outcome):
             return function(self.fun(outcome))
         return RV(self.probSpace, f_new)
@@ -233,6 +253,11 @@ class RVConditional(RV):
                          random_variable.fun)
         
     def draw(self):
+        """
+            A function, that takes no arguments, explaining how to draw one 
+        outcome from the Probability Space described by the random variable.
+        """
+
         probSpace = self.probSpace
         while True:
             outcome = probSpace.draw()
