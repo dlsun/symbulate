@@ -23,10 +23,10 @@ class Distribution(ProbabilitySpace):
         self.sd = lambda : scipy.std(**self.params)
         
         self.discrete = discrete
-        
+
         self.xlim = (
-            self.mean() - 3 * self.sd(), 
-            self.mean() + 3 * self.sd()
+            scipy.ppf(0.01, **self.params),
+            scipy.ppf(0.99, **self.params)
             )
     
     def plot(self, type = None, alpha = None, xlim = None, **kwargs):
