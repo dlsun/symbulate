@@ -482,14 +482,20 @@ class StudentT(Distribution):
     """
 
     def __init__(self, df):
-        self.df = df
-        
+        if df > 0:
+            self.df = df
+        else:
+            raise Exception("Degrees of Freedom cannot be equal to or less than 0")
+
         params = {
             "df" : df 
             }
         super().__init__(params, stats.t, False)
     
     def draw(self):
+        """A function that takes no arguments and 
+            takes a single draw from the T distribution."""
+
         return np.random.standard_t(self.df)
 
 class ChiSquare(Distribution):
@@ -500,8 +506,11 @@ class ChiSquare(Distribution):
     """
 
     def __init__(self, df):
-        self.df = df
-        
+        if df > 0:
+            self.df = df
+        else:
+            raise Exception("Degrees of Freedom cannot be equal to or less than 0")
+
         params = {
             "df" : df 
             }
@@ -509,6 +518,9 @@ class ChiSquare(Distribution):
         self.xlim = (0, self.xlim[1]) # Chi-Square distributions are not defined for x < 0
     
     def draw(self):
+        """A function that takes no arguments and 
+            takes a single draw from the ChiSquare distribution."""
+        
         return np.random.chisquare(self.df)
 
 class F(Distribution):
@@ -520,9 +532,17 @@ class F(Distribution):
     """
 
     def __init__(self, dfN, dfD):
-        self.dfN = dfN
-        self.dfD = dfD
         
+        if dfN > 0:
+            self.dfN = dfN
+        else:
+            raise Exception("Degrees of freedom in numerator cannot be less than or equal to 0")
+
+        if dfD > 0:
+            self.dfD = dfD
+        else:
+            raise Exception("Degrees of freedom in denominator cannot be less than or equal to 0")
+
         params = {
             "dfn" : dfN,
             "dfd" : dfD
@@ -531,6 +551,9 @@ class F(Distribution):
         self.xlim = (0, self.xlim[1]) # F distributions are not defined for x < 0
     
     def draw(self):
+        """A function that takes no arguments and 
+            takes a single draw from the F distribution."""
+
         return np.random.f(self.dfN, self.dfD)
 
 ## Multivariate Distributions
