@@ -138,8 +138,18 @@ class BoxModel(ProbabilitySpace):
         self.order_matters = order_matters
 
     def draw(self):
-        """A function, that takes no arguments, explaining how to draw one 
-        outcome from the probability space.
+        """
+        A function that takes no arguments and returns a value(s) from the 
+            box input of the BoxModel.
+
+        Based on BoxModel inputs: 
+        Number of values returned depends on the input of the size 
+            argument. 
+        By default replacement is set to True. Thus values drawn will still
+            re-occur.
+        If a list of probabilities is inputed, values drawn will be based
+            off the implemented list.
+        By default, order matters is set to True. The orderings of values drawn             will count as different outcomes.
         """
 
         def draw_inds(size):

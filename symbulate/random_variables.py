@@ -11,8 +11,12 @@ class RV:
         self.fun = fun
 
     def draw(self):
-        """A function, that takes no arguments, explaining how to draw one 
-        outcome from the Probability Space described by the random variable.
+        """
+        A function that takes no arguments and returns a single value
+            from the probability space of the random variable
+        
+        Examples of probability spaces: distributions. BoxModel, etc.
+        e.g. X = RV(Normal(0,1)).draw() may return -0.9  
         """
 
         return self.fun(self.probSpace.draw())
@@ -38,7 +42,8 @@ class RV:
     def apply(self, function):
         """
         Args:
-            function: function being used on results (addition, subtractions, etc.)
+            function: function to apply to the random variable
+                functions such as (e.g) log, sqrt, exp
         
         Input function is applied to the output results.
         """
@@ -254,10 +259,16 @@ class RVConditional(RV):
         
     def draw(self):
         """
-            A function, that takes no arguments, explaining how to draw one 
-        outcome from the Probability Space described by the random variable.
-        """
+        A function that takes no arguments and returns a single set 
+            of values from the probability spaces defined in the conditional 
+            random variable that meet the conditional event. 
+        The number of values returned in the set depend on the number of 
+            probability spaces defined. 
 
+        e.g. X,Y = RV(Binomial(2,0.4)**2)
+             A = ((X & Y) | (X + Y == 3)) may return a set: (2,1) 
+        
+        """
         probSpace = self.probSpace
         while True:
             outcome = probSpace.draw()

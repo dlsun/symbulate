@@ -78,7 +78,7 @@ class Bernoulli(Distribution):
  
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Bernoulli distribution."""
+            returns a single draw from the Bernoulli distribution."""
         
         return np.random.binomial(n=1, p=self.p)
 
@@ -94,10 +94,10 @@ class Binomial(Distribution):
 
     def __init__(self, n, p):
         
-        if n >= 0:
+        if n >= 0 and (isinstance(n,int)):
             self.n = n
         else:
-            raise Exception("n must be greater than or equal to 0")
+            raise Exception("n must be an integer greater than or equal to 0")
 
         if 0 <= p <= 1:
             self.p = p
@@ -113,7 +113,7 @@ class Binomial(Distribution):
 
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Binomial distribution."""
+            returns a single draw from the Binomial distribution."""
 
         return np.random.binomial(n=self.n, p=self.p)
 
@@ -132,20 +132,20 @@ class Hypergeometric(Distribution):
 
     def __init__(self, n, N0, N1):
         
-        if n > 0:
+        if n > 0 and (isinstance(n,int)):
             self.n = n
         else:
-            raise Exception("Number of draws cannot be negative")
+            raise Exception("Number of draws must be an integer and cannot be negative")
         
-        if N0 > 0:
+        if N0 > 0 and (isinstance(N0,int)):
             self.N0 = N0
         else:
-            raise Exception("Number of failures cannot be negative")
+            raise Exception("Number of failures must be an integer and cannot be negative")
         
-        if N1 > 0:
+        if N1 > 0 and (isinstance(N1,int)):
             self.N1 = N1
         else:
-            raise Exception("Number of successes cannot be negative")
+            raise Exception("Number of successes must be an integer and cannot be negative")
 
         params = {
             "M" : N0 + N1,
@@ -154,14 +154,14 @@ class Hypergeometric(Distribution):
             }
 
         if (N0 + N1) < n:
-            raise Exception("Number of Successes + Failures cannot be less than the sample size N")
+            raise Exception("Number of Successes + Failures cannot be less than the sample size n")
 
         super().__init__(params, stats.hypergeom, True)
         self.xlim = (0, n) # Hypergeometric distributions are not defined for x < 0 and x > n
         
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Hypergeometric distribution."""
+            returns a single draw from the Hypergeometric distribution."""
 
         return np.random.hypergeometric(ngood=self.N1, nbad=self.N0, nsample=self.n)
 
@@ -191,7 +191,7 @@ class Geometric(Distribution):
         
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Geometric distribution."""
+            returns a single draw from the Geometric distribution."""
 
         return np.random.geometric(p=self.p)
 
@@ -209,10 +209,10 @@ class NegativeBinomial(Distribution):
 
     def __init__(self, r, p):
 
-        if 0 < r:
+        if 0 < r and (isinstance(r,int)):
             self.r = r
         else:
-            raise Exception("r must be greater than 0")
+            raise Exception("r must be an integer greater than 0")
 
         if 0 <= p <= 1:
             self.p = p
@@ -229,7 +229,7 @@ class NegativeBinomial(Distribution):
 
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Negative Binomial distribution."""
+            returns a single draw from the Negative Binomial distribution."""
 
         # Numpy's negative binomial returns numbers in [0, inf),
         # but we want numbers in [r, inf).
@@ -249,10 +249,10 @@ class Pascal(Distribution):
     
     def __init__(self, r, p):
         
-        if 0 < r:
+        if 0 < r and (isinstance(r,int)):
             self.r = r
         else:
-            raise Exception("r must be greater than 0")
+            raise Exception("r must be an integer greater than 0")
 
         if 0 <= p <= 1:
             self.p = p
@@ -268,7 +268,7 @@ class Pascal(Distribution):
     
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Pascal distribution."""
+            returns a single draw from the Pascal distribution."""
 
         # Numpy's negative binomial returns numbers in [0, inf).
         return np.random.negative_binomial(n=self.r, p=self.p)
@@ -295,7 +295,7 @@ class Poisson(Distribution):
 
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Poisson distribution."""
+            returns a single draw from the Poisson distribution."""
 
         return np.random.poisson(lam=self.lam)
 
@@ -326,7 +326,7 @@ class Uniform(Distribution):
         
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Uniform distribution."""
+            returns a single draw from the Uniform distribution."""
 
         return np.random.uniform(low=self.a, high=self.b)
 
@@ -348,6 +348,14 @@ class Normal(Distribution):
                 self.scale = sd
             else:
                 raise Exception("sd cannot be less than or equal to 0")
+        
+        if var is None:
+            self.var = 1.0
+        else:
+            if var > 0:
+                self.var = var
+            else:
+                raise Exception("variance cannot be less than or equal to 0")
 
         params = {
             "loc" : mean,
@@ -357,7 +365,7 @@ class Normal(Distribution):
     
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Normal distribution."""
+            returns a single draw from the Normal distribution."""
 
         return np.random.normal(loc=self.mean(), scale=self.scale)
 
@@ -390,7 +398,7 @@ class Exponential(Distribution):
         
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Exponential distribution."""
+            returns a single draw from the Exponential distribution."""
 
         if self.scale is None:
             return np.random.exponential(scale=1. / self.rate)
@@ -434,7 +442,7 @@ class Gamma(Distribution):
             
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Gamma distribution."""
+            returns a single draw from the Gamma distribution."""
 
         if self.scale is None:
             return np.random.gamma(self.shape, 1. / self.rate)
@@ -470,7 +478,7 @@ class Beta(Distribution):
 
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Beta distribution."""
+            returns a single draw from the Beta distribution."""
 
         return np.random.beta(self.a, self.b)
 
@@ -494,7 +502,7 @@ class StudentT(Distribution):
     
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the T distribution."""
+            returns a single draw from the T distribution."""
 
         return np.random.standard_t(self.df)
 
@@ -519,7 +527,7 @@ class ChiSquare(Distribution):
     
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the ChiSquare distribution."""
+            returns a single draw from the ChiSquare distribution."""
         
         return np.random.chisquare(self.df)
 
@@ -552,7 +560,7 @@ class F(Distribution):
     
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the F distribution."""
+            returns a single draw from the F distribution."""
 
         return np.random.f(self.dfN, self.dfD)
 
@@ -573,21 +581,21 @@ class MultivariateNormal(Distribution):
                             "is not compatible with the dimensions" +
                             "of the covariance matrix.")
         
-        if len(mean) >= 2:
+        if len(mean) >= 1:
             if (all (len(row) == len(mean) for row in mean)):
                 self.mean = mean
             else;
                 raise Exception("Mean matrix is not square")
         else:
-            raise Exception("Dimension of mean matrix is less than 2")    
+            raise Exception("Dimension of mean matrix cannot be less than 1")    
         
-        if len(cov) >= 2:
+        if len(cov) >= 1:
             if (all (len(row) == len(mean) for row in mean)):
                 self.cov = cov
             else:
                 raise Exception("Cov matrix is not square")
         else:
-            raise Exception("Dimension of cov matrix is less than 2")
+            raise Exception("Dimension of cov matrix cannot be less than 1")
  
         self.discrete = False
         self.pdf = lambda x: stats.multivariate_normal(x, mean, cov)
@@ -597,7 +605,7 @@ class MultivariateNormal(Distribution):
     
     def draw(self):
         """A function that takes no arguments and 
-            takes a single draw from the Multivariate Normal distribution."""
+            returns a single draw from the Multivariate Normal distribution."""
 
         return tuple(np.random.multivariate_normal(self.mean, self.cov))
 
