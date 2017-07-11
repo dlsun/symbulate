@@ -140,16 +140,15 @@ class BoxModel(ProbabilitySpace):
     def draw(self):
         """
         A function that takes no arguments and returns a value(s) from the 
-            box input of the BoxModel.
+            "box" argument of the BoxModel.
 
         Based on BoxModel inputs: 
-        Number of values returned depends on the input of the size 
+        Number of values returned depends on the input of the "size" 
             argument. 
-        By default replacement is set to True. Thus values drawn will still
-            re-occur.
-        If a list of probabilities is inputed, values drawn will be based
-            off the implemented list.
-        By default, order matters is set to True. The orderings of values drawn             will count as different outcomes.
+        Whether or not a value in the box can appear multiple times
+            depends on the "replace" argument.
+        If a list of probabilities is specified, values drawn will be drawn
+            with the specified probabilities.
         """
 
         def draw_inds(size):

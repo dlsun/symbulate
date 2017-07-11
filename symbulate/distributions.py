@@ -94,7 +94,7 @@ class Binomial(Distribution):
 
     def __init__(self, n, p):
         
-        if n >= 0 and (isinstance(n,int)):
+        if n >= 0 and (isinstance(n, int)):
             self.n = n
         else:
             raise Exception("n must be an integer greater than or equal to 0")
@@ -132,17 +132,17 @@ class Hypergeometric(Distribution):
 
     def __init__(self, n, N0, N1):
         
-        if n > 0 and (isinstance(n,int)):
+        if n > 0 and (isinstance(n, int)):
             self.n = n
         else:
             raise Exception("Number of draws must be an integer and cannot be negative")
         
-        if N0 > 0 and (isinstance(N0,int)):
+        if N0 > 0 and (isinstance(N0, int)):
             self.N0 = N0
         else:
             raise Exception("Number of failures must be an integer and cannot be negative")
         
-        if N1 > 0 and (isinstance(N1,int)):
+        if N1 > 0 and (isinstance(N1, int)):
             self.N1 = N1
         else:
             raise Exception("Number of successes must be an integer and cannot be negative")
@@ -209,7 +209,7 @@ class NegativeBinomial(Distribution):
 
     def __init__(self, r, p):
 
-        if 0 < r and (isinstance(r,int)):
+        if 0 < r and (isinstance(r, int)):
             self.r = r
         else:
             raise Exception("r must be an integer greater than 0")
@@ -249,7 +249,7 @@ class Pascal(Distribution):
     
     def __init__(self, r, p):
         
-        if 0 < r and (isinstance(r,int)):
+        if 0 < r and (isinstance(r, int)):
             self.r = r
         else:
             raise Exception("r must be an integer greater than 0")

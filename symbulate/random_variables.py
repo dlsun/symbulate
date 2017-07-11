@@ -9,14 +9,20 @@ class RV:
     def __init__(self, probSpace, fun=lambda x: x):
         self.probSpace = probSpace
         self.fun = fun
+        """
+            Initializes an instance of the random variable class. 
+            The random variable will be assigned probabilities specific
+                to the distribution of the "probSpace" argument.
+        """
 
     def draw(self):
         """
-        A function that takes no arguments and returns a single value
-            from the probability space of the random variable
+        A function that takes no arguments and returns a single instance
+            of the random variable.
         
-        Examples of probability spaces: distributions. BoxModel, etc.
-        e.g. X = RV(Normal(0,1)).draw() may return -0.9  
+
+        Ex:  X = RV(Normal(0,1))
+                X.draw() may return -0.9  
         """
 
         return self.fun(self.probSpace.draw())
@@ -42,8 +48,7 @@ class RV:
     def apply(self, function):
         """
         Args:
-            function: function to apply to the random variable
-                functions such as (e.g) log, sqrt, exp
+            function: function to apply to the random variable (e.g., log, sqrt, exp)
         
         Input function is applied to the output results.
         """
@@ -260,10 +265,7 @@ class RVConditional(RV):
     def draw(self):
         """
         A function that takes no arguments and returns a single set 
-            of values from the probability spaces defined in the conditional 
-            random variable that meet the conditional event. 
-        The number of values returned in the set depend on the number of 
-            probability spaces defined. 
+            of values from the random variable.
 
         e.g. X,Y = RV(Binomial(2,0.4)**2)
              A = ((X & Y) | (X + Y == 3)) may return a set: (2,1) 
