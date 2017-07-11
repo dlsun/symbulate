@@ -10,19 +10,19 @@ class RV:
         self.probSpace = probSpace
         self.fun = fun
         """
-            Initializes an instance of the random variable class. 
-            The random variable will be assigned probabilities specific
-                to the distribution of the "probSpace" argument.
+        Initializes an instance of the random variable class. 
+        
+        The random variable will be assigned probabilities specific
+            to the distribution of the "probSpace" argument.
         """
 
     def draw(self):
         """
-        A function that takes no arguments and returns a single instance
+        A function that takes no arguments and returns a single realization
             of the random variable.
-        
 
-        Ex:  X = RV(Normal(0,1))
-                X.draw() may return -0.9  
+        Ex:  X = RV(Normal(0, 1))
+             X.draw() might return -0.9, for example.  
         """
 
         return self.fun(self.probSpace.draw())
@@ -267,8 +267,8 @@ class RVConditional(RV):
         A function that takes no arguments and returns a single set 
             of values from the random variable.
 
-        e.g. X,Y = RV(Binomial(2,0.4)**2)
-             A = ((X & Y) | (X + Y == 3)) may return a set: (2,1) 
+        e.g. X,Y = RV(Binomial(2, 0.4)**2)
+             A = ((X & Y) | (X + Y == 3)) might return a set (2, 1), for example.
         
         """
         probSpace = self.probSpace
