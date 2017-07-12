@@ -584,7 +584,7 @@ class MultivariateNormal(Distribution):
         if len(mean) >= 1:
             if (all (len(row) == len(mean) for row in mean)):
                 self.mean = mean
-            else;
+            else:
                 raise Exception("Mean matrix is not square")
         else:
             raise Exception("Dimension of mean matrix cannot be less than 1")    
