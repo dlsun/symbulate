@@ -264,11 +264,11 @@ class RVConditional(RV):
         
     def draw(self):
         """
-        A function that takes no arguments and returns a single set 
-            of values from the random variable.
+        A function that takes no arguments and returns a value from
+            the conditional distribution of the random variable.
 
         e.g. X,Y = RV(Binomial(2, 0.4)**2)
-             A = ((X & Y) | (X + Y == 3)) might return a set (2, 1), for example.
+             A = (X | (X + Y == 3)) might return a value of 2, for example.
         
         """
         probSpace = self.probSpace
