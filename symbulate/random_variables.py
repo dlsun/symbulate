@@ -76,13 +76,14 @@ class RV:
         Args:
           function: function to apply to the random variable
         
-        Examples:
+        Example:
           X = RV(Exponential(1))
           Y = X.apply(lambda x: log(x ** 2))
 
         Note: For most standard functions, you can apply the function to
           the random variable directly. For example, in the example above,
-          Y = log(X ** 2) would have been equivalent and more readable.
+          Y = log(X ** 2) would have been equivalent and preferred
+          (because it is more readable).
         """
         
         def f_new(outcome):
