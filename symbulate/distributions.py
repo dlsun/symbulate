@@ -349,14 +349,6 @@ class Normal(Distribution):
             else:
                 raise Exception("sd cannot be less than or equal to 0")
         
-        if var is None:
-            self.var = 1.0
-        else:
-            if var > 0:
-                self.var = var
-            else:
-                raise Exception("variance cannot be less than or equal to 0")
-
         params = {
             "loc" : mean,
             "scale" : self.scale
