@@ -9,11 +9,34 @@ class RV:
     def __init__(self, probSpace, fun=lambda x: x):
         self.probSpace = probSpace
         self.fun = fun
+        """
+        Initializes an instance of the random variable class. 
+        
+        The random variable will be assigned probabilities specific
+            to the distribution of the "probSpace" argument.
+        """
 
     def draw(self):
+        """
+        A function that takes no arguments and returns a single realization
+            of the random variable.
+
+        Ex:  X = RV(Normal(0, 1))
+             X.draw() might return -0.9, for example.  
+        """
+
         return self.fun(self.probSpace.draw())
 
     def sim(self, n):
+        """Simulate n draws from probability space described by the random variable.
+
+        Args:
+          n (int): How many draws to make.
+
+        Returns:
+          Results: A list-like object containing the simulation results.
+        """
+
         return RVResults(self.draw() for _ in range(n))
 
     def check_same_probSpace(self, other):
@@ -23,6 +46,13 @@ class RV:
             self.probSpace.check_same(other.probSpace)
 
     def apply(self, function):
+        """
+        Args:
+            function: function to apply to the random variable (e.g., log, sqrt, exp)
+        
+        Input function is applied to the output results.
+        """
+        
         def f_new(outcome):
             return function(self.fun(outcome))
         return RV(self.probSpace, f_new)
@@ -233,6 +263,14 @@ class RVConditional(RV):
                          random_variable.fun)
         
     def draw(self):
+        """
+        A function that takes no arguments and returns a value from
+            the conditional distribution of the random variable.
+
+        e.g. X,Y = RV(Binomial(2, 0.4)**2)
+             A = (X | (X + Y == 3)) might return a value of 2, for example.
+        
+        """
         probSpace = self.probSpace
         while True:
             outcome = probSpace.draw()
