@@ -572,6 +572,8 @@ class MultivariateNormal(Distribution):
             raise Exception("The dimension of the mean vector" +
                             "is not compatible with the dimensions" +
                             "of the covariance matrix.")
+
+        self.mean = mean
                 
         if len(cov) >= 1:
             if (all(len(row) == len(mean) for row in cov)):
