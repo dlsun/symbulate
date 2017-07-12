@@ -637,8 +637,6 @@ class BivariateNormal(MultivariateNormal):
                             "between -1 and 1.")
 
         self.mean = [mean1, mean2]
-        if (var1 < 0) or (var2 < 0):
-            raise Exception("Variance cannot be less than 0")
 
         if var1 is None:
             var1 = sd1 ** 2
