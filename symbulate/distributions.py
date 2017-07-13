@@ -345,16 +345,16 @@ class Normal(Distribution):
         if (sd is None) and (var is None):
             raise Exception("sd or var argument is missing!")
         elif sd is None:
-            if (var > 0):
+            if (var >= 0):
                 self.var = var
                 self.scale = np.sqrt(var)
             else:
-                raise Exception("var cannot be less than or equal to 0")
+                raise Exception("var cannot be less than 0")
         else:
-            if sd > 0:
+            if sd >= 0:
                 self.scale = sd
             else:
-                raise Exception("sd cannot be less than or equal to 0")
+                raise Exception("sd cannot be less than 0")
 
         params = {
             "loc" : mean,
