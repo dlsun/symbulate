@@ -341,14 +341,21 @@ class Normal(Distribution):
     """
 
     def __init__(self, mean=0.0, var=1.0, sd=None):
-        if sd is None:
-            self.scale = np.sqrt(var)
+
+        if (sd is None) and (var is None):
+            raise Exception("sd or var argument is missing!")
+        elif sd is None:
+            if (var > 0):
+                self.var = var
+                self.scale = np.sqrt(var)
+            else:
+                raise Exception("var cannot be less than or equal to 0")
         else:
             if sd > 0:
                 self.scale = sd
             else:
                 raise Exception("sd cannot be less than or equal to 0")
-        
+
         params = {
             "loc" : mean,
             "scale" : self.scale
@@ -570,9 +577,15 @@ class MultivariateNormal(Distribution):
     def __init__(self, mean, cov):
         if len(mean) != len(cov):
             raise Exception("The dimension of the mean vector" +
-                            "is not compatible with the dimensions" +
-                            "of the covariance matrix.")
-                
+                            " is not compatible with the dimensions" +
+                            " of the covariance matrix.")
+
+        #add a check if values in mean vector/ cov matrix aren't floats/ints.       
+        #how to check for positive, positive-semi definite matrices.
+			#np.all(np.linalg.eigvals(matrix) > 0)
+
+        self.mean = mean       
+ 
         if len(cov) >= 1:
             if (all(len(row) == len(mean) for row in cov)):
                 self.cov = cov
@@ -580,7 +593,7 @@ class MultivariateNormal(Distribution):
                 raise Exception("Cov matrix is not square")
         else:
             raise Exception("Dimension of cov matrix cannot be less than 1")
- 
+         
         self.discrete = False
         self.pdf = lambda x: stats.multivariate_normal(x, mean, cov)
  
