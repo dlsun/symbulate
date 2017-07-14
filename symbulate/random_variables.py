@@ -7,10 +7,12 @@ from .utils import is_scalar, is_vector, get_dimension
 class RV:
     """Defines a random variable.
     
-    A random variable is a function defined on a probability space.
-    Simulating a random variable is a two-step process: first,
-    a draw is taken from the underlying probability space; then,
-    the function is applied to that draw.
+    A random variable is a function which maps an outcome of
+    a probability space to a number.  Simulating a random 
+    variable is a two-step process: first, a draw is taken 
+    from the underlying probability space; then, the function 
+    is applied to that draw to obtain the realized value of
+    the random variable.
 
     Args:
       probSpace (ProbabilitySpace): the underlying probability space
@@ -29,11 +31,18 @@ class RV:
         space to numbers.
 
     Examples:
-      P = Normal(0, 1)
-      X = RV(P) # the function is just the identity
+      # a single draw is a sequence of 0s and 1s, e.g., (0, 0, 1, 0, 1)
+      P = BoxModel([0, 1], size=5)
+      # X counts the number of 1s in the draw, e.g., 5
+      X = RV(P, sum)
 
-      P = BivariateNormal() # each draw returns two numbers
-      S = RV(P, lambda x: x[0] - x[1]) # RV is the difference between them
+      # the function is the identity, so Y has a Normal(0, 1) distribution
+      Y = RV(Normal(0, 1)
+
+      # a single draw from BivariateNormal is a tuple of two numbers
+      P = BivariateNormal()
+      # Z is the smaller of the two numbers
+      Z = RV(P, min)
     """
 
     def __init__(self, probSpace, fun=lambda x: x):
@@ -78,12 +87,18 @@ class RV:
         
         Example:
           X = RV(Exponential(1))
-          Y = X.apply(lambda x: log(x ** 2))
+          Y = X.apply(log)
 
         Note: For most standard functions, you can apply the function to
           the random variable directly. For example, in the example above,
-          Y = log(X ** 2) would have been equivalent and preferred
-          (because it is more readable).
+          Y = log(X) would have been equivalent and more readable.
+
+        User defined functions can also be applied.
+
+        Example:
+          def g(x):
+            return log(x ** 2)
+          Y = X.apply(g)
         """
         
         def f_new(outcome):
