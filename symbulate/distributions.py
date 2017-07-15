@@ -353,75 +353,32 @@ class Normal(Distribution):
                 self.var = var
                 self.scale = np.sqrt(var)
 
-                params = { 
-                    "loc" : mean,
-                    "scale" : self.scale
-                    }   
-   
-                super().__init__(params, stats.norm, False) 
-                    
-                def draw(self):
-                    return np.random.normal(loc=self.mean(), scale=self.scale)
-            
             elif var == 0: 
-                raise Exception("working on this")  
+                raise Exception("Unimplemeneted, working on sd == 0")  
             else:
                 raise Exception("var cannot be less than 0")
         
         else:
             if sd > 0:
                 self.scale = sd
-                
-                params = { 
-                    "loc" : mean,
-                    "scale" : self.scale
-                    }
-   
-                super().__init__(params, stats.norm, False) 
-            
-                def draw(self):
-                    return np.random.normal(loc=self.mean(), scale=self.scale)
-            
+                self.var = sd ** 2
             elif sd == 0:
-                #self.scale = sd
-                
-                #params = {
-                #    "loc" : mean,
-                #    "scale" : self.scale
-                #    }
-                #super().__init__(params, stats.norm, False)    
-                #self.params = params
-                #self.pdf = lambda x: scipy.pdf(x, loc = mean, scale = 0)
-                #self.cdf = lambda x: scipy.cdf(x, loc = mean, scale = 0)
-                #self.quantile = mean
-                #self.mean = mean
-                #self.median = mean  
-                #self.mean = mean 
-                #self.var = 0 
-                #self.sd = 0 
-
-                #self.xlim = (
-                #    mean,
-                #    mean
-                #    )
-                   
-                #self.draw = mean
-                pass                 
+                raise Exception("Unimplemented working on sd == 0")                 
             else:
                 raise Exception("sd cannot be less than 0")
         
 
-        #params = {
-            #"loc" : mean,
-            #"scale" : self.scale
-            #}
-        #super().__init__(params, stats.norm, False)
+        params = {
+            "loc" : mean,
+            "scale" : self.scale
+            }
+        super().__init__(params, stats.norm, False)
     
-    #def draw(self):
-         #"""A function that takes no arguments and 
-            #returns a single draw from the Normal distribution."""
+    def draw(self):
+        """A function that takes no arguments and 
+            returns a single draw from the Normal distribution."""
     
-        #return np.random.normal(loc=self.mean(), scale=self.scale)
+        return np.random.normal(loc=self.mean(), scale=self.scale)
 
 class Exponential(Distribution):
     """Defines a probability space for an exponential distribution.
