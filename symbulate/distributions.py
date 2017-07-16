@@ -100,7 +100,7 @@ class Binomial(Distribution):
             raise NotImplementedError
             #TODO
         else:
-            raise Exception("n must be an integer greater than 0")
+            raise Exception("n must be an integer greater than or equal to 0")
 
         if 0 <= p <= 1:
             self.p = p
@@ -143,12 +143,12 @@ class Hypergeometric(Distribution):
         if N0 >= 0 and isinstance(N0, int):
             self.N0 = N0
         else:
-            raise Exception("Number of 0s must be a non-negative integer")
+            raise Exception("N0 must be a non-negative integer")
         
         if N1 >= 0 and isinstance(N1, int):
             self.N1 = N1
         else:
-            raise Exception("Number of 1s must be a non-negative integer")
+            raise Exception("N1 must be a non-negative integer")
 
         params = {
             "M" : N0 + N1,
@@ -321,7 +321,7 @@ class Uniform(Distribution):
             "scale" : b - a
             }
 
-        if (a > b):
+        if a > b:
             raise Exception("b cannot be less than a")
 
         super().__init__(params, stats.uniform, False)
@@ -342,6 +342,7 @@ class Normal(Distribution):
       sd (float): standard deviation parameter of the normal 
         distribution (if specified, var parameter will be ignored)
     """
+    #TODO edit docstring for Normal Distribution
 
     def __init__(self, mean=0.0, var=1.0, sd=None):
 
@@ -349,7 +350,6 @@ class Normal(Distribution):
 
         if sd is None:
             if (var > 0):
-                self.var = var
                 self.scale = np.sqrt(var)
 
             elif var == 0: 
@@ -399,13 +399,13 @@ class Exponential(Distribution):
                 self.rate = rate
                 self.scale = scale
             else:
-                raise Exception("rate cannot be less than or equal to 0")
+                raise Exception("rate must be positive 0")
         else:
             if scale > 0:
                 self.scale = scale
                 self.rate = 1. / scale
             else:
-                raise Exception("scale cannot be less than or equal to 0")
+                raise Exception("scale must be positive 0")
         
         params = {
             "scale" : 1. / rate if scale is None else scale
@@ -567,12 +567,12 @@ class F(Distribution):
         if dfN > 0:
             self.dfN = dfN
         else:
-            raise Exception("Degrees of freedom in numerator must be greater than 0")
+            raise Exception("dfN must be greater than 0")
 
         if dfD > 0:
             self.dfD = dfD
         else:
-            raise Exception("Degrees of freedom in denominator must be greater than 0")
+            raise Exception("dfD must be greater than 0")
 
         params = {
             "dfn" : dfN,
@@ -668,18 +668,15 @@ class BivariateNormal(MultivariateNormal):
         if (sd2 < 0):
             raise Exception("sd2 cannot be less than 0")
 
-
+        
         if var1 is None:
             var1 = sd1 ** 2
         if var2 is None:
             var2 = sd2 ** 2
         if (var1 < 0) or (var2 < 0):
-            raise Exception("var1 or var2 cannot be negative")
+            raise Exception("var1 and var 2 cannot be negative")
         if cov is None:
-            if var1 * var2 < 0:
-                raise Exception("var1*var2 cannot be less than 0")
-            else:
-                cov = corr * np.sqrt(var1 * var2)
+            cov = corr * np.sqrt(var1 * var2)
         self.cov = [[var1, cov], [cov, var2]]
         self.discrete = False
         self.pdf = lambda x: stats.multivariate_normal(x, self.mean, self.cov)
