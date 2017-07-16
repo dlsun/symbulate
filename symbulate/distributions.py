@@ -135,17 +135,17 @@ class Hypergeometric(Distribution):
 
     def __init__(self, n, N0, N1):
         
-        if n > 0 and (isinstance(n, int)):
+        if n > 0 and isinstance(n, int):
             self.n = n
         else:
             raise Exception("n must be a positive integer")
         
-        if N0 >= 0 and (isinstance(N0, int)):
+        if N0 >= 0 and isinstance(N0, int):
             self.N0 = N0
         else:
             raise Exception("Number of 0s must be a non-negative integer")
         
-        if N1 >= 0 and (isinstance(N1, int)):
+        if N1 >= 0 and isinstance(N1, int):
             self.N1 = N1
         else:
             raise Exception("Number of 1s must be a non-negative integer")
@@ -610,7 +610,7 @@ class MultivariateNormal(Distribution):
             raise Exception("Mean vector and Cov matrix cannot be empty")      
  
         if len(cov) >= 1:
-            if (all(len(row) == len(mean) for row in cov)):
+            if all(len(row) == len(mean) for row in cov):
                 try:
                     if np.all(np.linalg.eigvals(matrix) >= 0):
                         self.cov = cov
