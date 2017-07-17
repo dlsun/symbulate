@@ -299,6 +299,35 @@ class Poisson(Distribution):
 
         return np.random.poisson(lam=self.lam)
 
+class DiscreteUniform(Distribution):
+    """Defines a probability space for a discrete uniform distribution.
+
+    Attributes:
+      a (int): lower bound for possible values
+      b (int): upper bound for possible values
+    """
+
+    def __init__(self, a=0, b=1):
+        self.a = a
+        self.b = b
+        
+        params = {
+            "low" : self.a,
+            "high" : self.b
+            }
+
+        if (b-a) <= 0:
+            raise Exception("b-a cannot be less than or equal to 0")
+
+        super().__init__(params, stats.randint, True)
+        self.xlim = (a, b) # Uniform distributions are not defined for x < a and x > b
+        
+    def draw(self):
+        """A function that takes no arguments and 
+            returns a single draw from the Discrete Uniform distribution."""
+
+        return np.random.randint(low=self.a, high=self.b)
+
 ## Continuous Distributions
 
 class Uniform(Distribution):
@@ -555,6 +584,87 @@ class F(Distribution):
             returns a single draw from the F distribution."""
 
         return np.random.f(self.dfN, self.dfD)
+
+class Cauchy(Distribution):
+    """Defines a probability space for a Cauchy distribution
+
+    Attributes:
+      The Cauchy distribution has no parameters  
+    """
+
+    def __init__(self):
+        params = {}
+        super().__init__(params, stats.cauchy, False)
+
+    def draw(self):
+        return np.random.standard_cauchy()
+
+class LogNormal(Distribution):
+    """Defines a probability space for a Log-Normal distribution
+
+    Attributes:
+      mean (float): mean of log-normal distribution 
+      var (float): variance of log-normal distribution
+      sd (float): standard deviation of log-normal distribution
+        (if specified, var parameter will be ignored)
+    """
+
+    def __init__(self, mean=0.0, var=1.0, sd=None):
+        if sd is None:
+            self.s = np.sqrt(var)
+        else:
+            self.s = sd
+
+        params = {
+            "s" : self.s,
+            "scale" : np.exp(mean) 
+            }
+        super().__init__(params, stats.lognorm, False)
+        self.xlim = (0, self.xlim[1]) # Log-Normal distributions are not defined for x < 0
+
+    def draw(self):
+        return np.random.lognormal(self.mean(), self.sd())
+
+class Pareto(Distribution):
+    """Defines a probability space for a Pareto distribution.
+
+    Attributes:
+      b (float): shape parameter of Pareto distribution 
+    """
+
+    def __init__(self, b=1.0):
+        
+        if b > 0:
+            self.b = b 
+        else:
+            raise Exception("b cannot be less than or equal to 0")
+        
+        params = {
+            "b" : self.b 
+            }
+        super().__init__(params, stats.pareto, False)
+        self.xlim = (0, self.xlim[1]) # Pareto distributions are not defined for x < 0
+        
+    def draw(self):
+        return np.random.pareto(self.b)
+
+# class Weibull(Distribution):
+#     
+#     def __init__(self, eta, beta= ):
+
+class Rayleigh(Distribution):
+    """Defines a probability space for a Rayleigh distribution
+
+    Attributes:
+      The Rayleigh distribution has no parameters  
+    """
+
+    def __init__(self):
+        params = {}
+        super().__init__(params, stats.rayleigh, False)
+
+    def draw(self):
+        return np.random.rayleigh()
 
 ## Multivariate Distributions
 
