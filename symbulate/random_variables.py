@@ -5,30 +5,64 @@ from .results import RVResults
 from .utils import is_scalar, is_vector, get_dimension
 
 class RV:
+    """Defines a random variable.
+    
+    A random variable is a function which maps an outcome of
+    a probability space to a number.  Simulating a random 
+    variable is a two-step process: first, a draw is taken 
+    from the underlying probability space; then, the function 
+    is applied to that draw to obtain the realized value of
+    the random variable.
+
+    Args:
+      probSpace (ProbabilitySpace): the underlying probability space
+        of the random variable.
+      fun (function, optional): a function that maps draws from the 
+        probability space to numbers. (By default, the function is the 
+        identity function. For named distributions, a draw from the
+        underlying probability space is the value of the random
+        variable itself, which is why the identity function is the 
+        most frequently used.)
+
+    Attributes:
+      probSpace (ProbabilitySpace): the underlying probability space
+        of the random variable.
+      fun (function): a function that maps draws from the probability
+        space to numbers.
+
+    Examples:
+      # a single draw is a sequence of 0s and 1s, e.g., (0, 0, 1, 0, 1)
+      P = BoxModel([0, 1], size=5)
+      # X counts the number of 1s in the draw, e.g., 5
+      X = RV(P, sum)
+
+      # the function is the identity, so Y has a Normal(0, 1) distribution
+      Y = RV(Normal(0, 1)
+
+      # a single draw from BivariateNormal is a tuple of two numbers
+      P = BivariateNormal()
+      # Z is the smaller of the two numbers
+      Z = RV(P, min)
+    """
 
     def __init__(self, probSpace, fun=lambda x: x):
         self.probSpace = probSpace
         self.fun = fun
-        """
-        Initializes an instance of the random variable class. 
-        
-        The random variable will be assigned probabilities specific
-            to the distribution of the "probSpace" argument.
-        """
 
     def draw(self):
-        """
-        A function that takes no arguments and returns a single realization
-            of the random variable.
+        """A function that takes no arguments and returns a single 
+          realization of the random variable.
 
-        Ex:  X = RV(Normal(0, 1))
-             X.draw() might return -0.9, for example.  
+        Example:
+          X = RV(Normal(0, 1))
+          X.draw() might return -0.9, for example.  
         """
 
         return self.fun(self.probSpace.draw())
 
     def sim(self, n):
-        """Simulate n draws from probability space described by the random variable.
+        """Simulate n draws from probability space described by the random 
+          variable.
 
         Args:
           n (int): How many draws to make.
@@ -46,11 +80,25 @@ class RV:
             self.probSpace.check_same(other.probSpace)
 
     def apply(self, function):
-        """
+        """Transform a random variable by a function.
+
         Args:
-            function: function to apply to the random variable (e.g., log, sqrt, exp)
+          function: function to apply to the random variable
         
-        Input function is applied to the output results.
+        Example:
+          X = RV(Exponential(1))
+          Y = X.apply(log)
+
+        Note: For most standard functions, you can apply the function to
+          the random variable directly. For example, in the example above,
+          Y = log(X) would have been equivalent and more readable.
+
+        User defined functions can also be applied.
+
+        Example:
+          def g(x):
+            return log(x ** 2)
+          Y = X.apply(g)
         """
         
         def f_new(outcome):
@@ -175,7 +223,7 @@ class RV:
         else:
             raise Exception("Joint distributions are only defined for RVs.")
 
-    ## The following function all return Events
+    ## The following operations all return Events
     ## (Events are used to define conditional distributions)
 
     # e.g., X < 3
@@ -256,6 +304,25 @@ class RV:
             raise NotImplementedError
 
 class RVConditional(RV):
+    """Defines a random variable conditional on an event.
+
+    RVConditionals are typically produced when you condition a
+    RV on an Event object.
+
+    Args:
+      random_variable (RV): the random variable whose conditional
+        distribution is desired
+      condition_event (Event): the event to condition on
+
+    Attributes:
+      random_variable (RV): the random variable whose conditional
+        distribution is desired
+      condition_event (Event): the event to condition on
+
+    Examples:
+      X, Y = RV(Binomial(10, 0.4) ** 2)
+      (X | (X + Y == 5)).draw() # returns a value between 0 and 5.
+    """
 
     def __init__(self, random_variable, condition_event):
         self.condition_event = condition_event
@@ -263,13 +330,12 @@ class RVConditional(RV):
                          random_variable.fun)
         
     def draw(self):
-        """
-        A function that takes no arguments and returns a value from
-            the conditional distribution of the random variable.
+        """A function that takes no arguments and returns a value from
+          the conditional distribution of the random variable.
 
-        e.g. X,Y = RV(Binomial(2, 0.4)**2)
-             A = (X | (X + Y == 3)) might return a value of 2, for example.
-        
+        Example:
+          X, Y = RV(Binomial(10, 0.4) ** 2)
+          (X | (X + Y == 5)).draw() might return a value of 4, for example.
         """
         probSpace = self.probSpace
         while True:
