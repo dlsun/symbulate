@@ -607,12 +607,10 @@ class MultivariateNormal(Distribution):
  
         if len(cov) >= 1:
             if all(len(row) == len(mean) for row in cov):
-                try:
-                    if np.all(np.linalg.eigvals(matrix) >= 0):
+                    if np.all(np.linalg.eigvals(cov) >= 0) and np.allclose(cov,np.transpose(cov)):
                         self.cov = cov
-                except:
-                    print("Cov matrix is not positive semi-definite")
-                    self.cov = cov
+                    else:
+                        raise Exception("Cov matrix is not symmetric and positive semi-definite")
             else:
                 raise Exception("Cov matrix is not square")
         else:
@@ -670,7 +668,7 @@ class BivariateNormal(MultivariateNormal):
         if var2 is None:
             var2 = sd2 ** 2
         if var1 < 0 or var2 < 0:
-            raise Exception("var1 and var 2 cannot be negative")
+            raise Exception("var1 and var2 cannot be negative")
         if cov is None:
             cov = corr * np.sqrt(var1 * var2)
         self.cov = [[var1, cov], [cov, var2]]
