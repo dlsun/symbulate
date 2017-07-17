@@ -94,13 +94,13 @@ class Binomial(Distribution):
 
     def __init__(self, n, p):
         
-        if n > 0 and (isinstance(n, int)):
+        if n > 0 and isinstance(n, int):
             self.n = n
         elif n == 0:
             raise NotImplementedError
             #TODO
         else:
-            raise Exception("n must be an integer greater than or equal to 0")
+            raise Exception("n must be a non-negative integer")
 
         if 0 <= p <= 1:
             self.p = p
@@ -156,8 +156,8 @@ class Hypergeometric(Distribution):
             "N" : n
             }
 
-        if (N0 + N1) < n:
-            raise Exception("Number of Successes + Failures cannot be less than the sample size n")
+        if N0 + N1 < n:
+            raise Exception("N0 + N1 cannot be less than the sample size n")
 
         super().__init__(params, stats.hypergeom, True)
         self.xlim = (0, n) # Hypergeometric distributions are not defined for x < 0 and x > n
@@ -212,7 +212,7 @@ class NegativeBinomial(Distribution):
 
     def __init__(self, r, p):
 
-        if 0 < r and (isinstance(r, int)):
+        if 0 < r and isinstance(r, int):
             self.r = r
         else:
             raise Exception("r must be a positive integer")
@@ -252,7 +252,7 @@ class Pascal(Distribution):
     
     def __init__(self, r, p):
         
-        if 0 < r and (isinstance(r, int)):
+        if 0 < r and isinstance(r, int):
             self.r = r
         else:
             raise Exception("r must be a positive integer")
@@ -349,9 +349,8 @@ class Normal(Distribution):
         #Note: cleaner way to implement this
 
         if sd is None:
-            if (var > 0):
+            if var > 0:
                 self.scale = np.sqrt(var)
-
             elif var == 0: 
                 raise NotImplementedError
                 #TODO
@@ -361,7 +360,6 @@ class Normal(Distribution):
         else:
             if sd > 0:
                 self.scale = sd
-                self.var = sd ** 2
             elif sd == 0:
                 raise NotImplementedError
                 #TODO
@@ -399,13 +397,12 @@ class Exponential(Distribution):
                 self.rate = rate
                 self.scale = scale
             else:
-                raise Exception("rate must be positive 0")
+                raise Exception("rate must be positive")
         else:
             if scale > 0:
                 self.scale = scale
-                self.rate = 1. / scale
             else:
-                raise Exception("scale must be positive 0")
+                raise Exception("scale must be positive")
         
         params = {
             "scale" : 1. / rate if scale is None else scale
@@ -441,20 +438,19 @@ class Gamma(Distribution):
         if 0 < shape:
             self.shape = shape
         else:
-            raise Exception("shape parameter cannot be less than or equal to 0")
+            raise Exception("shape parameter must be positive")
         
         if scale is None:
             if rate > 0:
                 self.rate = rate
                 self.scale = scale
             else:
-                raise Exception("rate cannot be less than or equal to 0")
+                raise Exception("rate must be positive")
         else:
             if scale > 0:
                 self.scale = scale
-                self.rate = 1. / scale
             else:
-                raise Exception("scale cannot be less than or equal to 0")        
+                raise Exception("scale must be positive")        
 
         params = {
             "a" : shape,
@@ -485,12 +481,12 @@ class Beta(Distribution):
         if 0 < a:
             self.a = a
         else:
-            raise Exception("a cannot be less than or equal to 0")
+            raise Exception("a must be positive")
             
         if 0 < b:
             self.b = b
         else:        
-            raise Exception("b cannot be less than or equal to 0")
+            raise Exception("b must be positive")
 
         params = {
             "a" : a,
@@ -657,15 +653,15 @@ class BivariateNormal(MultivariateNormal):
                  sd1=1.0, sd2=1.0, corr=0.0,
                  var1=None, var2=None, cov=None):
 
-        if not (-1 <= corr <= 1):
+        if not -1 <= corr <= 1:
             raise Exception("Correlation must be "
                             "between -1 and 1.")
 
         self.mean = [mean1, mean2]
 
-        if (sd1 < 0):
+        if sd1 < 0:
             raise Exception("sd1 cannot be less than 0")
-        if (sd2 < 0):
+        if sd2 < 0:
             raise Exception("sd2 cannot be less than 0")
 
         
@@ -673,7 +669,7 @@ class BivariateNormal(MultivariateNormal):
             var1 = sd1 ** 2
         if var2 is None:
             var2 = sd2 ** 2
-        if (var1 < 0) or (var2 < 0):
+        if var1 < 0 or var2 < 0:
             raise Exception("var1 and var 2 cannot be negative")
         if cov is None:
             cov = corr * np.sqrt(var1 * var2)
