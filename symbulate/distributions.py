@@ -94,10 +94,13 @@ class Binomial(Distribution):
 
     def __init__(self, n, p):
         
-        if n >= 0 and (isinstance(n, int)):
+        if n > 0 and isinstance(n, int):
             self.n = n
+        elif n == 0:
+            raise NotImplementedError
+            #TODO
         else:
-            raise Exception("n must be an integer greater than or equal to 0")
+            raise Exception("n must be a non-negative integer")
 
         if 0 <= p <= 1:
             self.p = p
@@ -132,20 +135,20 @@ class Hypergeometric(Distribution):
 
     def __init__(self, n, N0, N1):
         
-        if n > 0 and (isinstance(n, int)):
+        if n > 0 and isinstance(n, int):
             self.n = n
         else:
-            raise Exception("Number of draws must be an integer and cannot be negative")
+            raise Exception("n must be a positive integer")
         
-        if N0 > 0 and (isinstance(N0, int)):
+        if N0 >= 0 and isinstance(N0, int):
             self.N0 = N0
         else:
-            raise Exception("Number of failures must be an integer and cannot be negative")
+            raise Exception("N0 must be a non-negative integer")
         
-        if N1 > 0 and (isinstance(N1, int)):
+        if N1 >= 0 and isinstance(N1, int):
             self.N1 = N1
         else:
-            raise Exception("Number of successes must be an integer and cannot be negative")
+            raise Exception("N1 must be a non-negative integer")
 
         params = {
             "M" : N0 + N1,
@@ -153,8 +156,8 @@ class Hypergeometric(Distribution):
             "N" : n
             }
 
-        if (N0 + N1) < n:
-            raise Exception("Number of Successes + Failures cannot be less than the sample size n")
+        if N0 + N1 < n:
+            raise Exception("N0 + N1 cannot be less than the sample size n")
 
         super().__init__(params, stats.hypergeom, True)
         self.xlim = (0, n) # Hypergeometric distributions are not defined for x < 0 and x > n
@@ -178,7 +181,7 @@ class Geometric(Distribution):
 
     def __init__(self, p):
         
-        if 0 <= p <= 1:
+        if 0 < p < 1:
             self.p = p
         else:
             raise Exception("p must be between 0 and 1")        
@@ -209,12 +212,12 @@ class NegativeBinomial(Distribution):
 
     def __init__(self, r, p):
 
-        if 0 < r and (isinstance(r, int)):
+        if 0 < r and isinstance(r, int):
             self.r = r
         else:
-            raise Exception("r must be an integer greater than 0")
+            raise Exception("r must be a positive integer")
 
-        if 0 <= p <= 1:
+        if 0 < p <= 1:
             self.p = p
         else:
             raise Exception("p must be between 0 and 1")
@@ -249,12 +252,12 @@ class Pascal(Distribution):
     
     def __init__(self, r, p):
         
-        if 0 < r and (isinstance(r, int)):
+        if 0 < r and isinstance(r, int):
             self.r = r
         else:
-            raise Exception("r must be an integer greater than 0")
+            raise Exception("r must be a positive integer")
 
-        if 0 <= p <= 1:
+        if 0 < p <= 1:
             self.p = p
         else:
             raise Exception("p must be between 0 and 1")
@@ -318,8 +321,8 @@ class Uniform(Distribution):
             "scale" : b - a
             }
 
-        if (b-a) <= 0:
-            raise Exception("b-a cannot be less than or equal to 0")
+        if a > b:
+            raise Exception("b cannot be less than a")
 
         super().__init__(params, stats.uniform, False)
         self.xlim = (a, b) # Uniform distributions are not defined for x < a and x > b
@@ -339,16 +342,30 @@ class Normal(Distribution):
       sd (float): standard deviation parameter of the normal 
         distribution (if specified, var parameter will be ignored)
     """
+    #TODO edit docstring for Normal Distribution
 
     def __init__(self, mean=0.0, var=1.0, sd=None):
+
+        #Note: cleaner way to implement this
+
         if sd is None:
-            self.scale = np.sqrt(var)
+            if var > 0:
+                self.scale = np.sqrt(var)
+            elif var == 0: 
+                raise NotImplementedError
+                #TODO
+            else:
+                raise Exception("var cannot be less than 0")
+        
         else:
             if sd > 0:
                 self.scale = sd
+            elif sd == 0:
+                raise NotImplementedError
+                #TODO
             else:
-                raise Exception("sd cannot be less than or equal to 0")
-        
+                raise Exception("sd cannot be less than 0")
+
         params = {
             "loc" : mean,
             "scale" : self.scale
@@ -358,7 +375,7 @@ class Normal(Distribution):
     def draw(self):
         """A function that takes no arguments and 
             returns a single draw from the Normal distribution."""
-
+    
         return np.random.normal(loc=self.mean(), scale=self.scale)
 
 class Exponential(Distribution):
@@ -375,12 +392,17 @@ class Exponential(Distribution):
 
     def __init__(self, rate=1.0, scale=None):
         
-        if scale > 0:
-            self.scale = scale
+        if scale is None:
+            if rate > 0:
+                self.rate = rate
+                self.scale = scale
+            else:
+                raise Exception("rate must be positive")
         else:
-            raise Exception("scale cannot be less than or equal to 0")
-
-        self.rate = rate
+            if scale > 0:
+                self.scale = scale
+            else:
+                raise Exception("scale must be positive")
         
         params = {
             "scale" : 1. / rate if scale is None else scale
@@ -416,15 +438,20 @@ class Gamma(Distribution):
         if 0 < shape:
             self.shape = shape
         else:
-            raise Exception("shape parameter cannot be less than or equal to 0")
+            raise Exception("shape parameter must be positive")
         
-        if 0 < scale:
-            self.scale = scale
+        if scale is None:
+            if rate > 0:
+                self.rate = rate
+                self.scale = scale
+            else:
+                raise Exception("rate must be positive")
         else:
-            raise Exception("scale parameter cannot be less than or equal to 0")
+            if scale > 0:
+                self.scale = scale
+            else:
+                raise Exception("scale must be positive")        
 
-        self.rate = rate
-        
         params = {
             "a" : shape,
             "scale" : 1. / rate if scale is None else scale
@@ -454,12 +481,12 @@ class Beta(Distribution):
         if 0 < a:
             self.a = a
         else:
-            raise Exception("a cannot be less than or equal to 0")
+            raise Exception("a must be positive")
             
         if 0 < b:
             self.b = b
         else:        
-            raise Exception("b cannot be less than or equal to 0")
+            raise Exception("b must be positive")
 
         params = {
             "a" : a,
@@ -485,7 +512,7 @@ class StudentT(Distribution):
         if df > 0:
             self.df = df
         else:
-            raise Exception("Degrees of Freedom cannot be equal to or less than 0")
+            raise Exception("df must be greater than 0")
 
         params = {
             "df" : df 
@@ -506,10 +533,10 @@ class ChiSquare(Distribution):
     """
 
     def __init__(self, df):
-        if df > 0:
+        if df > 0 and isinstance(df, int):
             self.df = df
         else:
-            raise Exception("Degrees of Freedom cannot be equal to or less than 0")
+            raise Exception("df must be a positive integer")
 
         params = {
             "df" : df 
@@ -536,12 +563,12 @@ class F(Distribution):
         if dfN > 0:
             self.dfN = dfN
         else:
-            raise Exception("Degrees of freedom in numerator cannot be less than or equal to 0")
+            raise Exception("dfN must be greater than 0")
 
         if dfD > 0:
             self.dfD = dfD
         else:
-            raise Exception("Degrees of freedom in denominator cannot be less than or equal to 0")
+            raise Exception("dfD must be greater than 0")
 
         params = {
             "dfn" : dfN,
@@ -570,19 +597,25 @@ class MultivariateNormal(Distribution):
     def __init__(self, mean, cov):
         if len(mean) != len(cov):
             raise Exception("The dimension of the mean vector" +
-                            "is not compatible with the dimensions" +
-                            "of the covariance matrix.")
+                            " is not compatible with the dimensions" +
+                            " of the covariance matrix.")
 
-        self.mean = mean
-                
+        if len(mean) >= 1:
+            self.mean = mean 
+        else:
+            raise Exception("Mean vector and Cov matrix cannot be empty")      
+ 
         if len(cov) >= 1:
-            if (all(len(row) == len(mean) for row in cov)):
-                self.cov = cov
+            if all(len(row) == len(mean) for row in cov):
+                    if np.all(np.linalg.eigvals(cov) >= 0) and np.allclose(cov,np.transpose(cov)):
+                        self.cov = cov
+                    else:
+                        raise Exception("Cov matrix is not symmetric and positive semi-definite")
             else:
                 raise Exception("Cov matrix is not square")
         else:
             raise Exception("Dimension of cov matrix cannot be less than 1")
- 
+         
         self.discrete = False
         self.pdf = lambda x: stats.multivariate_normal(x, mean, cov)
  
@@ -618,21 +651,26 @@ class BivariateNormal(MultivariateNormal):
                  sd1=1.0, sd2=1.0, corr=0.0,
                  var1=None, var2=None, cov=None):
 
-        if corr is not None and not (-1 <= corr < 1):
+        if not -1 <= corr <= 1:
             raise Exception("Correlation must be "
                             "between -1 and 1.")
 
         self.mean = [mean1, mean2]
 
+        if sd1 < 0:
+            raise Exception("sd1 cannot be less than 0")
+        if sd2 < 0:
+            raise Exception("sd2 cannot be less than 0")
+
+        
         if var1 is None:
             var1 = sd1 ** 2
         if var2 is None:
             var2 = sd2 ** 2
+        if var1 < 0 or var2 < 0:
+            raise Exception("var1 and var2 cannot be negative")
         if cov is None:
-            if var1 * var2 < 0:
-                raise Exception("var1*var2 cannot be less than 0")
-            else:
-                cov = corr * np.sqrt(var1 * var2)
+            cov = corr * np.sqrt(var1 * var2)
         self.cov = [[var1, cov], [cov, var2]]
         self.discrete = False
         self.pdf = lambda x: stats.multivariate_normal(x, self.mean, self.cov)
