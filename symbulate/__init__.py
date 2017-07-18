@@ -10,6 +10,7 @@ from .distributions import (
     NegativeBinomial,
     Pascal,
     Poisson,
+    DiscreteUniform,
     Uniform,
     Normal,
     Exponential,
@@ -18,6 +19,10 @@ from .distributions import (
     StudentT,
     ChiSquare,
     F,
+    Cauchy,
+    LogNormal,
+    Pareto,
+    Rayleigh,
     MultivariateNormal,
     BivariateNormal
 )

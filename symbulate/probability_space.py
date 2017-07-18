@@ -103,6 +103,13 @@ class Event:
                         "((2 < X) & (X < 5)) instead."
                     )
 
+    def draw(self):
+        return self.fun(self.probSpace.draw())
+
+    def sim(self, n):
+        return Results(self.draw() for _ in range(n))
+
+
 class BoxModel(ProbabilitySpace):
     """Defines a probability space from a box model.
 
