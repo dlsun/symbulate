@@ -603,9 +603,9 @@ class LogNormal(Distribution):
     """Defines a probability space for a Log-Normal distribution
 
     Attributes:
-      mean (float): mean of log-normal distribution 
-      var (float): variance of log-normal distribution
-      sd (float): standard deviation of log-normal distribution
+      mean (float): mean of a normal distribution 
+      var (float): variance of a normal distribution
+      sd (float): standard deviation of a normal distribution
         (if specified, var parameter will be ignored)
     """
 
