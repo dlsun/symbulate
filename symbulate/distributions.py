@@ -316,7 +316,7 @@ class DiscreteUniform(Distribution):
             "high" : self.b
             }
 
-        if (b-a) <= 0:
+        if a > b:
             raise Exception("b-a cannot be less than or equal to 0")
 
         super().__init__(params, stats.randint, True)
@@ -610,10 +610,15 @@ class LogNormal(Distribution):
     """
 
     def __init__(self, mean=0.0, var=1.0, sd=None):
+
+        self.norm_mean = mean
+
         if sd is None:
+            self.norm_sd = np.sqrt(var)
             self.s = np.sqrt(var)
         else:
             self.s = sd
+            self.norm_sd = sd
 
         params = {
             "s" : self.s,
@@ -623,7 +628,7 @@ class LogNormal(Distribution):
         self.xlim = (0, self.xlim[1]) # Log-Normal distributions are not defined for x < 0
 
     def draw(self):
-        return np.random.lognormal(self.mean(), self.sd())
+        return np.random.lognormal(self.norm_mean, self.norm_sd)
 
 class Pareto(Distribution):
     """Defines a probability space for a Pareto distribution.
