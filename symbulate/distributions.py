@@ -94,10 +94,10 @@ class Binomial(Distribution):
 
     def __init__(self, n, p):
         
-        if n > 0 and isinstance(n, int):
+        if n >= 0 and isinstance(n, int):
             self.n = n
-        elif n == 0:
-            raise NotImplementedError
+        #elif n == 0:
+            #raise NotImplementedError
             #TODO
         else:
             raise Exception("n must be a non-negative integer")
