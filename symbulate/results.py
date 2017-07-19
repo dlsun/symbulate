@@ -7,7 +7,9 @@ random process.
 """
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 from numbers import Number
 
@@ -15,6 +17,7 @@ from .sequences import TimeFunction
 from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
 from .plot import configure_axes, get_next_color
+from statsmodels.graphics.mosaicplot import mosaic
 
 plt.style.use('ggplot')
 
@@ -266,15 +269,34 @@ class RVResults(Results):
                 raise Exception("Histogram must have type='impulse' or 'bar'.")
         elif dim == 2:
             x, y = zip(*self)
+
+            if type is None:
+                counts = self._get_counts()
+                heights = counts.values()
+                if sum([(i > 1) for i in heights]) > .8 * len(heights):
+                    type = "mosaic"
+                else:
+                    type = 'scatter'
             if alpha is None:
                 alpha = .5
-            if jitter:
-                x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
-                y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
-            # get next color in cycle
-            axes = plt.gca()
-            color = get_next_color(axes)
-            plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
+            if type == "scatter":
+                if jitter:
+                    x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
+                    y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
+                # get next color in cycle
+                axes = plt.gca()
+                color = get_next_color(axes)
+                plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
+            elif type == "mosaic":
+                res = pd.DataFrame({'X': x, 'Y': y})
+                mosaic(res, ['X', 'Y'])
+            elif type == "tile":
+                res = pd.DataFrame({'X': x, 'Y': y})
+                fig, ax = plt.subplots()
+                heatmap = ax.pcolor(pd.crosstab(res["X"], res["Y"]))
+                plt.show()
+            else:
+                raise Exception("Must have type='mosaic', 'tile', or 'scatter'.")
         else:
             if alpha is None:
                 alpha = .1
