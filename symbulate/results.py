@@ -190,85 +190,46 @@ class Results(list):
 
 
     def plot(self):
-
         raise Exception("Only simulations of random variables (RV) "
-
                         "can be plotted, but you simulated from a " 
-
                         "probability space. You must first define a RV "
-
                         "on your probability space and simulate it. "
-
                         "Then call .plot() on those simulations.")
-
  
-
     def mean(self):
-
         raise Exception("You can only call .mean() on simulations of "
-
                         "random variables (RV), but you simulated from "
-
                         "a probability space. You must first define "
-
                         "a RV on your probability space and simulate it "
-
                         "Then call .mean() on those simulations.")
 
     def var(self):
-
         raise Exception("You can only call .var() on simulations of "
-
                         "random variables (RV), but you simulated from "
-
                         "a probability space. You must first define "
-
                         " a RV on your probability space and simulate it "
-
                         "Then call .var() on those simulations.")
 
-    
-
     def sd(self):
-
         raise Exception("You can only call .sd() on simulations of "
-
                         "random variables (RV), but you simulated from "
-
                         "a probability space. You must first define "
-
                         " a RV on your probability space and simulate it "
-
                         "Then call .sd() on those simulations.")
 
-
-
     def corr(self):
-
         raise Exception("You can only call .corr() on simulations of "
-
                         "random variables (RV), but you simulated from "
-
                         "a probability space. You must first define "
-
                         " a RV on your probability space and simulate it "
-
                         "Then call .corr() on those simulations.")
-
-    
-
+   
     def cov(self):
-
         raise Exception("You can only call .cov() on simulations of "
-
                         "random variables (RV), but you simulated from "
-
                         "a probability space. You must first define "
-
                         " a RV on your probability space and simulate it "
-
                         "Then call .cov() on those simulations.")
-
 
 
     def _repr_html_(self):
