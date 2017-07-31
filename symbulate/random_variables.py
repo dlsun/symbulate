@@ -73,6 +73,23 @@ class RV:
 
         return RVResults(self.draw() for _ in range(n))
 
+    def __call__(self, input):
+        temp = self.probSpace.draw()
+        if isinstance(input, tuple):
+            if len(input) != len(tuple(temp)):
+                raise Exception("Input has wrong length")
+            if all(isinstance(x, type(temp[0])) for x in input):
+                return self.fun(input)
+            else:
+                raise Exception("Input of wrong type")
+        elif isinstance(input, (float, int, str)):
+            if isinstance(temp, (tuple, list)):
+                raise Exception("Input requires more values")
+            if type(temp) is type(input):
+                return self.fun(input)
+            else:
+                raise Exception("Input of wrong type")
+
     def check_same_probSpace(self, other):
         if is_scalar(other):
             return

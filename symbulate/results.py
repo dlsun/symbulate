@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import seaborn as sns
 
 from numbers import Number
 
@@ -23,6 +24,15 @@ plt.style.use('ggplot')
 
 def is_hashable(x):
     return x.__hash__ is not None
+
+def count_var(x):
+    counts = {}
+    for val in x:
+        if val in counts:
+            counts[val] += 1
+        else:
+            counts[val] = 1
+    return counts
 
 class Results(list):
 
@@ -270,15 +280,30 @@ class RVResults(Results):
         elif dim == 2:
             x, y = zip(*self)
 
+            x_count = count_var(x)
+            y_count = count_var(y)
+            x_height = x_count.values()
+            y_height = y_count.values()
+            
+            discrete_x = False
+            if sum([(i > 1) for i in x_height]) > .8 * len(x_height):
+                discrete_x = True
+            discrete_y = False
+            if sum([(i > 1) for i in y_height]) > .8 * len(y_height):
+                discrete_y = True
+
             if type is None:
-                counts = self._get_counts()
-                heights = counts.values()
-                if sum([(i > 1) for i in heights]) > .8 * len(heights):
-                    type = "mosaic"
+                if discrete_x and discrete_y:
+                    type = "tile"
+                elif discrete_x != discrete_y:
+                    #TODO will keep scatter for now
+                    type = "scatter"
                 else:
-                    type = 'scatter'
+                    type = "scatter"
+
             if alpha is None:
                 alpha = .5
+
             if type == "scatter":
                 if jitter:
                     x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
@@ -287,16 +312,32 @@ class RVResults(Results):
                 axes = plt.gca()
                 color = get_next_color(axes)
                 plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
-            elif type == "mosaic":
+            elif type == "tile" and discrete_x and discrete_y:
                 res = pd.DataFrame({'X': x, 'Y': y})
-                mosaic(res, ['X', 'Y'])
-            elif type == "tile":
+                res['num'] = 1
+                temp = pd.pivot_table(res, values = 'num', index = ['Y'],
+                    columns = ['X'], aggfunc = np.sum)
+                sns.set()
+                sns.cubehelix_palette(8)
+                fig, ax = plt.subplots(1, 1)
+                cbar_ax = fig.add_axes([.91, .3, .03, .4])
+                sns.heatmap(temp, ax=ax, cbar_ax = cbar_ax, linewidths = 0.03, 
+                    square = True).invert_yaxis()
+            elif type == "mosaic" and discrete_x and discrete_y:
                 res = pd.DataFrame({'X': x, 'Y': y})
-                fig, ax = plt.subplots()
-                heatmap = ax.pcolor(pd.crosstab(res["X"], res["Y"]))
-                plt.show()
+                ct = pd.crosstab(res['Y'], res['X'])
+                ctplus = ct + 1e-8
+                labels = lambda k: ""
+                fig, ax = plt.subplots(1, 1)
+                mosaic(ctplus.unstack(), ax = ax, labelizer = labels, axes_label = False)
+            elif discrete_x and discrete_y:
+                raise Exception("Must have type='mosaic', 'tile', or 'scatter' if discrete.")
+            elif (discrete_x and not discrete_y
+                or discrete_y and not discrete_x) and type == 'violin':
+                #TODO
+                raise NotImplementedError
             else:
-                raise Exception("Must have type='mosaic', 'tile', or 'scatter'.")
+                raise Exception("Can only have type='scatter' if continuous.")
         else:
             if alpha is None:
                 alpha = .1
@@ -344,6 +385,14 @@ class RVResults(Results):
             return tuple(np.array(self).std(0))
         else:
             raise Exception("I don't know how to take the variance of these values.")
+
+    def standardize(self):
+        temp_mean = self.mean()
+        temp_sd  = self.sd() 
+        if all(is_scalar(x) for x in self):
+            return RVResults((x - temp_mean) / temp_sd for x in self)
+        elif get_dimension(self) > 0:
+            return RVResults((np.asarray(self) - temp_mean) / temp_sd)
 
 
 class RandomProcessResults(Results):
