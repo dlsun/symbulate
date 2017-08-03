@@ -62,7 +62,8 @@ class Table(dict):
         return self.table_template.format(table_body=table_body)
 
     def _transform_values(self, f):
-        return Table({k: f(v) for k, v in self.items()})
+        return Table({k: f(v) for k, v in self.items()},
+                     self.outcomes)
 
     def __add__(self, n):
         return self._transform_values(lambda v: v + n)

@@ -94,10 +94,10 @@ class Binomial(Distribution):
 
     def __init__(self, n, p):
         
-        if n > 0 and isinstance(n, int):
+        if n >= 0 and isinstance(n, int):
             self.n = n
-        elif n == 0:
-            raise NotImplementedError
+        #elif n == 0:
+            #raise NotImplementedError
             #TODO
         else:
             raise Exception("n must be a non-negative integer")
@@ -319,8 +319,8 @@ class DiscreteUniform(Distribution):
             "high" : self.b
             }
 
-        if a > b:
-            raise Exception("b-a cannot be less than or equal to 0")
+        if a >= b:
+            raise Exception("b cannot be less than or equal to a")
 
         super().__init__(params, stats.randint, True)
         self.xlim = (a, b) # Uniform distributions are not defined for x < a and x > b
@@ -648,11 +648,17 @@ class LogNormal(Distribution):
         self.norm_mean = mu 
 
         if sigma is None:
-            self.norm_sd = np.sqrt(var)
-            self.s = np.sqrt(var)
+            if var > 0:
+                self.norm_sd = np.sqrt(var)
+                self.s = np.sqrt(var)
+            else:
+                raise Exception("var must be greater than 0")
         else:
-            self.s = sigma 
-            self.norm_sd = sigma
+            if sigma > 0:
+                self.s = sigma
+                self.norm_sd = sigma
+            else:
+                raise Exception("sd must be greater than 0")
 
         params = {
             "s" : self.s,
@@ -676,7 +682,7 @@ class Pareto(Distribution):
         if b > 0:
             self.b = b 
         else:
-            raise Exception("b cannot be less than or equal to 0")
+            raise Exception("b must be greater than 0")
         
         params = {
             "b" : self.b 
