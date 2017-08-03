@@ -74,6 +74,11 @@ class RV:
         return RVResults(self.draw() for _ in range(n))
 
     def __call__(self, input):
+        print(
+            "Warning: Calling an RV as a function simply applies\n"
+            + "the function defining the RV to the input regarless of how\n"
+            + "valid the input is."
+        )
         temp = self.probSpace.draw()
         if isinstance(input, tuple):
             if len(input) != len(tuple(temp)):
@@ -84,7 +89,8 @@ class RV:
                 raise Exception("Input of wrong type")
         elif isinstance(input, (float, int, str)):
             if isinstance(temp, (tuple, list)):
-                raise Exception("Input requires more values")
+                raise Exception("Check if your probability space returns"
+                    + "a single value or a tuple")
             if type(temp) is type(input):
                 return self.fun(input)
             else:

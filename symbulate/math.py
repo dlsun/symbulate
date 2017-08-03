@@ -32,7 +32,7 @@ def log(x, base=e):
             try:
                 return RVResults(np.log(x))
             except FloatingPointError as e:
-                raise e
+                raise Exception("I can't take the log of these values") from e
     else:
         return operation_factory(lambda y: math.log(y, base))(x)
 
