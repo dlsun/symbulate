@@ -623,12 +623,19 @@ class Cauchy(Distribution):
       The Cauchy distribution has no parameters  
     """
 
-    def __init__(self):
-        params = {}
+    def __init__(self, loc=0, scale=1):
+        self.loc = loc
+        self.scale = scale
+
+        params = {
+            "loc" : loc,
+            "scale" : scale
+        }
+
         super().__init__(params, stats.cauchy, False)
 
     def draw(self):
-        return np.random.standard_cauchy()
+        return self.loc + (self.scale * np.random.standard_cauchy())
 
 class LogNormal(Distribution):
     """Defines a probability space for a Log-Normal distribution
@@ -643,14 +650,14 @@ class LogNormal(Distribution):
         (if specified, var parameter will be ignored)
     """
 
-    def __init__(self, mu=0.0, var=1.0, sigma=None):
+    def __init__(self, mu=0.0, sigma_squared=1.0, sigma=None):
 
         self.norm_mean = mu 
 
         if sigma is None:
-            if var > 0:
-                self.norm_sd = np.sqrt(var)
-                self.s = np.sqrt(var)
+            if sigma_squared > 0:
+                self.norm_sd = np.sqrt(sigma_squared)
+                self.s = np.sqrt(sigma_squared)
             else:
                 raise Exception("var must be greater than 0")
         else:

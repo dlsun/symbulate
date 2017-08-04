@@ -32,9 +32,12 @@ def log(x, base=e):
             try:
                 return RVResults(np.log(x))
             except FloatingPointError as e:
-                raise Exception("I can't take the log of these values") from e
+                raise type(e)("I can't take the log of these values.")
     else:
-        return operation_factory(lambda y: math.log(y, base))(x)
+        try: 
+            return operation_factory(lambda y: math.log(y, base))(x)
+        except ValueError as e:
+            raise type(e)("I can't take the log of these values.")
 
 def mean(x):
     return sum(x) / len(x)

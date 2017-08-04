@@ -75,9 +75,9 @@ class RV:
 
     def __call__(self, input):
         print(
-            "Warning: Calling an RV as a function simply applies\n"
-            + "the function defining the RV to the input regarless of how\n"
-            + "valid the input is."
+            "Warning: Calling an RV as a function simply applies the function defining\n"
+            + "the RV to the input, regardless of whether the input is a valid outcome in \n"
+            + "the probability space on which the RV is defined."
         )
         temp = self.probSpace.draw()
         if isinstance(input, tuple):
@@ -90,7 +90,7 @@ class RV:
         elif isinstance(input, (float, int, str)):
             if isinstance(temp, (tuple, list)):
                 raise Exception("Check if your probability space returns"
-                    + "a single value or a tuple")
+                    + " a single value or a tuple")
             if type(temp) is type(input):
                 return self.fun(input)
             else:
