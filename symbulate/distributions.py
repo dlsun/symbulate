@@ -644,28 +644,19 @@ class LogNormal(Distribution):
        log(Y) has a normal distribution with mean mu and sd sigma.
 
     Attributes:
-      mu (float): mean of a normal distribution 
-      var (float): variance of a normal distribution
-      sigma (float): standard deviation of a normal distribution
-        (if specified, var parameter will be ignored)
+      mu (float): mean of the underlying normal distribution 
+      sigma (float): standard deviation of the underlying normal distribution
     """
 
-    def __init__(self, mu=0.0, sigma_squared=1.0, sigma=None):
+    def __init__(self, mu=0.0, sigma=1.0):
 
         self.norm_mean = mu 
 
-        if sigma is None:
-            if sigma_squared > 0:
-                self.norm_sd = np.sqrt(sigma_squared)
-                self.s = np.sqrt(sigma_squared)
-            else:
-                raise Exception("var must be greater than 0")
+        if sigma > 0:
+            self.s = sigma
+            self.norm_sd = sigma
         else:
-            if sigma > 0:
-                self.s = sigma
-                self.norm_sd = sigma
-            else:
-                raise Exception("sd must be greater than 0")
+            raise Exception("sigma must be greater than 0")
 
         params = {
             "s" : self.s,

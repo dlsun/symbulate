@@ -297,7 +297,7 @@ class RVResults(Results):
             if type == "bar":
                 if alpha is None:
                     alpha = .5
-                plt.hist(self, normed=normalize, alpha=alpha, **kwargs)
+                plt.hist(self, normed=normalize, alpha=alpha, bins = 30, **kwargs)
                 plt.ylabel("Density" if normalize else "Count")
             elif type == "impulse":
                 x = list(counts.keys())
@@ -328,19 +328,14 @@ class RVResults(Results):
             x_height = x_count.values()
             y_height = y_count.values()
             
-            discrete_x = False
-            if sum([(i > 1) for i in x_height]) > .8 * len(x_height):
-                discrete_x = True
-            discrete_y = False
-            if sum([(i > 1) for i in y_height]) > .8 * len(y_height):
-                discrete_y = True
+            discrete_x = sum([(i > 1) for i in x_height]) > .8 * len(x_height)
+            discrete_y = sum([(i > 1) for i in y_height]) > .8 * len(y_height)
 
             if type is None:
                 if discrete_x and discrete_y:
                     type = "tile"
                 elif discrete_x != discrete_y:
-                    #TODO will keep scatter for now
-                    type = "scatter"
+                    type = "violin"
                 else:
                     type = "scatter"
 
@@ -360,27 +355,39 @@ class RVResults(Results):
                 res['num'] = 1
                 temp = pd.pivot_table(res, values = 'num', index = ['Y'],
                     columns = ['X'], aggfunc = np.sum)
+                temp = temp / len(x)
                 sns.set()
                 sns.cubehelix_palette(8)
                 fig, ax = plt.subplots(1, 1)
-                cbar_ax = fig.add_axes([.91, .3, .03, .4])
-                sns.heatmap(temp, ax=ax, cbar_ax = cbar_ax, linewidths = 0.03, 
-                    square = True).invert_yaxis()
+                sns.heatmap(temp, ax=ax, linewidths = 0.03).invert_yaxis()
+                ax.set_ylabel('')
+                ax.set_xlabel('')
             elif type == "mosaic" and discrete_x and discrete_y:
                 res = pd.DataFrame({'X': x, 'Y': y})
                 ct = pd.crosstab(res['Y'], res['X'])
                 ctplus = ct + 1e-8
                 labels = lambda k: ""
                 fig, ax = plt.subplots(1, 1)
-                mosaic(ctplus.unstack(), ax = ax, labelizer = labels, axes_label = False)
+                temp = mosaic(ctplus.unstack(), ax = ax, labelizer = labels, axes_label = False)
             elif discrete_x and discrete_y:
                 raise Exception("Must have type='mosaic', 'tile', or 'scatter' if discrete.")
-            elif (discrete_x and not discrete_y
-                or discrete_y and not discrete_x) and type == 'violin':
-                #TODO
-                raise NotImplementedError
+            elif discrete_x == True and discrete_y == False and type == 'violin':
+                fig, ax = plt.subplots(1, 1)
+                res = pd.DataFrame({'X': x, 'Y': y})
+                sns.violinplot(x='X', y='Y', data=res)
+                ax.set_ylabel('')
+                ax.set_xlabel('')
+            elif discrete_x == False and discrete_y == True and type == 'violin':
+                #TODO change this situation based on Dr. Ross's suggestions
+                if jitter:
+                    x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
+                    y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
+                # get next color in cycle
+                axes = plt.gca()
+                color = get_next_color(axes)
+                plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
             else:
-                raise Exception("Can only have type='scatter' if continuous.")
+                raise Exception("I don't know how to plot these variables.")
         else:
             if alpha is None:
                 alpha = .1
@@ -430,12 +437,12 @@ class RVResults(Results):
             raise Exception("I don't know how to take the variance of these values.")
 
     def standardize(self):
-        temp_mean = self.mean()
-        temp_sd  = self.sd() 
+        mean_ = self.mean()
+        sd_ = self.sd() 
         if all(is_scalar(x) for x in self):
-            return RVResults((x - temp_mean) / temp_sd for x in self)
+            return RVResults((x - mean_) / sd_ for x in self)
         elif get_dimension(self) > 0:
-            return RVResults((np.asarray(self) - temp_mean) / temp_sd)
+            return RVResults((np.asarray(self) - mean_) / sd_)
 
 
 class RandomProcessResults(Results):
