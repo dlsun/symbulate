@@ -26,6 +26,7 @@ from .distributions import (
     MultivariateNormal,
     BivariateNormal
 )
+from .make_independent import MakeIndependent
 from .markov_chains import MarkovChain, ContinuousTimeMarkovChain
 from .poisson_process import PoissonProcess
 from .plot import figure, xlabel, ylabel, xlim, ylim, plot
