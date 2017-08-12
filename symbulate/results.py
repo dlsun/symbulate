@@ -284,7 +284,9 @@ class Results(list):
 
 class RVResults(Results):
 
-    def plot(self, type=None, alpha=None, normalize=True, jitter=False, **kwargs):
+    def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
+        bins = 30, **kwargs):
+        
         dim = get_dimension(self)
         if dim == 1:
             counts = self._get_counts()
@@ -297,7 +299,7 @@ class RVResults(Results):
             if type == "bar":
                 if alpha is None:
                     alpha = .5
-                plt.hist(self, normed=normalize, alpha=alpha, bins = 30, **kwargs)
+                plt.hist(self, normed=normalize, alpha=alpha, bins=bins, **kwargs)
                 plt.ylabel("Density" if normalize else "Count")
             elif type == "impulse":
                 x = list(counts.keys())

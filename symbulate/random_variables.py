@@ -91,8 +91,8 @@ class RV:
                 "Was given a(n) " + type(input).__name__ + ".")
         elif isinstance(input, (float, int, str)):
             if isinstance(dummy_draw, (tuple, list)):
-                raise Exception("The underlying probability space returns a tuple. "
-                "A(n) " + type(input).__name__ + " was given.")
+                raise Exception("The underlying probability space of the random variable "
+                "returns a tuple. A single " + type(input).__name__ + " was given.")
             if type(dummy_draw) is type(input):
                 return self.fun(input)
             else:
