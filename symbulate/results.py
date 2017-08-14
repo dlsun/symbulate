@@ -285,7 +285,7 @@ class Results(list):
 class RVResults(Results):
 
     def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
-        bins = 30, **kwargs):
+        bins=30, **kwargs):
         
         dim = get_dimension(self)
         if dim == 1:

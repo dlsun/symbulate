@@ -30,7 +30,7 @@ def log(x, base=e):
     if isinstance(x, RVResults):
         with np.errstate(all='raise'):
             try:
-                return RVResults(np.log(x))
+                return RVResults(np.log(x) / np.log(base))
             except FloatingPointError as e:
                 raise type(e)("I can't take the log of these values.")
     else:

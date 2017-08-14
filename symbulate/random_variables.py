@@ -74,8 +74,8 @@ class RV:
         return RVResults(self.draw() for _ in range(n))
 
     def __call__(self, input):
-        print("Warning: Calling an RV as a function simply applies the function that defines\n"
-            "the RV to the input, regardless of whether the input is a valid outcome in \n"
+        print("Warning: Calling an RV as a function simply applies the function that defines "
+            "the RV to the input, regardless of whether the input is a valid outcome in "
             "the underlying probability space.")
         dummy_draw= self.probSpace.draw()
         if isinstance(input, tuple):
