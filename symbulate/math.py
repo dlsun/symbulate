@@ -2,6 +2,7 @@ import math
 
 from .random_variables import RV
 from .random_processes import RandomProcess
+from .results import *
 
 pi = math.pi
 e = math.e
@@ -26,7 +27,17 @@ cos = operation_factory(math.cos)
 tan = operation_factory(math.tan)
 factorial = operation_factory(math.factorial)
 def log(x, base=e):
-    return operation_factory(lambda y: math.log(y, base))(x)
+    if isinstance(x, RVResults):
+        with np.errstate(all='raise'):
+            try:
+                return RVResults(np.log(x) / np.log(base))
+            except FloatingPointError as e:
+                raise type(e)("I can't take the log of these values.")
+    else:
+        try: 
+            return operation_factory(lambda y: math.log(y, base))(x)
+        except ValueError as e:
+            raise type(e)("I can't take the log of these values.")
 
 def mean(x):
     return sum(x) / len(x)

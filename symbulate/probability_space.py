@@ -92,6 +92,10 @@ class Event:
             return Event(self.probSpace,
                          lambda x: self.fun(x) or other.fun(x))
 
+    # define the event (-A)
+    def __invert__(self):
+        return Event(self.probSpace, lambda x: not self.fun(x))
+
     # This prevents users from writing expressions like 2 < X < 5,
     # which evaluate to ((2 < X) and (X < 5)). This unfortunately
     # is not well-defined in Python and cannot be overloaded.

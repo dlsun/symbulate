@@ -7,7 +7,10 @@ random process.
 """
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import seaborn as sns
 
 from numbers import Number
 
@@ -15,11 +18,21 @@ from .sequences import TimeFunction
 from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
 from .plot import configure_axes, get_next_color
+from statsmodels.graphics.mosaicplot import mosaic
 
 plt.style.use('ggplot')
 
 def is_hashable(x):
     return x.__hash__ is not None
+
+def count_var(x):
+    counts = {}
+    for val in x:
+        if val in counts:
+            counts[val] += 1
+        else:
+            counts[val] = 1
+    return counts
 
 class Results(list):
 
@@ -271,7 +284,9 @@ class Results(list):
 
 class RVResults(Results):
 
-    def plot(self, type=None, alpha=None, normalize=True, jitter=False, **kwargs):
+    def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
+        bins=30, **kwargs):
+        
         dim = get_dimension(self)
         if dim == 1:
             counts = self._get_counts()
@@ -284,7 +299,7 @@ class RVResults(Results):
             if type == "bar":
                 if alpha is None:
                     alpha = .5
-                plt.hist(self, normed=normalize, alpha=alpha, **kwargs)
+                plt.hist(self, normed=normalize, alpha=alpha, bins=bins, **kwargs)
                 plt.ylabel("Density" if normalize else "Count")
             elif type == "impulse":
                 x = list(counts.keys())
@@ -309,15 +324,67 @@ class RVResults(Results):
                 raise Exception("Histogram must have type='impulse' or 'bar'.")
         elif dim == 2:
             x, y = zip(*self)
+
+            x_count = count_var(x)
+            y_count = count_var(y)
+            x_height = x_count.values()
+            y_height = y_count.values()
+            
+            discrete_x = sum([(i > 1) for i in x_height]) > .8 * len(x_height)
+            discrete_y = sum([(i > 1) for i in y_height]) > .8 * len(y_height)
+
+            if type is None:
+                type = "scatter"
+
             if alpha is None:
                 alpha = .5
-            if jitter:
-                x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
-                y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
-            # get next color in cycle
-            axes = plt.gca()
-            color = get_next_color(axes)
-            plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
+
+            if type == "scatter":
+                if jitter:
+                    x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
+                    y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
+                # get next color in cycle
+                axes = plt.gca()
+                color = get_next_color(axes)
+                plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
+            elif type == "tile" and discrete_x and discrete_y:
+                res = pd.DataFrame({'X': x, 'Y': y})
+                res['num'] = 1
+                temp = pd.pivot_table(res, values = 'num', index = ['Y'],
+                    columns = ['X'], aggfunc = np.sum)
+                temp = temp / len(x)
+                sns.set()
+                sns.cubehelix_palette(8)
+                fig, ax = plt.subplots(1, 1)
+                sns.heatmap(temp, ax=ax, linewidths = 0.03).invert_yaxis()
+                ax.set_ylabel('')
+                ax.set_xlabel('')
+            elif type == "mosaic" and discrete_x and discrete_y:
+                res = pd.DataFrame({'X': x, 'Y': y})
+                ct = pd.crosstab(res['Y'], res['X'])
+                ctplus = ct + 1e-8
+                labels = lambda k: ""
+                fig, ax = plt.subplots(1, 1)
+                temp = mosaic(ctplus.unstack(), ax = ax, labelizer = labels, axes_label = False)
+            elif discrete_x and discrete_y:
+                raise Exception("Must have type='mosaic', 'tile', or 'scatter' if discrete.")
+            elif discrete_x == True and discrete_y == False and type == 'violin':
+                fig, ax = plt.subplots(1, 1)
+                res = pd.DataFrame({'X': x, 'Y': y})
+                sns.violinplot(x='X', y='Y', data=res)
+                ax.set_ylabel('')
+                ax.set_xlabel('')
+            elif discrete_x == False and discrete_y == True and type == 'violin':
+                #TODO change this situation based on Dr. Ross's suggestions
+                if jitter:
+                    x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
+                    y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
+                # get next color in cycle
+                axes = plt.gca()
+                color = get_next_color(axes)
+                plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
+            else:
+                raise Exception("I don't know how to plot these variables.")
         else:
             if alpha is None:
                 alpha = .1
@@ -365,6 +432,14 @@ class RVResults(Results):
             return tuple(np.array(self).std(0))
         else:
             raise Exception("I don't know how to take the variance of these values.")
+
+    def standardize(self):
+        mean_ = self.mean()
+        sd_ = self.sd() 
+        if all(is_scalar(x) for x in self):
+            return RVResults((x - mean_) / sd_ for x in self)
+        elif get_dimension(self) > 0:
+            return RVResults((np.asarray(self) - mean_) / sd_)
 
 
 class RandomProcessResults(Results):

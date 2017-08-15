@@ -312,7 +312,7 @@ class DiscreteUniform(Distribution):
 
     def __init__(self, a=0, b=1):
         self.a = a
-        self.b = b
+        self.b = b + 1
         
         params = {
             "low" : self.a,
@@ -547,6 +547,10 @@ class StudentT(Distribution):
             "df" : df 
             }
         super().__init__(params, stats.t, False)
+        if df == 1:
+            self.mean = lambda : float('nan') 
+            self.sd = lambda : float('nan') 
+            self.var = lambda : float('nan') 
     
     def draw(self):
         """A function that takes no arguments and 
@@ -619,43 +623,44 @@ class Cauchy(Distribution):
       The Cauchy distribution has no parameters  
     """
 
-    def __init__(self):
-        params = {}
+    def __init__(self, loc=0, scale=1):
+        self.loc = loc
+        self.scale = scale
+
+        params = {
+            "loc" : loc,
+            "scale" : scale
+        }
+
         super().__init__(params, stats.cauchy, False)
 
     def draw(self):
-        return np.random.standard_cauchy()
+        return self.loc + (self.scale * np.random.standard_cauchy())
 
 class LogNormal(Distribution):
     """Defines a probability space for a Log-Normal distribution
 
+       If Y has a LogNormal distribution with parameters mu and sigma, then 
+       log(Y) has a normal distribution with mean mu and sd sigma.
+
     Attributes:
-      mean (float): mean of a normal distribution 
-      var (float): variance of a normal distribution
-      sd (float): standard deviation of a normal distribution
-        (if specified, var parameter will be ignored)
+      mu (float): mean of the underlying normal distribution 
+      sigma (float): standard deviation of the underlying normal distribution
     """
 
-    def __init__(self, mean=0.0, var=1.0, sd=None):
+    def __init__(self, mu=0.0, sigma=1.0):
 
-        self.norm_mean = mean
+        self.norm_mean = mu 
 
-        if sd is None:
-            if var > 0:
-                self.norm_sd = np.sqrt(var)
-                self.s = np.sqrt(var)
-            else:
-                raise Exception("var must be greater than 0")
+        if sigma > 0:
+            self.s = sigma
+            self.norm_sd = sigma
         else:
-            if sd > 0:
-                self.s = sd
-                self.norm_sd = sd
-            else:
-                raise Exception("sd must be greater than 0")
+            raise Exception("sigma must be greater than 0")
 
         params = {
             "s" : self.s,
-            "scale" : np.exp(mean) 
+            "scale" : np.exp(mu) 
             }
         super().__init__(params, stats.lognorm, False)
         self.xlim = (0, self.xlim[1]) # Log-Normal distributions are not defined for x < 0
