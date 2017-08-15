@@ -18,6 +18,12 @@ def AssumeIndependent(*args):
     # check that none of the RVs (or RandomProcesses)
     # are defined on the same probability space
     for i in range(len(args)):
+        if not isinstance(args[i], (RV, RandomProcess)):
+            raise Exception(
+                "AssumeIndependent(...) can only be "
+                "used with RVs and RandomProcesses, "
+                "but you passed in a %s." % 
+                type(args[i]).__name__)
         for j in range(i + 1, len(args)):
             if args[i].probSpace == args[j].probSpace:
                 raise Exception(
