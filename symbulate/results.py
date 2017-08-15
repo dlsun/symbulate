@@ -334,12 +334,7 @@ class RVResults(Results):
             discrete_y = sum([(i > 1) for i in y_height]) > .8 * len(y_height)
 
             if type is None:
-                if discrete_x and discrete_y:
-                    type = "tile"
-                elif discrete_x != discrete_y:
-                    type = "violin"
-                else:
-                    type = "scatter"
+                type = "scatter"
 
             if alpha is None:
                 alpha = .5
