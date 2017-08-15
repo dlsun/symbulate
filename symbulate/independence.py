@@ -2,8 +2,8 @@ from .probability_space import ProbabilitySpace
 from .random_variables import RV
 from .random_processes import RandomProcess
 
-def MakeIndependent(*args):
-    """Makes RVs or RandomProcesses independent.
+def AssumeIndependent(*args):
+    """Make RVs or RandomProcesses independent.
 
     Args:
       *args: Any number of RVs and RandomProcesses
@@ -15,6 +15,17 @@ def MakeIndependent(*args):
       probability space so as to be independent.
     """
 
+    # check that none of the RVs (or RandomProcesses)
+    # are defined on the same probability space
+    for i in range(len(args)):
+        for j in range(i + 1, len(args)):
+            if args[i].probSpace == args[j].probSpace:
+                raise Exception(
+                    "The RVs or RandomProcesses must be "
+                    "currently defined on different "
+                    "probability spaces in order to use "
+                    "this function.")
+    
     def draw():
         outcome = []
         for arg in args:
