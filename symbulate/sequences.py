@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import collections
 
 from .time_index import TimeIndex
 from .utils import is_scalar
@@ -105,4 +106,22 @@ class TimeFunction:
     def __rpow__(self, other):
         op_fun = self._operation_factory(lambda x, y: y ** x)
         return op_fun(self, other)
-    
+
+
+class LazyFunction:
+
+    def __init__(self, fun):
+        self.fun = fun
+        self.cached_args = []
+        self.cached_vals = []
+
+    def __call__(self, arg):
+        for a, v in zip(self.cached_args, self.cached_vals):
+            if arg == a:
+                return v
+
+        val = self.fun(arg,
+                       self.cached_args, self.cached_vals)
+        self.cached_args.append(arg)
+        self.cached_vals.append(val)
+        return val
