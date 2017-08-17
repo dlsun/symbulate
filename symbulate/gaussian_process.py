@@ -21,6 +21,8 @@ class GaussianProcess(ProbabilitySpace):
                     cached_args_.append(a)
                     cached_vals_.append(v)
 
+            # if there are no cached values, simulate from
+            # (unconditional) normal distribution
             if not cached_args_:
                 return np.random.normal(
                     loc=mean_fn(arg),
@@ -40,8 +42,10 @@ class GaussianProcess(ProbabilitySpace):
                              dtype="float64")
             cov22 = cov_fn(arg, arg)
 
+            # add 1e-12 to the diagonal for numerical stability
             cov11 += 1e-12 * np.identity(len(cached_args_))
 
+            # calculate conditional mean and variance
             cond_mean = (mean2 +
                          (cov21 * np.linalg.solve(
                              cov11, np.array(cached_vals_) - mean1
@@ -50,11 +54,8 @@ class GaussianProcess(ProbabilitySpace):
                         (cov21 * np.linalg.solve(cov11, cov21)).sum())
             cond_var = max(cond_var, 0)
 
-            try:
-                return np.random.normal(cond_mean, np.sqrt(cond_var))
-            except:
-                print(cond_var)
-                return 0
+            # simulate normal with given mean and variance
+            return np.random.normal(cond_mean, np.sqrt(cond_var))
 
         def draw():
             return LazyFunction(fun)
