@@ -87,11 +87,9 @@ class TestHypergeometric(unittest.TestCase):
         self.assertTrue(pval > 0.01)
 
     def test_Hypergeometric_error_n_greater(self):
-        self.assertRaises(Exception, lambda: 
-                                     Hypergeometric(n=10, N0=1, N1=8))
-    def test_Hypergeometric_error_n0_0(self):
-        self.assertRaises(Exception, lambda:
-                                     Hypergeometric(n=10, N0=0, N1=8))
+        self.assertRaises(Exception, 
+                          lambda: Hypergeometric(n=10, N0=1, N1=8))
+
 
 class TestGeometric(unittest.TestCase):
     
@@ -115,8 +113,8 @@ class TestGeometric(unittest.TestCase):
 class TestNegativeBinomial(unittest.TestCase):
 
     def test_NBinom_error_r(self):
-        self.assertRaises(Exception, lambda: 
-                                     NegativeBinomial(r=-10, p=0.6))
+        self.assertRaises(Exception, 
+                          lambda: NegativeBinomial(r=-10, p=0.6))
     
     def test_NBinom_p_1(self):
         X = NegativeBinomial(r=10, p=1)
@@ -181,19 +179,16 @@ class TestPoisson(unittest.TestCase):
 
     def test_conditional_Poisson_add(self):
         obs_list, exp_list = [], []
-        X,Y = RV(Poisson(20) * Poisson(30))
-        sims = (X|(X+Y == 40)).sim(Nsim)
+        X,Y = RV(Poisson(lam=6) * Poisson(lam=7))
+        sims = (X|(X+Y == 8)).sim(Nsim)
         simulated = sims.tabulate()
-        for k in range(5, 35):
-            expected = Nsim * stats.binom(40, (20 / 50)).pmf(k)
+        for k in range(8):
+            expected = Nsim * stats.binom(n=8, p=6 / 13).pmf(k)
             if expected > 5:
                 exp_list.append(expected)
                 obs_list.append(simulated[k])
         pval = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > .01)
-
-
-#class DiscreteUniform(unittest.TestCase):
 
 
 class TestUniform(unittest.TestCase):
@@ -678,15 +673,13 @@ class TestBivariateNormal(unittest.TestCase):
         self.assertTrue(pval > .01)
     
     def test_BivNormal_condDistr_r(self):
-        results = []
         corr_list = list(np.arange(-0.9, 0.9, 0.1))
-        for c in corr_list:
+        for c in [-0.9, 0.9, 0.1]:
             X,Y = RV(BivariateNormal(mean1=20, mean2=10, sd1=3, sd2=5, corr=c))
             sims = (Y | (abs(X - 21) < 0.1)).sim(500)
             cdf = stats.norm(loc=10 + c * 5 / 3 * (21 - 20), 
                              scale=5 * sqrt(1 - c ** 2)).cdf
             pval = stats.kstest(sims, cdf).pvalue
-            results.append((pval > 0.01))
-        self.assertTrue(all(res == True for res in results))
+            self.assertTrue(pval > 0.01)
 
 
