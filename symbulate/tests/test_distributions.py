@@ -18,12 +18,12 @@ class TestBernoulli(unittest.TestCase):
         exp_list, obs_list = [], []
         X = RV(Bernoulli(p=.4) ** 5)
         sims = X.apply(sum).sim(Nsim)
-        key_list = sims.tabulate()
+        simulated = sims.tabulate()
         for k in range(6):
             expected = Nsim * stats.binom(n=5, p=.4).pmf(k)
             if expected > 5:
                 exp_list.append(expected)
-                obs_list.append(key_list[k])
+                obs_list.append(simulated[k])
         pval = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > 0.01)
 
@@ -31,12 +31,12 @@ class TestBernoulli(unittest.TestCase):
         exp_list, obs_list = [], []   
         X = RV(Bernoulli(p=.4))
         sims = X.sim(Nsim)
-        key_list = sims.tabulate()
+        simulated = sims.tabulate()
         for k in range(2): 
             expected = Nsim * stats.binom(n=1, p=.4).pmf(k)
             if expected > 5:
                 exp_list.append(expected)
-                obs_list.append(key_list[k])
+                obs_list.append(simulated[k])
         pval = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > 0.01)
 
@@ -56,12 +56,12 @@ class TestBinomial(unittest.TestCase):
         exp_list, obs_list = [], []
         X, Y = RV(Binomial(n=8, p=0.6) * Binomial(n=5, p=0.6))
         sims = (X & Y).sim(Nsim).apply(sum)
-        key_list = sims.tabulate()
+        simulated = sims.tabulate()
         for k in range(2, 14):
             expected = Nsim * stats.binom(n=13, p=.6).pmf(k)
             if expected > 5:
                 exp_list.append(expected)
-                obs_list.append(key_list[k])
+                obs_list.append(simulated[k])
         pval = stats.chisquare(obs_list, exp_list).pvalue   
         self.assertTrue(pval > 0.01)
     
@@ -77,19 +77,21 @@ class TestHypergeometric(unittest.TestCase):
         exp_list, obs_list = [], []
         X = RV(Hypergeometric(n=8, N0=200, N1=800))
         sims = X.sim(Nsim)
-        key_list = sims.tabulate()
+        simulated = sims.tabulate()
         for k in range(9):
             expected = Nsim * stats.binom(n=8, p=.8).pmf(k)
             if expected > 5:
                 exp_list.append(expected)
-                obs_list.append(key_list[k])
+                obs_list.append(simulated[k])
         pval = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > 0.01)
 
-    def test_Hypergeometric_error(self):
+    def test_Hypergeometric_error_n_greater(self):
         self.assertRaises(Exception, lambda: 
+                                     Hypergeometric(n=10, N0=1, N1=8))
+    def test_Hypergeometric_error_n0_0(self):
+        self.assertRaises(Exception, lambda:
                                      Hypergeometric(n=10, N0=0, N1=8))
-
 
 class TestGeometric(unittest.TestCase):
     
@@ -100,12 +102,12 @@ class TestGeometric(unittest.TestCase):
         exp_list, obs_list = [], []
         X = Geometric(p=0.8)
         sims = X.sim(Nsim)
-        key_list = sims.tabulate()
+        simulated = sims.tabulate()
         for k in range(1, 10):
-            expected = Nsim  * stats.nbinom(n=1,p=0.8).pmf(k)
+            expected = Nsim  * stats.nbinom(n=1,p=0.8).pmf(k-1)
             if expected > 5:
-                exp_list.append(expected / (1 - 0.8)) 
-                obs_list.append(key_list[k]) 
+                exp_list.append(expected) 
+                obs_list.append(simulated[k]) 
         pval = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > 0.01)
 
@@ -125,12 +127,12 @@ class TestNegativeBinomial(unittest.TestCase):
         exp_list, obs_list = [], []
         X, Y = RV(Pascal(r=4, p=0.6) * Pascal(r=6, p=0.6))
         sims = (X + Y).sim(Nsim)
-        key_list = sims.tabulate()
+        simulated = sims.tabulate()
         for k in range(10, 35):
             expected = Nsim * stats.nbinom(n=10, p=0.6).pmf(k)
             if expected > 5:
                 exp_list.append(expected) 
-                obs_list.append(key_list[k])
+                obs_list.append(simulated[k])
         pval = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > .01)
 
@@ -138,12 +140,12 @@ class TestNegativeBinomial(unittest.TestCase):
         exp_list, obs_list = [], []
         X = NegativeBinomial(r=1, p=0.8)
         sims = X.sim(Nsim)
-        key_list = sims.tabulate()
+        simulated = sims.tabulate()
         for k in range(10):
             expected = Nsim * stats.geom(p=0.8).pmf(k)
             if expected > 5:
                 exp_list.append(expected)
-                obs_list.append(key_list[k])
+                obs_list.append(simulated[k])
         pval  = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > 0.01)
 
@@ -168,25 +170,25 @@ class TestPoisson(unittest.TestCase):
         exp_list, obs_list = [], []
         X, Y = RV(Poisson(lam=4) * Poisson(lam=7))
         sims = (X + Y).sim(Nsim)
-        key_list = sims.tabulate()
+        simulated = sims.tabulate()
         for k in range(25):
             expected = Nsim * stats.poisson(mu=11).pmf(k)
             if expected > 5:
                 exp_list.append(expected)
-                obs_list.append(key_list[k])
+                obs_list.append(simulated[k])
         pval = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > .01)
 
     def test_conditional_Poisson_add(self):
-        exp_list, obs_list = [], []
-        X, Y = RV(Poisson(lam=4) * Poisson(lam=7))
-        sims = (X + Y).sim(Nsim)
-        key_list = sims.tabulate()
-        for k in range(25):
-            expected = Nsim * stats.poisson(mu=11).pmf(k)
+        obs_list, exp_list = [], []
+        X,Y = RV(Poisson(20) * Poisson(30))
+        sims = (X|(X+Y == 40)).sim(Nsim)
+        simulated = sims.tabulate()
+        for k in range(5, 35):
+            expected = Nsim * stats.binom(40, (20 / 50)).pmf(k)
             if expected > 5:
                 exp_list.append(expected)
-                obs_list.append(key_list[k])
+                obs_list.append(simulated[k])
         pval = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > .01)
 
@@ -372,18 +374,17 @@ class TestExponential(unittest.TestCase):
             z = RV(Poisson(x)).draw()
             return z
 
-        expect, obs, new_key, lam = [], [], [], 1/5
+        exp_list, obs_list, lam = [], [], 1/5
         P = ProbabilitySpace(poisson_exp)
         A = RV(P)
         sims = (A + 1).sim(Nsim)
-        key_list = [keys for keys in sims.tabulate().keys()]
-        for k in key_list:
-            outcome = Nsim * stats.geom(p=1 / (1 + lam)).pmf(k)
-            if outcome > 5:
-                expect.append(outcome)
-                new_key.append(k)
-        obs = [sims.tabulate()[k] for k in new_key]
-        pval = stats.chisquare(obs, expect).pvalue
+        simulated = sims.tabulate()
+        for k in range(40):
+            expected = Nsim * stats.geom(p=1 / (1 + lam)).pmf(k)
+            if expected > 5:
+                exp_list.append(expected)
+                obs_list.append(simulated[k])
+        pval = stats.chisquare(obs_list, exp_list).pvalue
         self.assertTrue(pval > .01)
 
 
@@ -411,7 +412,7 @@ class TestGamma(unittest.TestCase):
  
     def test_Gamma_additive(self):
         X, Y = RV(Gamma(shape=10, scale=0.5) * 
-                       Gamma(shape=8, scale=0.5))
+                  Gamma(shape=8, scale=0.5))
         sims = (X + Y).sim(Nsim)
         cdf = stats.gamma(scale=0.5, a=18).cdf
         pval = stats.kstest(sims, cdf).pvalue
@@ -463,7 +464,7 @@ class TestBeta(unittest.TestCase):
 
     def test_Beta_to_Exponential(self):
         X = RV(Beta(a=0.7, b=1))
-        sims = (-1 * log(X)).sim(Nsim)
+        sims = (-log(X)).sim(Nsim)
         cdf = stats.expon(scale=1 / 0.7).cdf
         pval = stats.kstest(sims, cdf).pvalue
         self.assertTrue(pval > .01)
@@ -515,7 +516,7 @@ class TestChiSquare(unittest.TestCase):
         pval = stats.kstest(sims, cdf).pvalue
         self.assertTrue(pval > .01)
 
-    def test_ChiSquares_to_Beta(self):
+    def test_ChiSquare_to_Beta(self):
         X, Y = RV(ChiSquare(df=4) * ChiSquare(df=5))
         sims = (X / (X + Y)).sim(Nsim)
         cdf = stats.beta(a=4/2, b=5/2).cdf
@@ -535,17 +536,9 @@ class TestF(unittest.TestCase):
         pval = stats.kstest(sims, cdf).pvalue
         self.assertTrue(pval > .01)
 
-    def test_StudentT_to_T(self):
+    def test_StudentT_to_F(self):
         X = RV(StudentT(df=15))
         sims = (X ** 2).sim(Nsim)
-        cdf = stats.f(dfn=1, dfd=15).cdf
-        pval = stats.kstest(sims, cdf).pvalue
-        self.assertTrue(pval > .01)
-
-    def test_StudentT_to_T2(self):
-        X = RV(StudentT(df=15))
-        X = X ** 2
-        sims = X.sim(Nsim)
         cdf = stats.f(dfn=1, dfd=15).cdf
         pval = stats.kstest(sims, cdf).pvalue
         self.assertTrue(pval > .01)
@@ -684,31 +677,16 @@ class TestBivariateNormal(unittest.TestCase):
         pval = stats.kstest(sims, cdf).pvalue
         self.assertTrue(pval > .01)
     
-
     def test_BivNormal_condDistr_r(self):
-        X,Y = RV(BivariateNormal(mean1=20, mean2=10, sd1=3, sd2=5, corr=0.5))
-        sims = (Y | (abs(X - 21) < 0.1)).sim(Nsim)
-        cdf = stats.norm(loc=10 + 0.5 * 5 / 3 * (21 - 20), 
-                         scale=5 * sqrt(1 - (0.5) ** 2)).cdf
-        pval = stats.kstest(sims, cdf).pvalue
-        self.assertTrue(pval > 0.01)
-
-    #if approx 1 (0.9999), it fails?
-    def test_BivNormal_condDistr_r(self):
-        X,Y = RV(BivariateNormal(mean1=20, mean2=10, sd1=3, sd2=5, corr=0.9))
-        sims = (Y | (abs(X - 21) < 0.1)).sim(1000)
-        cdf = stats.norm(loc=10 + 0.9 * 5 / 3 * (21 - 20), 
-                         scale=5 * sqrt(1 - (0.9) ** 2)).cdf
-        pval = stats.kstest(sims, cdf).pvalue
-        self.assertTrue(pval > 0.01)
-
-    #if approx -1 (-0.99999), it fails
-    def test_BivNormal_condDistr_r(self):
-        X,Y = RV(BivariateNormal(mean1=20, mean2=10, sd1=3, sd2=5, corr=-0.9))
-        sims = (Y | (abs(X - 21) < 0.1)).sim(1000)
-        cdf = stats.norm(loc=10 + (-0.9) * 5 / 3 * (21 - 20), 
-                         scale=5 * sqrt(1 - (-0.9) ** 2)).cdf
-        pval = stats.kstest(sims, cdf).pvalue
-        self.assertTrue(pval > 0.01)
+        results = []
+        corr_list = list(np.arange(-0.9, 0.9, 0.1))
+        for c in corr_list:
+            X,Y = RV(BivariateNormal(mean1=20, mean2=10, sd1=3, sd2=5, corr=c))
+            sims = (Y | (abs(X - 21) < 0.1)).sim(500)
+            cdf = stats.norm(loc=10 + c * 5 / 3 * (21 - 20), 
+                             scale=5 * sqrt(1 - c ** 2)).cdf
+            pval = stats.kstest(sims, cdf).pvalue
+            results.append((pval > 0.01))
+        self.assertTrue(all(res == True for res in results))
 
 
