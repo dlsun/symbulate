@@ -180,10 +180,10 @@ class TestPoisson(unittest.TestCase):
     def test_conditional_Poisson_add(self):
         obs_list, exp_list = [], []
         X,Y = RV(Poisson(lam=6) * Poisson(lam=7))
-        sims = (X|(X+Y == 8)).sim(Nsim)
+        sims = (X|(X+Y == 12)).sim(Nsim)
         simulated = sims.tabulate()
-        for k in range(8):
-            expected = Nsim * stats.binom(n=8, p=6 / 13).pmf(k)
+        for k in range(12):
+            expected = Nsim * stats.binom(n=12, p=6 / 13).pmf(k)
             if expected > 5:
                 exp_list.append(expected)
                 obs_list.append(simulated[k])
