@@ -673,7 +673,6 @@ class TestBivariateNormal(unittest.TestCase):
         self.assertTrue(pval > .01)
     
     def test_BivNormal_condDistr_r(self):
-        corr_list = list(np.arange(-0.9, 0.9, 0.1))
         for c in [-0.9, 0.9, 0.1]:
             X,Y = RV(BivariateNormal(mean1=20, mean2=10, sd1=3, sd2=5, corr=c))
             sims = (Y | (abs(X - 21) < 0.1)).sim(500)
