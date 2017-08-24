@@ -21,7 +21,7 @@ from statsmodels.graphics.mosaicplot import mosaic
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 
-#plt.style.use('ggplot')
+plt.style.use('ggplot')
 
 def is_hashable(x):
     return x.__hash__ is not None
@@ -373,7 +373,7 @@ class RVResults(Results):
                     y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
                 nullfmt = NullFormatter() #removes labels on fig
                 fig, ax = plt.subplots(1, 1)
-                ax.scatter(x, y, alpha=alpha, cmap='blues')
+                ax.scatter(x, y, alpha=alpha, c='b')
             elif all(x in ("scatter", "marginal") for x in type):
                 if jitter:
                     x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
@@ -384,9 +384,9 @@ class RVResults(Results):
                 ax_joint = fig.add_subplot(gs[1:4, 0:3])
                 ax_marg_x = fig.add_subplot(gs[0, 0:3])
                 ax_marg_y = fig.add_subplot(gs[1:4, 3])
-                ax_joint.scatter(x, y, alpha=alpha, cmap='Blues')
-                ax_marg_x.hist(x)
-                ax_marg_y.hist(y, orientation='horizontal')
+                ax_joint.scatter(x, y, alpha=alpha, c='b')
+                ax_marg_x.hist(x, color='b')
+                ax_marg_y.hist(y, color='b', orientation='horizontal')
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
             elif all(x in ("hist2d", ) for x in type) and continuous_both:
@@ -401,8 +401,8 @@ class RVResults(Results):
                 ax_marg_x = fig.add_subplot(gs[0, 0:3])
                 ax_marg_y = fig.add_subplot(gs[1:4, 3])
                 ax_joint.hist2d(x, y, bins=bins, cmap='Blues')
-                ax_marg_x.hist(x)
-                ax_marg_y.hist(y, orientation='horizontal')
+                ax_marg_x.hist(x, color='b')
+                ax_marg_y.hist(y, color='b', orientation='horizontal')
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
             elif all(x in ("tile", ) for x in type) and discrete_both:
