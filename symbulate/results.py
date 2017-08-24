@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import seaborn as sns
 
 from numbers import Number
 
@@ -19,8 +18,10 @@ from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
 from .plot import configure_axes, get_next_color
 from statsmodels.graphics.mosaicplot import mosaic
+from matplotlib.gridspec import GridSpec
+from matplotlib.ticker import NullFormatter
 
-plt.style.use('ggplot')
+#plt.style.use('ggplot')
 
 def is_hashable(x):
     return x.__hash__ is not None
@@ -286,6 +287,13 @@ class RVResults(Results):
 
     def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
         bins=30, **kwargs):
+        if type is None:
+            pass
+        elif isinstance(type, str):
+            type = (type,)
+        elif not isinstance(type, (tuple, list)):
+            raise Exception("I don't know how to plot a " + str(type))
+            
         
         dim = get_dimension(self)
         if dim == 1:
@@ -293,15 +301,32 @@ class RVResults(Results):
             if type is None:
                 heights = counts.values()
                 if sum([(i > 1) for i in heights]) > .8 * len(heights):
-                    type = "impulse"
+                    type = ("impulse",)
                 else:
-                    type = "bar"
-            if type == "bar":
-                if alpha is None:
-                    alpha = .5
-                plt.hist(self, normed=normalize, alpha=alpha, bins=bins, **kwargs)
-                plt.ylabel("Density" if normalize else "Count")
-            elif type == "impulse":
+                    type = ("hist",)
+            if alpha is None:
+                alpha = .5
+            if all(x in ("hist",) for x in type):
+                df = pd.DataFrame({'X':self})
+                ax = df['X'].plot(kind='hist', normed=normalize, alpha=alpha, color='b', bins=bins)
+                ax.set_ylabel('')
+            elif all(x in ("density",) for x in type):
+                df = pd.DataFrame({'X':self})
+                ax = df['X'].plot(kind='density', alpha=alpha, color='b')
+                ax.set_ylabel('')
+            elif all(x in ("rug",) for x in type):
+                fig, ax = plt.subplots()
+                ax.plot(list(self), [0.001]*len(self), '|', color='k')
+            elif all(x in ("hist", "density") for x in type):
+                df = pd.DataFrame({'X':self})
+                ax = df['X'].plot(kind='hist', normed=normalize, alpha=alpha, color='b', bins=bins)
+                df['X'].plot(kind='kde', ax=ax)
+                ax.set_ylabel('')
+            elif all(x in ("hist", "rug") for x in type):
+                fig, ax = plt.subplots()
+                ax.hist(self, normed=normalize, alpha=alpha, bins=bins, color='b', **kwargs)
+                ax.plot(list(self), [0.001]*len(self), '|', color='k')
+            elif all(x in ("impulse",) for x in type):
                 x = list(counts.keys())
                 y = list(counts.values())
                 if alpha is None:
@@ -333,56 +358,108 @@ class RVResults(Results):
             discrete_x = sum([(i > 1) for i in x_height]) > .8 * len(x_height)
             discrete_y = sum([(i > 1) for i in y_height]) > .8 * len(y_height)
 
+            discrete_both = discrete_x and discrete_y
+            continuous_both = not discrete_x and not discrete_y
+
             if type is None:
-                type = "scatter"
+                type = ("scatter",)
 
             if alpha is None:
                 alpha = .5
 
-            if type == "scatter":
+            if all(x in ("scatter") for x in type):
                 if jitter:
                     x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
                     y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
-                # get next color in cycle
-                axes = plt.gca()
-                color = get_next_color(axes)
-                plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
-            elif type == "tile" and discrete_x and discrete_y:
+                nullfmt = NullFormatter() #removes labels on fig
+                fig, ax = plt.subplots(1, 1)
+                ax.scatter(x, y, alpha=alpha, cmap='blues')
+            elif all(x in ("scatter", "marginal") for x in type):
+                if jitter:
+                    x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
+                    y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
+                nullfmt = NullFormatter() #removes labels on fig
+                fig = plt.figure()
+                gs = GridSpec(4, 4)
+                ax_joint = fig.add_subplot(gs[1:4, 0:3])
+                ax_marg_x = fig.add_subplot(gs[0, 0:3])
+                ax_marg_y = fig.add_subplot(gs[1:4, 3])
+                ax_joint.scatter(x, y, alpha=alpha, cmap='Blues')
+                ax_marg_x.hist(x)
+                ax_marg_y.hist(y, orientation='horizontal')
+                plt.setp(ax_marg_x.get_xticklabels(), visible=False)
+                plt.setp(ax_marg_y.get_yticklabels(), visible=False)
+            elif all(x in ("hist2d", ) for x in type) and continuous_both:
+                nullfmt = NullFormatter() #removes labels on fig
+                fig, ax = plt.subplots(1, 1)
+                ax.hist2d(x, y, bins=bins, cmap='Blues')
+            elif all(x in ("hist2d", "marginal") for x in type) and continuous_both:
+                nullfmt = NullFormatter() #removes labels on fig
+                fig = plt.figure()
+                gs = GridSpec(4, 4)
+                ax_joint = fig.add_subplot(gs[1:4, 0:3])
+                ax_marg_x = fig.add_subplot(gs[0, 0:3])
+                ax_marg_y = fig.add_subplot(gs[1:4, 3])
+                ax_joint.hist2d(x, y, bins=bins, cmap='Blues')
+                ax_marg_x.hist(x)
+                ax_marg_y.hist(y, orientation='horizontal')
+                plt.setp(ax_marg_x.get_xticklabels(), visible=False)
+                plt.setp(ax_marg_y.get_yticklabels(), visible=False)
+            elif all(x in ("tile", ) for x in type) and discrete_both:
                 res = pd.DataFrame({'X': x, 'Y': y})
                 res['num'] = 1
-                temp = pd.pivot_table(res, values = 'num', index = ['Y'],
-                    columns = ['X'], aggfunc = np.sum)
+                temp = pd.pivot_table(res, values='num', index=['Y'],
+                    columns=['X'], aggfunc=np.sum)
                 temp = temp / len(x)
-                sns.set()
-                sns.cubehelix_palette(8)
+                temp[np.isnan(temp)] = 0
                 fig, ax = plt.subplots(1, 1)
-                sns.heatmap(temp, ax=ax, linewidths = 0.03).invert_yaxis()
-                ax.set_ylabel('')
-                ax.set_xlabel('')
-            elif type == "mosaic" and discrete_x and discrete_y:
+                hm = plt.pcolor(temp, cmap=plt.cm.Blues)
+                cbar = plt.colorbar(mappable=hm, ax=ax)
+            elif all(x in ("mosaic", ) for x in type) and discrete_both:
                 res = pd.DataFrame({'X': x, 'Y': y})
                 ct = pd.crosstab(res['Y'], res['X'])
                 ctplus = ct + 1e-8
                 labels = lambda k: ""
                 fig, ax = plt.subplots(1, 1)
-                temp = mosaic(ctplus.unstack(), ax = ax, labelizer = labels, axes_label = False)
+                temp = mosaic(ctplus.unstack(), ax=ax, labelizer=labels, axes_label=False)
             elif discrete_x and discrete_y:
                 raise Exception("Must have type='mosaic', 'tile', or 'scatter' if discrete.")
-            elif discrete_x == True and discrete_y == False and type == 'violin':
+            elif all(x in ("violin", ) for x in type) and discrete_x and not discrete_y:
                 fig, ax = plt.subplots(1, 1)
                 res = pd.DataFrame({'X': x, 'Y': y})
-                sns.violinplot(x='X', y='Y', data=res)
-                ax.set_ylabel('')
-                ax.set_xlabel('')
-            elif discrete_x == False and discrete_y == True and type == 'violin':
-                #TODO change this situation based on Dr. Ross's suggestions
-                if jitter:
-                    x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
-                    y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
-                # get next color in cycle
-                axes = plt.gca()
-                color = get_next_color(axes)
-                plt.scatter(x, y, color=color, alpha=alpha, **kwargs)
+                values = []
+                positions = sorted(list(x_count.keys()))
+                for i in positions:
+                    values.append(list(res[res.X == i]['Y']))
+                violins = ax.violinplot(dataset=values, showmedians=True)
+                for part in violins['bodies']:
+                    part.set_facecolor('blue')
+                    part.set_edgecolor('black')
+                    part.set_alpha(alpha)
+                for part in ('cbars', 'cmins', 'cmaxes', 'cmedians'):
+                    vp = violins[part]
+                    vp.set_edgecolor('black')
+                    vp.set_linewidth(1)
+                ax.set_xticks(np.array(positions) + 1)
+                ax.set_xticklabels(positions)
+            elif all(x in ("violin", ) for x in type) and not discrete_x and discrete_y:
+                fig, ax = plt.subplots(1, 1)
+                res = pd.DataFrame({'X': x, 'Y': y})
+                values = []
+                positions = sorted(list(y_count.keys()))
+                for i in positions:
+                    values.append(list(res[res.Y == i]['X']))
+                violins = ax.violinplot(dataset=values, vert=False, showmedians=True)
+                for part in violins['bodies']:
+                    part.set_facecolor('blue')
+                    part.set_edgecolor('black')
+                    part.set_alpha(alpha)
+                for part in ('cbars', 'cmins', 'cmaxes', 'cmedians'):
+                    vp = violins[part]
+                    vp.set_edgecolor('black')
+                    vp.set_linewidth(1)
+                ax.set_yticks(np.array(positions) + 1)
+                ax.set_yticklabels(positions)
             else:
                 raise Exception("I don't know how to plot these variables.")
         else:
