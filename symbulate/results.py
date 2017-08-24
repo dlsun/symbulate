@@ -21,7 +21,7 @@ from statsmodels.graphics.mosaicplot import mosaic
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 
-plt.style.use('ggplot')
+#plt.style.use('ggplot')
 
 def is_hashable(x):
     return x.__hash__ is not None
