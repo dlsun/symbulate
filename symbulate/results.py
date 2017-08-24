@@ -408,12 +408,12 @@ class RVResults(Results):
             elif all(x in ("tile", ) for x in type) and discrete_both:
                 res = pd.DataFrame({'X': x, 'Y': y})
                 res['num'] = 1
-                temp = pd.pivot_table(res, values='num', index=['Y'],
+                res_pivot = pd.pivot_table(res, values='num', index=['Y'],
                     columns=['X'], aggfunc=np.sum)
-                temp = temp / len(x)
-                temp[np.isnan(temp)] = 0
+                res_pivot = res_pivot / len(x)
+                res_pivot[np.isnan(res_pivot)] = 0
                 fig, ax = plt.subplots(1, 1)
-                hm = plt.pcolor(temp, cmap=plt.cm.Blues)
+                hm = plt.pcolor(res_pivot, cmap=plt.cm.Blues)
                 cbar = plt.colorbar(mappable=hm, ax=ax)
             elif all(x in ("mosaic", ) for x in type) and discrete_both:
                 res = pd.DataFrame({'X': x, 'Y': y})
@@ -421,7 +421,7 @@ class RVResults(Results):
                 ctplus = ct + 1e-8
                 labels = lambda k: ""
                 fig, ax = plt.subplots(1, 1)
-                temp = mosaic(ctplus.unstack(), ax=ax, labelizer=labels, axes_label=False)
+                mosaic(ctplus.unstack(), ax=ax, labelizer=labels, axes_label=False)
             elif discrete_x and discrete_y:
                 raise Exception("Must have type='mosaic', 'tile', or 'scatter' if discrete.")
             elif all(x in ("violin", ) for x in type) and discrete_x and not discrete_y:
