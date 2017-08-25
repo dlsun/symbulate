@@ -21,7 +21,7 @@ from statsmodels.graphics.mosaicplot import mosaic
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 
-#plt.style.use('ggplot')
+plt.style.use('ggplot')
 
 def is_hashable(x):
     return x.__hash__ is not None
@@ -308,23 +308,23 @@ class RVResults(Results):
                 alpha = .5
             if all(x in ("hist",) for x in type):
                 df = pd.DataFrame({'X':self})
-                ax = df['X'].plot(kind='hist', normed=normalize, alpha=alpha, color='b', bins=bins)
+                ax = df['X'].plot(kind='hist', normed=normalize, alpha=alpha, bins=bins)
                 ax.set_ylabel('')
             elif all(x in ("density",) for x in type):
                 df = pd.DataFrame({'X':self})
-                ax = df['X'].plot(kind='density', alpha=alpha, color='b')
+                ax = df['X'].plot(kind='density', alpha=alpha)
                 ax.set_ylabel('')
             elif all(x in ("rug",) for x in type):
                 fig, ax = plt.subplots()
                 ax.plot(list(self), [0.001]*len(self), '|', color='k')
             elif all(x in ("hist", "density") for x in type):
                 df = pd.DataFrame({'X':self})
-                ax = df['X'].plot(kind='hist', normed=normalize, alpha=alpha, color='b', bins=bins)
+                ax = df['X'].plot(kind='hist', normed=normalize, alpha=alpha, bins=bins)
                 df['X'].plot(kind='kde', ax=ax)
                 ax.set_ylabel('')
             elif all(x in ("hist", "rug") for x in type):
                 fig, ax = plt.subplots()
-                ax.hist(self, normed=normalize, alpha=alpha, bins=bins, color='b', **kwargs)
+                ax.hist(self, normed=normalize, alpha=alpha, bins=bins, **kwargs)
                 ax.plot(list(self), [0.001]*len(self), '|', color='k')
             elif all(x in ("impulse",) for x in type):
                 x = list(counts.keys())
@@ -384,9 +384,9 @@ class RVResults(Results):
                 ax_joint = fig.add_subplot(gs[1:4, 0:3])
                 ax_marg_x = fig.add_subplot(gs[0, 0:3])
                 ax_marg_y = fig.add_subplot(gs[1:4, 3])
-                ax_joint.scatter(x, y, alpha=alpha, c='b')
-                ax_marg_x.hist(x, color='b')
-                ax_marg_y.hist(y, color='b', orientation='horizontal')
+                ax_joint.scatter(x, y, alpha=alpha)
+                ax_marg_x.hist(x)
+                ax_marg_y.hist(y, orientation='horizontal')
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
             elif all(x in ("hist2d", ) for x in type) and continuous_both:
@@ -433,7 +433,6 @@ class RVResults(Results):
                     values.append(list(res[res.X == i]['Y']))
                 violins = ax.violinplot(dataset=values, showmedians=True)
                 for part in violins['bodies']:
-                    part.set_facecolor('blue')
                     part.set_edgecolor('black')
                     part.set_alpha(alpha)
                 for part in ('cbars', 'cmins', 'cmaxes', 'cmedians'):
@@ -451,7 +450,6 @@ class RVResults(Results):
                     values.append(list(res[res.Y == i]['X']))
                 violins = ax.violinplot(dataset=values, vert=False, showmedians=True)
                 for part in violins['bodies']:
-                    part.set_facecolor('blue')
                     part.set_edgecolor('black')
                     part.set_alpha(alpha)
                 for part in ('cbars', 'cmins', 'cmaxes', 'cmedians'):
