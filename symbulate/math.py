@@ -1,4 +1,7 @@
 import math
+import statistics
+import numpy as np
+import operator as op
 
 from .random_variables import RV
 from .random_processes import RandomProcess
@@ -55,3 +58,55 @@ def var(x):
 
 def sd(x):
     return math.sqrt(var(x))
+
+def median(x):
+    return statistics.median(x)
+
+def range(x):
+    return max(x) - min(x)
+
+def min(x):
+    return min(x)
+
+def max(x):
+    return max(x)
+
+def quantile(q):
+    return lambda x: np.percentile(x, q*100)    
+
+def comparefun(x, compare, value):
+    count = 0
+    for i in x:
+        if compare(i, value):
+            count += 1
+    return count
+    
+def count_eq(value):
+    def fun(x):
+        return comparefun(x, op.eq, value)
+    return fun    
+
+def count_neq(value):
+    def fun(x):
+        return comparefun(x, op.ne, value)
+    return fun
+
+def count_lt(value):
+    def fun(x):
+        return comparefun(x, op.lt, value)
+    return fun 
+
+def count_gt(value):
+    def fun(x):
+        return comparefun(x, op.gt, value)
+    return fun 
+
+def count_geq(value):
+    def fun(x):
+        return comparefun(x, op.ge, value)
+    return fun 
+
+def count_leq(value):
+    def fun(x):
+        return comparefun(x, op.le, value)
+    return fun 
