@@ -62,9 +62,6 @@ def sd(x):
 def median(x):
     return statistics.median(x)
 
-def range(x):
-    return max(x) - min(x)
-
 def quantile(q):
     return lambda x: np.percentile(x, q*100)    
 
