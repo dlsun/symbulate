@@ -1,5 +1,4 @@
 import math
-import statistics
 import numpy as np
 import operator as op
 
@@ -60,7 +59,7 @@ def sd(x):
     return math.sqrt(var(x))
 
 def median(x):
-    return statistics.median(x)
+    return np.median(x)
 
 def quantile(q):
     return lambda x: np.percentile(x, q*100)    
