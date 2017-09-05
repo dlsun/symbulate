@@ -40,4 +40,7 @@ def plot(*args, **kwargs):
     except:
         plt.plot(*args, **kwargs)
         
+def discrete_check(heights):
+    return sum([(i > 1) for i in heights]) > .8 * len(heights)
+    
         
