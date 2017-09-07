@@ -324,8 +324,9 @@ class RVResults(Results):
                     xs = np.linspace(min(self), max(self), 1000)
                     ax.plot(xs, density(xs), linewidth=2, color=color)
 
-            if 'hist' in type:
+            if 'hist' in type or 'bar' in type:
                 ax.hist(self, color=color, bins=bins, alpha=alpha, normed=True, **kwargs)
+                plt.ylabel("Density" if normalize else "Count")
             elif 'impulse' in type:
                 x = list(counts.keys())
                 y = list(counts.values())
@@ -340,7 +341,7 @@ class RVResults(Results):
                     x = [i + noise for i in x]
                 # plot the impulses
                 ax.vlines(x, 0, y, color=color, alpha=alpha, **kwargs)
-                configure_axes(ax, x, y)
+                configure_axes(ax, x, y, ylabel="Relative Frequency" if normalize else "Count")
             if 'rug' in type:
                 if discrete:
                     self = self + np.random.normal(loc=0, scale=.002 * (max(self) - min(self)), size=len(self))
@@ -418,20 +419,36 @@ class RVResults(Results):
                     y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
                 ax.scatter(x, y, alpha=alpha, c=color, **kwargs)
             elif 'hist' in type:
-                ax.hist2d(x, y, bins=bins, cmap='Blues')
+                histo = ax.hist2d(x, y, bins=bins, cmap='Blues')
+                if 'marginal' not in type:
+                    caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
+                else:
+                    caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
+                cbar = plt.colorbar(mappable=histo[3], cax=caxes)
+                caxes.yaxis.set_ticks_position('left')
+                cbar.set_label('Density')
+                caxes.yaxis.set_label_position("left")
             elif 'density' in type:
                 res = np.vstack([x, y])
                 density = gaussian_kde(res)
                 xmax = max(x)
                 xmin = min(x)
-                ymax = max(x)
-                ymin = min(x)
+                ymax = max(y)
+                ymin = min(y)
                 Xgrid, Ygrid = np.meshgrid(np.linspace(xmin, xmax, 100),
                                            np.linspace(ymin, ymax, 100))
                 Z = density.evaluate(np.vstack([Xgrid.ravel(), Ygrid.ravel()]))
-                ax.imshow(Z.reshape(Xgrid.shape), origin='lower', cmap='Blues',
+                den = ax.imshow(Z.reshape(Xgrid.shape), origin='lower', cmap='Blues',
                           aspect='auto', extent=[xmin, xmax, ymin, ymax]
                 )
+                if 'marginal' not in type:
+                    caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
+                else:
+                    caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
+                cbar = plt.colorbar(mappable=den, cax=caxes)
+                caxes.yaxis.set_ticks_position('left')
+                cbar.set_label('Density')
+                caxes.yaxis.set_label_position("left")
             elif 'tile' in type:
                 res = np.array(self)
 
@@ -452,19 +469,15 @@ class RVResults(Results):
                 x_axis = np.arange(intensity_frame.shape[0])
                 y_axis = np.arange(intensity_frame.shape[1])
                 hm = ax.pcolor(x_axis, y_axis, np.fliplr(np.rot90(intensity_frame, k=3)), cmap=plt.cm.Blues)
-                    
 
-                #res = pd.DataFrame({'X': x, 'Y': y})
-                #res['num'] = 1
-                #res_pivot = pd.pivot_table(res, values='num', index=['Y'],
-                #    columns=['X'], aggfunc=np.sum)
-                #res_pivot = res_pivot / len(x)
-                #res_pivot[np.isnan(res_pivot)] = 0
-                #hm = ax.pcolor(res_pivot, cmap=plt.cm.Blues)
                 if 'marginal' not in type:
-                    cbar = plt.colorbar(mappable=hm, ax=ax)
+                    caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
                 else:
-                    cbar = plt.colorbar(mappable=hm, ax=ax_marg_y)
+                    caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
+                cbar = plt.colorbar(mappable=hm, cax=caxes)
+                caxes.yaxis.set_ticks_position('left')
+                cbar.set_label('Relative Frequency')
+                caxes.yaxis.set_label_position("left")
             elif 'mixed-tile' in type:
                 if not discrete_x:
                     bin_points = np.linspace(np.amin(x), np.amax(x), bins)
