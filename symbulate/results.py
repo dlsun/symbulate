@@ -314,13 +314,16 @@ class RVResults(Results):
             color = get_next_color(ax)
             
             if 'density' in type:
-                density = gaussian_kde(self)
-                density.covariance_factor = lambda: 0.25
-                density._compute_covariance()
                 if discrete:
                     xs = sorted(list(counts.keys()))
-                    ax.plot(xs, density(xs), marker='o', color=color, linestyle='-')
+                    ys = []
+                    for val in xs:
+                        ys.append(counts[val] / len(self))
+                    ax.plot(xs, ys, marker='o', color=color, linestyle='-')
                 else:
+                    density = gaussian_kde(self)
+                    density.covariance_factor = lambda: 0.25
+                    density._compute_covariance()
                     xs = np.linspace(min(self), max(self), 1000)
                     ax.plot(xs, density(xs), linewidth=2, color=color)
 
@@ -469,6 +472,16 @@ class RVResults(Results):
                 x_axis = np.arange(intensity_frame.shape[0])
                 y_axis = np.arange(intensity_frame.shape[1])
                 hm = ax.pcolor(x_axis, y_axis, np.fliplr(np.rot90(intensity_frame, k=3)), cmap=plt.cm.Blues)
+                x_labels = np.array(ax.get_xticks().tolist())
+                x_pos = x_labels - 0.5
+                x_pos[0] += 0.5
+                ax.set_xticks(x_pos)
+                ax.set_xticklabels(x_labels.astype('int'))
+                y_labels = np.array(ax.get_yticks().tolist())
+                y_pos = y_labels - 0.5
+                y_pos[0] += 0.5
+                ax.set_yticks(y_pos)
+                ax.set_yticklabels(y_labels.astype('int'))
 
                 if 'marginal' not in type:
                     caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
