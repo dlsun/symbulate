@@ -320,12 +320,16 @@ class RVResults(Results):
                     for val in xs:
                         ys.append(counts[val] / len(self))
                     ax.plot(xs, ys, marker='o', color=color, linestyle='-')
+                    if len(type) == 1:
+                        plt.ylabel('Relative Frequency')
                 else:
                     density = gaussian_kde(self)
                     density.covariance_factor = lambda: 0.25
                     density._compute_covariance()
                     xs = np.linspace(min(self), max(self), 1000)
                     ax.plot(xs, density(xs), linewidth=2, color=color)
+                    if len(type) == 1:
+                        plt.ylabel('Density')
 
             if 'hist' in type or 'bar' in type:
                 ax.hist(self, color=color, bins=bins, alpha=alpha, normed=True, **kwargs)
@@ -452,36 +456,36 @@ class RVResults(Results):
                 caxes.yaxis.set_ticks_position('left')
                 cbar.set_label('Density')
                 caxes.yaxis.set_label_position("left")
-            elif 'tile' in type:
-                res = np.array(self)
+            elif 'tile' in type or 'mixed-tile' in type:
+                if 'mixed-tile' in type:
+                    if not discrete_x:
+                        bin_points = np.linspace(np.amin(x), np.amax(x), bins)
+                        x = np.digitize(x, bin_points)
+                    if not discrete_y:
+                        bin_points = np.linspace(np.amin(y), np.amax(y), bins)
+                        y = np.digitize(y, bin_points)
+                    counts = count_var(list(zip(x, y)))
+                else:
+                    counts = self._get_counts()
+                x_uniq = np.unique(x)
+                y_uniq = np.unique(y)
+                xmin = min(x)
+                ymin = min(y)
+                xmax = max(x)
+                ymax = max(y)
+                x_pos = np.arange((xmax + 1) - xmin)
+                y_pos = np.arange((ymax + 1) - ymin)
+                nums = len(x)
 
-                idx = np.ravel_multi_index(res.T, res.max(0)+1)
-                _, u_id, counts = np.unique(idx, return_index=True, return_counts=True)
-
-                x_vals = res[u_id][:, 0]
-                y_vals = res[u_id][:, 1]
-                intensity = counts / len(x)
-
-                x_uniq = np.unique(x_vals)
-                y_uniq = np.unique(y_vals)
-                intensity_frame = np.zeros(shape = (len(x_uniq) + 1, len(y_uniq) + 1))
-                
-                for i in range(len(x_vals)):
-                    intensity_frame[x_vals[i] - 1][y_vals[i] - 1] = intensity[i - 1]
-
-                x_axis = np.arange(intensity_frame.shape[0])
-                y_axis = np.arange(intensity_frame.shape[1])
-                hm = ax.pcolor(x_axis, y_axis, np.fliplr(np.rot90(intensity_frame, k=3)), cmap=plt.cm.Blues)
-                x_labels = np.array(ax.get_xticks().tolist())
-                x_pos = x_labels - 0.5
-                x_pos[0] += 0.5
+                intensity = np.zeros(shape = (len(y_pos), len(x_pos)))
+                for key, val in counts.items():
+                    intensity[key[1] - ymin][key[0] - xmin] = val / nums
+                hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto')
+                ax.xaxis.set_ticks_position('bottom')
                 ax.set_xticks(x_pos)
-                ax.set_xticklabels(x_labels.astype('int'))
-                y_labels = np.array(ax.get_yticks().tolist())
-                y_pos = y_labels - 0.5
-                y_pos[0] += 0.5
                 ax.set_yticks(y_pos)
-                ax.set_yticklabels(y_labels.astype('int'))
+                ax.set_xticklabels(np.arange(xmin, xmax + 1))
+                ax.set_yticklabels(np.arange(ymin, ymax + 1))
 
                 if 'marginal' not in type:
                     caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
@@ -491,20 +495,6 @@ class RVResults(Results):
                 caxes.yaxis.set_ticks_position('left')
                 cbar.set_label('Relative Frequency')
                 caxes.yaxis.set_label_position("left")
-            elif 'mixed-tile' in type:
-                if not discrete_x:
-                    bin_points = np.linspace(np.amin(x), np.amax(x), bins)
-                    x = np.digitize(x, bin_points)
-                if not discrete_y:
-                    bin_points = np.linspace(np.amin(y), np.amax(y), bins)
-                    y = np.digitize(y, bin_points)
-                res = pd.DataFrame({'X': x, 'Y': y})
-                res['num'] = 1
-                res_pivot = pd.pivot_table(res, values='num', index=['Y'],
-                    columns=['X'], aggfunc=np.sum)
-                res_pivot = res_pivot / len(x)
-                res_pivot[np.isnan(res_pivot)] = 0
-                hm = ax.pcolor(res_pivot, cmap=plt.cm.Blues)
             elif 'violin' in type:
                 res = np.array(self)
                 values = []
