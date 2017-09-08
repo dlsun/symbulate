@@ -11751,7 +11751,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Symbulate-Documentation:-Conditioning">Symbulate Documentation: Conditioning<a class="anchor-link" href="#Symbulate-Documentation:-Conditioning">&#182;</a></h1>
+<h1 id="Symbulate-Documentation">Symbulate Documentation<a class="anchor-link" href="#Symbulate-Documentation">&#182;</a></h1><h1 id="Conditioning">Conditioning<a class="anchor-link" href="#Conditioning">&#182;</a></h1>
 </div>
 </div>
 </div>
@@ -11771,24 +11771,24 @@ div#notebook {
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <ol>
-<li><a href="index.html"><strong>Introduction and installing Symbulate</strong></a></li>
-<li><a href="probspace.html"><strong>Probability spaces</strong></a></li>
-<li><a href="sim.html"><strong>Simulation tools</strong></a></li>
-<li><a href="rv.html"><strong>Random variables</strong></a></li>
-<li><a href="common.html"><strong>Commonly used probability models</strong></a></li>
-<li><a href="joint.html"><strong>Multiple random variables and joint distributions</strong></a></li>
-<li><a href="#conditioning"><strong>Conditioning</strong></a><ol>
+<li><a href="#cond_dens_def"><strong>Conditional distributions</strong></a></li>
 <li><a href="#pipe"><strong>Conditioning with |</strong></a></li>
 <li><a href="#event"><strong>Conditioning events</strong></a></li>
 <li><a href="#combine"><strong>Conditioning on multiple events</strong></a></li>
 <li><a href="#outcome"><strong>Conditioning on events in a probability space</strong></a></li>
-<li><a href="#continuous"><strong>Conditiong on the value of a continuous RV</strong></a></li>
+<li><a href="#continuous"><strong>Conditioning on the value of a continuous RV</strong></a></li>
 <li><a href="#conditional"><strong>Specifying a joint distribution via conditional and marginal distributions</strong></a></li>
 </ol>
-</li>
-<li><a href="process.html"><strong>Random processes</strong></a></li>
-<li><a href="mc.html"><strong>Markov processes</strong></a></li>
-</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>&lt; <a href="joint.html">Multiple random variables and joint distributions</a> | <a href="index.html">Contents</a> | <a href="process.html">Random processes</a> &gt;</p>
 
 </div>
 </div>
@@ -11832,8 +11832,20 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Conditioning">Conditioning<a class="anchor-link" href="#Conditioning">&#182;</a></h3><p>We are often interested in the <em>conditional distribution</em> of some random variables <em>given</em> the values of other random variables.  For example, if $X$ represents height (inches) and $Y$ represents weight (pounds) for some population, then the conditional distribution of $X$ given $Y=150$ would represent the distribution of heights only for those in the population who weigh 150 pounds.</p>
-<p>In principle, the conditional distribution of $X$ given $Y=y^*$ (where $y^*$ is a particular value, like 150 in the above example) can be simulated by (1) generating many $(x,y)$ pairs according to the joint distribution of $X$ and $Y$, (2) discarding all pairs for which $y\neq y^*$, and (3) summarizing the distribution of $x$ values for the pairs that remain.</p>
+<h3 id="Conditional-distributions">Conditional distributions<a class="anchor-link" href="#Conditional-distributions">&#182;</a></h3><p>We are often interested in the <em>conditional distribution</em> of some random variables <em>given</em> the values of other random variables.  For example, if $X$ represents height (inches) and $Y$ represents weight (pounds) for some population, then the conditional distribution of $X$ given $Y=150$ would represent the distribution of heights only for those in the population who weigh 150 pounds.</p>
+<p>Suppose X and Y are discrete random variables with joint probability mass function $p_{X,Y}(x,y) = P(X = x, Y = y)$ and marginal probability mass functions $p_{X}$ and $p_{Y}$. Then, the conditional probability mass function of $Y$ given $X = x$ is defined as $p_{Y\,|\,X}(y\,|\,x) = P(Y = y \,| \, X = x)$.</p>
+$$
+p_{Y\,|\,X}(y\,|\,x) = P(Y = y \, |\,  X = x) =  \frac{P(X = x, Y = y)}{P(X = x)} = \frac{p_{X,Y}(x,y)}{p_{X}(x)}
+$$<p>Suppose X and Y are jointly continuous random variables with joint probability density function $f_{X,Y}$ and marginal probability density functions $f_{X}$ and $f_{Y}$. Then, the conditional probability density function of $Y$ given $X = x$ is defined as:</p>
+$$
+f_{Y\, | \, X}(y\,|\,x) = \frac{f_{X,Y}(x,y)}{f_{X}(x)}
+$$<p>The conditional density function (or mass function if discrete) of $Y$ given $X=x$ is a probability density function (or mass function) on $y$ values, with $x$ treated as a fixed constant.  The above definitions reflect the generic formula</p>
+$$
+\text{conditional} = \frac{\text{joint}}{\text{marginal}}
+$$<p>Recall that for a continuous random variable $X$, <a href="https://dlsun.github.io/symbulate/common.html#continuous">the density $f_X(x)$ at a point $x$ is not a probability</a>.  Likewise, a conditional probability density function does represent conditional probabilities.  Rather, $f_{Y\, | \, X}(y\,|\,x)$ is related to the probability that $Y$ is "close to" $y$ given that $X$ is "close to" $x$.</p>
+$$
+P\left(y - h/2 < Y < y + h/2 \, \big\vert\, x - h/2 < X < x + h/2\right) \approx h\, f_{Y\, | \, X}(y\,|\,x)
+$$<p>In principle, the conditional distribution of $X$ given $Y=y^*$ (where $y^*$ is a particular value, like 150 in the above example) can be simulated by (1) generating many $(x,y)$ pairs according to the joint distribution of $X$ and $Y$, (2) discarding all pairs for which $y\neq y^*$, and (3) summarizing the distribution of $x$ values for the pairs that remain.</p>
 
 </div>
 </div>
@@ -12168,8 +12180,7 @@ NGGvHhBi2QAAAABJRU5ErkJggg==
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='event'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='event'></a></p>
 
 </div>
 </div>
@@ -12365,8 +12376,7 @@ VPT/AeXRMvE78vz9AAAAAElFTkSuQmCC
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='combine'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='combine'></a></p>
 
 </div>
 </div>
@@ -12378,7 +12388,7 @@ VPT/AeXRMvE78vz9AAAAAElFTkSuQmCC
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Conditioning-on-multiple-events">Conditioning on multiple events<a class="anchor-link" href="#Conditioning-on-multiple-events">&#182;</a></h3><p>Multiple events can be conditioned on using the logical operators</p>
 <ul>
-<li><code>!</code> for not: (!A)</li>
+<li><code>~</code> for not: (~A)</li>
 <li><code>&amp;</code> for and: (A &amp; B) </li>
 <li><code>|</code> for or: (A | B).  <strong>Caution: be sure to put parentheses around the conditioning events to avoid confusion between | for conditioning and | for or.</strong></li>
 </ul>
@@ -12521,8 +12531,7 @@ mg+Aa4OqlQAAAABJRU5ErkJggg==
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='outcome'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='outcome'></a></p>
 
 </div>
 </div>
@@ -12605,8 +12614,7 @@ mg+Aa4OqlQAAAABJRU5ErkJggg==
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='continuous'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='continuous'></a></p>
 
 </div>
 </div>
@@ -14690,8 +14698,7 @@ ezVRZDW8lgAAAABJRU5ErkJggg==
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='conditional'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='conditional'></a></p>
 
 </div>
 </div>
@@ -15808,7 +15815,7 @@ BoQkqciAkCQVGRCSpKL/B5Tr0zLGZz+0AAAAAElFTkSuQmCC
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a href="#contents">Back to contents</a></p>
+<p>&lt; <a href="joint.html">Multiple random variables and joint distributions</a> | <a href="index.html">Contents</a> | <a href="process.html">Random processes</a> &gt;</p>
 
 </div>
 </div>
