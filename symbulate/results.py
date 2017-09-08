@@ -328,7 +328,7 @@ class RVResults(Results):
                     density._compute_covariance()
                     xs = np.linspace(min(self), max(self), 1000)
                     ax.plot(xs, density(xs), linewidth=2, color=color)
-                    if len(type) == 1:
+                    if len(type) == 1 or (len(type) == 2 and 'rug' in type):
                         plt.ylabel('Density')
 
             if 'hist' in type or 'bar' in type:
@@ -372,6 +372,10 @@ class RVResults(Results):
 
             if alpha is None:
                 alpha = .5
+
+            if 'tile' in type and (not discrete_x or not discrete_y):
+                print('type=\'tile\' is only valid for 2 discrete variables')
+                type = ['scatter' if x == 'tile' else x for x in list(type)]
 
             if 'marginal' in type:
                 fig = plt.gcf()
@@ -435,6 +439,10 @@ class RVResults(Results):
                 caxes.yaxis.set_ticks_position('left')
                 cbar.set_label('Density')
                 caxes.yaxis.set_label_position("left")
+                new_labels = []
+                for label in caxes.get_yticklabels():
+                    new_labels.append(int(label.get_text()) / len(x))
+                caxes.set_yticklabels(new_labels)
             elif 'density' in type:
                 res = np.vstack([x, y])
                 density = gaussian_kde(res)
@@ -456,17 +464,8 @@ class RVResults(Results):
                 caxes.yaxis.set_ticks_position('left')
                 cbar.set_label('Density')
                 caxes.yaxis.set_label_position("left")
-            elif 'tile' in type or 'mixed-tile' in type:
-                if 'mixed-tile' in type:
-                    if not discrete_x:
-                        bin_points = np.linspace(np.amin(x), np.amax(x), bins)
-                        x = np.digitize(x, bin_points)
-                    if not discrete_y:
-                        bin_points = np.linspace(np.amin(y), np.amax(y), bins)
-                        y = np.digitize(y, bin_points)
-                    counts = count_var(list(zip(x, y)))
-                else:
-                    counts = self._get_counts()
+            elif 'tile' in type:
+                counts = self._get_counts()
                 x_uniq = np.unique(x)
                 y_uniq = np.unique(y)
                 xmin = min(x)
@@ -477,7 +476,7 @@ class RVResults(Results):
                 y_pos = np.arange((ymax + 1) - ymin)
                 nums = len(x)
 
-                intensity = np.zeros(shape = (len(y_pos), len(x_pos)))
+                intensity = np.zeros(shape=(len(y_pos), len(x_pos)))
                 for key, val in counts.items():
                     intensity[key[1] - ymin][key[0] - xmin] = val / nums
                 hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto')
@@ -495,6 +494,51 @@ class RVResults(Results):
                 caxes.yaxis.set_ticks_position('left')
                 cbar.set_label('Relative Frequency')
                 caxes.yaxis.set_label_position("left")
+            elif 'mixed-tile' in type:
+                if not discrete_x:
+                    x_bin = np.linspace(np.amin(x), np.amax(x), bins)
+                    x_new = []
+                    for val in x:
+                        i = 0
+                        while val > x_bin[i]:
+                            i += 1
+                        x_new.append(x_bin[i])
+                    x = x_new
+                    counts = count_var(list(zip(x, y)))
+                    x_uniq = np.unique(x)
+                    y_uniq = np.unique(y)
+                    xmin = min(x)
+                    ymin = min(y)
+                    xmax = max(x)
+                    ymax = max(y)
+                    x_pos = np.linspace(0, int(round(xmax)), bins)
+                    y_pos = np.arange((ymax + 1) - ymin)
+                    nums = len(x)
+
+                    intensity = np.zeros(shape=(len(y_pos), len(x_pos)))
+                elif not discrete_y:
+                    y_bin = np.linspace(np.amin(y), np.amax(y), bins)
+                    y_new = []
+                    for val in y:
+                        i = 0
+                        while val > y_bin[i]:
+                            i += 1
+                        y_new.append(y_bin[i])
+                    y = y_new
+                    counts = count_var(list(zip(x, y)))
+                    x_uniq = np.unique(x)
+                    y_uniq = np.unique(y)
+                    xmin = min(x)
+                    ymin = min(y)
+                    xmax = max(x)
+                    ymax = max(y)
+                    x_pos = np.arange((xmax + 1) - xmin)
+                    y_pos = np.linspace(0, int(round(ymax)), bins)
+                    nums = len(x)
+
+                    intensity = np.zeros(shape=(len(y_pos), len(x_pos)))
+                print(intensity)
+                print(counts)
             elif 'violin' in type:
                 res = np.array(self)
                 values = []
