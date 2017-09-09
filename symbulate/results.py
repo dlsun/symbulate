@@ -471,6 +471,7 @@ class RVResults(Results):
                 cbar.set_label('Density')
                 caxes.yaxis.set_label_position("left")
             elif 'tile' in type:
+                #np.unique returns sorted array of unique values
                 x_uniq = np.unique(x)
                 y_uniq = np.unique(y)
                 xmax, xmin = max(x), min(x)
@@ -492,8 +493,8 @@ class RVResults(Results):
                 ax.xaxis.set_ticks_position('bottom')
                 ax.set_xticks(x_pos)
                 ax.set_yticks(y_pos)
-                ax.set_xticklabels(np.linspace(xmin, xmax, len(x_uniq)))
-                ax.set_yticklabels(np.linspace(ymin, ymax, len(y_uniq)))
+                ax.set_xticklabels(x_uniq)
+                ax.set_yticklabels(y_uniq)
 
                 if 'marginal' not in type:
                     caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
@@ -512,8 +513,10 @@ class RVResults(Results):
                 elif not discrete_y:
                     y_bin = np.linspace(min(y), max(y), bins)
                     y = np.digitize(y, y_bin)
+                #np.unique returns sorted array of unique values
                 x_uniq = np.unique(x)
                 y_uniq = np.unique(y)
+                print(x_uniq)
                 xmax, xmin = max(x), min(x)
                 ymax, ymin = max(y), min(y)
                 x_pos = list(range(len(x_uniq)))
@@ -537,8 +540,10 @@ class RVResults(Results):
                 y_lab = np.linspace(oymin, oymax, len(y_uniq))
                 if not discrete_x: x_lab = np.around(x_lab, decimals=1)
                 if not discrete_y: y_lab = np.around(y_lab, decimals=1)
-                ax.set_xticklabels(x_lab)
-                ax.set_yticklabels(y_lab)
+                ax.set_xticklabels(x_uniq)
+                ax.set_yticklabels(y_uniq)
+                #ax.set_xticklabels(x_lab)
+                #ax.set_yticklabels(y_lab)
 
                 if 'marginal' not in type:
                     caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
