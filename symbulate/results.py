@@ -16,26 +16,18 @@ from collections import Counter
 from .sequences import TimeFunction
 from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
-from .plot import configure_axes, get_next_color, discrete_check
-from statsmodels.graphics.mosaicplot import mosaic
+from .plot import (configure_axes, get_next_color, is_discrete,
+    count_var, compute_density, add_colorbar, make_tile,
+    setup_ticks, make_violin, marginal_impulse, density2D)
+from scipy.stats import gaussian_kde
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
-from scipy.stats import gaussian_kde
 
 plt.style.use('seaborn-colorblind')
 
 def is_hashable(x):
     return x.__hash__ is not None
-
-def count_var(x):
-    counts = {}
-    for val in x:
-        if val in counts:
-            counts[val] += 1
-        else:
-            counts[val] = 1
-    return counts
 
 class Results(list):
 
@@ -299,7 +291,7 @@ class RVResults(Results):
         if dim == 1:
             counts = self._get_counts()
             heights = counts.values()
-            discrete = discrete_check(heights)
+            discrete = is_discrete(heights)
             if type is None:
                 if discrete:
                     type = ("impulse",)
@@ -324,9 +316,7 @@ class RVResults(Results):
                     if len(type) == 1:
                         plt.ylabel('Relative Frequency')
                 else:
-                    density = gaussian_kde(self)
-                    density.covariance_factor = lambda: 0.25
-                    density._compute_covariance()
+                    density = compute_density(self)
                     xs = np.linspace(min(self), max(self), 1000)
                     ax.plot(xs, density(xs), linewidth=2, color=color)
                     if len(type) == 1 or (len(type) == 2 and 'rug' in type):
@@ -364,24 +354,20 @@ class RVResults(Results):
             y_count = count_var(y)
             x_height = x_count.values()
             y_height = y_count.values()
-            
-            discrete_x = discrete_check(x_height)
-            discrete_y = discrete_check(y_height)
+            discrete_x = is_discrete(x_height)
+            discrete_y = is_discrete(y_height)
 
             if type is None:
                 type = ("scatter",)
-
             if alpha is None:
                 alpha = .5
-
             if bins is None:
-                if 'mixed-tile' in type:
+                if 'tile' in type:
                     bins = 10
                 else:
                     bins = 30
-
-            if 'tile' in type and (not discrete_x or not discrete_y):
-                print('type=\'tile\' is only valid for 2 discrete variables')
+            if 'tile' in type and (not discrete_x and not discrete_y):
+                print("type='tile' is only valid for 2 discrete variables")
                 type = ['scatter' if x == 'tile' else x for x in list(type)]
 
             if 'marginal' in type:
@@ -392,12 +378,8 @@ class RVResults(Results):
                 ax_marg_y = fig.add_subplot(gs[1:4, 3])
                 color = get_next_color(ax)
                 if 'density' in type:
-                    densityX = gaussian_kde(x)
-                    densityX.covariance_factor = lambda: 0.25
-                    densityX._compute_covariance()
-                    densityY = gaussian_kde(y)
-                    densityY.covariance_factor = lambda: 0.25
-                    densityY._compute_covariance()
+                    densityX = compute_density(x)
+                    densityY = compute_density(y)
                     x_lines = np.linspace(min(x), max(x), 1000)
                     y_lines = np.linspace(min(y), max(y), 1000)
                     ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2, color=get_next_color(ax))
@@ -405,20 +387,12 @@ class RVResults(Results):
                                   transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
                 else:
                     if discrete_x:
-                        x_key = list(x_count.keys())
-                        x_val = list(x_height)
-                        x_tot = sum(x_val)
-                        x_val = [i / x_tot for i in x_val]
-                        ax_marg_x.vlines(x_key, 0, x_val, color=get_next_color(ax), alpha=alpha, **kwargs)
+                        marginal_impulse(x_count, x_height, get_next_color(ax), ax_marg_x, alpha, 'x')
                     else:
                         ax_marg_x.hist(x, color=get_next_color(ax), normed=True, 
                                        alpha=alpha, bins=bins)
                     if discrete_y:
-                        y_key = list(y_count.keys())
-                        y_val = list(y_height)
-                        y_tot = sum(y_val)
-                        y_val = [i / y_tot for i in y_val]
-                        ax_marg_y.hlines(y_key, 0, y_val, color=get_next_color(ax), alpha=alpha, **kwargs)
+                        marginal_impulse(y_count, y_height, get_next_color(ax), ax_marg_y, alpha, 'y')
                     else:
                         ax_marg_y.hist(y, color=get_next_color(ax), normed=True,
                                        alpha=alpha, bins=bins, orientation='horizontal')
@@ -438,143 +412,28 @@ class RVResults(Results):
                 ax.scatter(x, y, alpha=alpha, c=color, **kwargs)
             elif 'hist' in type:
                 histo = ax.hist2d(x, y, bins=bins, cmap='Blues')
-                if 'marginal' not in type:
-                    caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
-                else:
-                    caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
-                cbar = plt.colorbar(mappable=histo[3], cax=caxes)
-                caxes.yaxis.set_ticks_position('left')
-                cbar.set_label('Density')
-                caxes.yaxis.set_label_position("left")
+                cbar, caxes = add_colorbar(fig, type, histo[3])
+                #change scale to density instead of counts
                 new_labels = []
                 for label in caxes.get_yticklabels():
                     new_labels.append(int(label.get_text()) / len(x))
                 caxes.set_yticklabels(new_labels)
             elif 'density' in type:
-                res = np.vstack([x, y])
-                density = gaussian_kde(res)
-                xmax, xmin = max(x), min(x)
-                ymax, ymin = max(y), min(y)
-                Xgrid, Ygrid = np.meshgrid(np.linspace(xmin, xmax, 100),
-                                           np.linspace(ymin, ymax, 100))
-                Z = density.evaluate(np.vstack([Xgrid.ravel(), Ygrid.ravel()]))
-                den = ax.imshow(Z.reshape(Xgrid.shape), origin='lower', cmap='Blues',
-                          aspect='auto', extent=[xmin, xmax, ymin, ymax]
-                )
-                if 'marginal' not in type:
-                    caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
-                else:
-                    caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
-                cbar = plt.colorbar(mappable=den, cax=caxes)
-                caxes.yaxis.set_ticks_position('left')
-                cbar.set_label('Density')
-                caxes.yaxis.set_label_position("left")
+                den = density2D(x, y, ax)
+                cbar, caxes = add_colorbar(fig, type, den)
             elif 'tile' in type:
-                x_uniq = np.unique(x)
-                y_uniq = np.unique(y)
-                x_pos = range(len(x_uniq))
-                y_pos = range(len(y_uniq))
-                x_map = dict(zip(x_uniq, x_pos))
-                y_map = dict(zip(y_uniq, y_pos))
-                x = np.vectorize(x_map.get)(x)
-                y = np.vectorize(y_map.get)(y)
-                nums = len(x)
-
-                counts = count_var(list(zip(y, x)))
-                intensity = np.zeros(shape=(len(y_uniq), len(x_uniq)))
-                    
-                for key, val in counts.items():
-                    intensity[key] = val / nums
-                hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto')
-                ax.xaxis.set_ticks_position('bottom')
-                ax.set_xticks(x_pos)
-                ax.set_yticks(y_pos)
-                ax.set_xticklabels(x_uniq)
-                ax.set_yticklabels(y_uniq)
-
-                if 'marginal' not in type:
-                    caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
-                else:
-                    caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
-                cbar = plt.colorbar(mappable=hm, cax=caxes)
-                caxes.yaxis.set_ticks_position('left')
-                cbar.set_label('Relative Frequency')
-                caxes.yaxis.set_label_position("left")
-            elif 'mixed-tile' in type:
-                if not discrete_x:
-                    x_bin = np.linspace(min(x), max(x) + 1, bins)
-                    x_lab = [min(x)]
-                    for i in range(len(x_bin) - 1):
-                        x_lab.append(0.5 * (x_bin[i] + x_bin[i+1]))
-                    x_pos = range(len(x_lab))
-                    x = np.digitize(x, x_bin)
-                else:
-                    x_lab = np.unique(x)
-                    x_pos = range(len(x_lab))
-                    x_map = dict(zip(x_lab, x_pos))
-                    x = np.vectorize(x_map.get)(x)
-
-                if not discrete_y:
-                    y_bin = np.linspace(min(y), max(y) + 1, bins)
-                    y_lab = [min(y)]
-                    for i in range(len(y_bin) - 1):
-                        y_lab.append(0.5 * (y_bin[i] + y_bin[i+1]))
-                    y = np.digitize(y, y_bin)
-                    y_pos = range(len(y_lab))
-                else:
-                    y_lab = np.unique(y)
-                    y_pos = range(len(y_lab))
-                    y_map = dict(zip(y_lab, y_pos))
-                    y = np.vectorize(y_map.get)(y)
-
-                nums = len(x)
-
-                counts = count_var(list(zip(y, x)))
-                intensity = np.zeros(shape=(len(y_lab), len(x_lab)))
-                    
-                for key, val in counts.items():
-                    intensity[key] = val / nums
-                hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto')
-                ax.xaxis.set_ticks_position('bottom')
-                ax.set_xticks(x_pos)
-                ax.set_yticks(y_pos)
-                if not discrete_x: x_lab = np.around(x_lab, decimals=1)
-                if not discrete_y: y_lab = np.around(y_lab, decimals=1)
-                ax.set_xticklabels(x_lab)
-                ax.set_yticklabels(y_lab)
-
-                if 'marginal' not in type:
-                    caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
-                else:
-                    caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
-                cbar = plt.colorbar(mappable=hm, cax=caxes)
-                caxes.yaxis.set_ticks_position('left')
-                cbar.set_label('Relative Frequency')
-                caxes.yaxis.set_label_position("left")
+                hm, x_lab, y_lab, x_pos, y_pos = make_tile(x, y, bins, discrete_x, discrete_y, ax)
+                setup_ticks(x_pos, x_lab, ax, 'x')
+                setup_ticks(y_pos, y_lab, ax, 'y')
+                cbar, caxes = add_colorbar(fig, type, hm)
             elif 'violin' in type:
                 res = np.array(self)
-                values = []
                 if discrete_x and not discrete_y:
                     positions = sorted(list(x_count.keys()))
-                    for i in positions:
-                        values.append(res[res[:, 0] == i, 1].tolist())
-                    violins = ax.violinplot(dataset=values, showmedians=True)
-                    ax.set_xticks(np.array(positions) + 1)
-                    ax.set_xticklabels(positions)
-                else: 
+                    violins = make_violin(res, positions, ax, 'x', alpha)
+                elif not discrete_x and discrete_y: 
                     positions = sorted(list(y_count.keys()))
-                    for i in positions:
-                        values.append(res[res[:, 1] == i, 0].tolist())
-                    violins = ax.violinplot(dataset=values, showmedians=True, vert=False)
-                    ax.set_yticks(np.array(positions) + 1)
-                    ax.set_yticklabels(positions)
-                for part in violins['bodies']:
-                    part.set_edgecolor('black')
-                    part.set_alpha(alpha)
-                for part in ('cbars', 'cmins', 'cmaxes', 'cmedians'):
-                    vp = violins[part]
-                    vp.set_edgecolor('black')
-                    vp.set_linewidth(1)
+                    violins = make_violin(res, positions, ax, 'y', alpha)
         else:
             if alpha is None:
                 alpha = .1
