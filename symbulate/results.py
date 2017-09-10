@@ -452,9 +452,9 @@ class RVResults(Results):
 
     def quantile(self, q):
         if all(is_scalar(x) for x in self):
-            return np.percentile(np.array(self), q*100)
+            return np.percentile(np.array(self), q * 100)
         elif get_dimension(self) > 0:
-            return tuple(np.percentile(np.array(self), q*100, 0))
+            return tuple(np.percentile(np.array(self), q * 100, 0))
         else:
             raise Exception("I don't know how to take the quanile of these values.")
 
@@ -493,18 +493,18 @@ class RVResults(Results):
     def iqr(self):
         if all(is_scalar(x) for x in self):                                          
             q75, q25 = np.percentile(np.array(self), [75, 25])
-            return q75-q25
+            return q75 - q25
         elif get_dimension(self) > 0:                                                
-            return tuple(np.subtract(np.percentile(np.array(self), 75, axis = 0), 
-                                     np.percentile(np.array(self), 25, axis = 0)))
+            return tuple(np.subtract(np.percentile(np.array(self), 75, axis=0), 
+                                     np.percentile(np.array(self), 25, axis=0)))
         else:                                                                        
             raise Exception("I don't know how to take the interquartile range of these values.")
 
     def orderstatistics(self, n):
         if all(is_scalar(x) for x in self):                                          
-            return np.partition(np.array(self), n-1)[n-1]
+            return np.partition(np.array(self), n - 1)[n - 1]
         elif get_dimension(self) > 0:                                                
-            return tuple(np.partition(np.array(self), n-1, axis = 0)[n-1]) 
+            return tuple(np.partition(np.array(self), n - 1, axis=0)[n - 1]) 
         else:                                                                        
             raise Exception("I don't know how to take the order statistics of these values.")
 

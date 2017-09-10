@@ -81,20 +81,20 @@ def med_abs_dev(x):
     return median(list(abs(i-median(x)) for i in x))
 
 def quantile(q):
-    return lambda x: np.percentile(x, q*100)    
+    return lambda x: np.percentile(x, q * 100)    
 
 def iqr(x):
     if isinstance(x, int) or isinstance(x, float):
         raise Exception("Taking the iqr of one value is unnecessary.")
     else:
         q75, q25 = np.percentile(x, [75, 25])
-        return q75-q25
+        return q75 - q25
 
 def orderstatistics(n):
     if n <= 0:
         raise Exception("Out of bounds. Lowest order is 1.")
     else:
-        return lambda x: np.partition(x, n-1)[n-1]
+        return lambda x: np.partition(x, n - 1)[n - 1]
 
 def skewness(x):
     if isinstance(x, int) or isinstance(x, float):
