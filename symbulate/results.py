@@ -7,7 +7,6 @@ random process.
 """
 
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
@@ -471,24 +470,21 @@ class RVResults(Results):
                 cbar.set_label('Density')
                 caxes.yaxis.set_label_position("left")
             elif 'tile' in type:
-                #np.unique returns sorted array of unique values
                 x_uniq = np.unique(x)
                 y_uniq = np.unique(y)
-                xmax, xmin = max(x), min(x)
-                ymax, ymin = max(y), min(y)
-                x_pos = list(range(len(x_uniq)))
-                y_pos = list(range(len(y_uniq)))
+                x_pos = range(len(x_uniq))
+                y_pos = range(len(y_uniq))
                 x_map = dict(zip(x_uniq, x_pos))
                 y_map = dict(zip(y_uniq, y_pos))
                 x = np.vectorize(x_map.get)(x)
                 y = np.vectorize(y_map.get)(y)
                 nums = len(x)
 
-                counts = count_var(list(zip(x, y)))
-                intensity = np.zeros(shape=(len(y_pos), len(x_pos)))
+                counts = count_var(list(zip(y, x)))
+                intensity = np.zeros(shape=(len(y_uniq), len(x_uniq)))
                     
                 for key, val in counts.items():
-                    intensity[key[1]][key[0]] = val / nums
+                    intensity[key] = val / nums
                 hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto')
                 ax.xaxis.set_ticks_position('bottom')
                 ax.set_xticks(x_pos)
@@ -505,45 +501,47 @@ class RVResults(Results):
                 cbar.set_label('Relative Frequency')
                 caxes.yaxis.set_label_position("left")
             elif 'mixed-tile' in type:
-                oxmax, oxmin = max(x), min(x)
-                oymax, oymin = max(y), min(y)
                 if not discrete_x:
-                    x_bin = np.linspace(min(x), max(x), bins)
+                    x_bin = np.linspace(min(x), max(x) + 1, bins)
+                    x_lab = [min(x)]
+                    for i in range(len(x_bin) - 1):
+                        x_lab.append(0.5 * (x_bin[i] + x_bin[i+1]))
+                    x_pos = range(len(x_lab))
                     x = np.digitize(x, x_bin)
-                elif not discrete_y:
-                    y_bin = np.linspace(min(y), max(y), bins)
+                else:
+                    x_lab = np.unique(x)
+                    x_pos = range(len(x_lab))
+                    x_map = dict(zip(x_lab, x_pos))
+                    x = np.vectorize(x_map.get)(x)
+
+                if not discrete_y:
+                    y_bin = np.linspace(min(y), max(y) + 1, bins)
+                    y_lab = [min(y)]
+                    for i in range(len(y_bin) - 1):
+                        y_lab.append(0.5 * (y_bin[i] + y_bin[i+1]))
                     y = np.digitize(y, y_bin)
-                #np.unique returns sorted array of unique values
-                x_uniq = np.unique(x)
-                y_uniq = np.unique(y)
-                print(x_uniq)
-                xmax, xmin = max(x), min(x)
-                ymax, ymin = max(y), min(y)
-                x_pos = list(range(len(x_uniq)))
-                y_pos = list(range(len(y_uniq)))
-                x_map = dict(zip(x_uniq, x_pos))
-                y_map = dict(zip(y_uniq, y_pos))
-                x = np.vectorize(x_map.get)(x)
-                y = np.vectorize(y_map.get)(y)
+                    y_pos = range(len(y_lab))
+                else:
+                    y_lab = np.unique(y)
+                    y_pos = range(len(y_lab))
+                    y_map = dict(zip(y_lab, y_pos))
+                    y = np.vectorize(y_map.get)(y)
+
                 nums = len(x)
 
-                counts = count_var(list(zip(x, y)))
-                intensity = np.zeros(shape=(len(y_pos), len(x_pos)))
+                counts = count_var(list(zip(y, x)))
+                intensity = np.zeros(shape=(len(y_lab), len(x_lab)))
                     
                 for key, val in counts.items():
-                    intensity[key[1]][key[0]] = val / nums
+                    intensity[key] = val / nums
                 hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto')
                 ax.xaxis.set_ticks_position('bottom')
                 ax.set_xticks(x_pos)
                 ax.set_yticks(y_pos)
-                x_lab = np.linspace(oxmin, oxmax, len(x_uniq))
-                y_lab = np.linspace(oymin, oymax, len(y_uniq))
                 if not discrete_x: x_lab = np.around(x_lab, decimals=1)
                 if not discrete_y: y_lab = np.around(y_lab, decimals=1)
-                ax.set_xticklabels(x_uniq)
-                ax.set_yticklabels(y_uniq)
-                #ax.set_xticklabels(x_lab)
-                #ax.set_yticklabels(y_lab)
+                ax.set_xticklabels(x_lab)
+                ax.set_yticklabels(y_lab)
 
                 if 'marginal' not in type:
                     caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
