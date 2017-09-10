@@ -120,7 +120,7 @@ def comparefun(x, compare, value):
         if compare(i, value):
             count += 1
     return count
-   
+
 def count(fun=lambda x: True):
     def func(x):
         val = 0
