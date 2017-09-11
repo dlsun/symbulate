@@ -18,7 +18,7 @@ from .table import Table
 from .utils import is_scalar, is_vector, get_dimension
 from .plot import (configure_axes, get_next_color, is_discrete,
     count_var, compute_density, add_colorbar, make_tile,
-    setup_ticks, make_violin, marginal_impulse, density2D)
+    setup_ticks, make_violin, make_marginal_impulse, make_density2D)
 from scipy.stats import gaussian_kde
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
@@ -361,13 +361,7 @@ class RVResults(Results):
             if alpha is None:
                 alpha = .5
             if bins is None:
-                if 'tile' in type:
-                    bins = 10
-                else:
-                    bins = 30
-            if 'tile' in type and (not discrete_x and not discrete_y):
-                print("type='tile' is only valid for 2 discrete variables")
-                type = ['scatter' if x == 'tile' else x for x in list(type)]
+                bins = 10 if 'tile' in type else 30
 
             if 'marginal' in type:
                 fig = plt.gcf()
@@ -386,12 +380,12 @@ class RVResults(Results):
                                   transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
                 else:
                     if discrete_x:
-                        marginal_impulse(x_count, x_height, get_next_color(ax), ax_marg_x, alpha, 'x')
+                        make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
                     else:
                         ax_marg_x.hist(x, color=get_next_color(ax), normed=True, 
                                        alpha=alpha, bins=bins)
                     if discrete_y:
-                        marginal_impulse(y_count, y_height, get_next_color(ax), ax_marg_y, alpha, 'y')
+                        make_marginal_impulse(y_count, get_next_color(ax), ax_marg_y, alpha, 'y')
                     else:
                         ax_marg_y.hist(y, color=get_next_color(ax), normed=True,
                                        alpha=alpha, bins=bins, orientation='horizontal')
@@ -418,9 +412,11 @@ class RVResults(Results):
                     new_labels.append(int(label.get_text()) / len(x))
                 caxes.set_yticklabels(new_labels)
             elif 'density' in type:
-                den = density2D(x, y, ax)
+                den = make_density2D(x, y, ax)
                 cbar, caxes = add_colorbar(fig, type, den, 'Density')
             elif 'tile' in type:
+                if not discrete_x and not discrete_y:
+                   raise Exception("type='tile' is only valid for 2 discrete variables" )
                 hm = make_tile(x, y, bins, discrete_x, discrete_y, ax)
                 cbar, caxes = add_colorbar(fig, type, hm, 'Relative Frequency')
             elif 'violin' in type:

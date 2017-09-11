@@ -58,6 +58,14 @@ def compute_density(values):
 	density.covariance_factor = lambda: 0.25
 	density._compute_covariance()
 	return density
+
+def setup_ticks(pos, lab, ax, axis):
+    if axis == 'x':
+        ax.set_xticks(pos)
+        ax.set_xticklabels(lab)
+    elif axis == 'y':
+        ax.set_yticks(pos)
+        ax.set_yticklabels(lab)
     
 def add_colorbar(fig, type, mappable, label):
     if 'marginal' not in type:
@@ -99,42 +107,25 @@ def make_tile(x, y, bins, discrete_x, discrete_y, ax):
     setup_ticks(y_pos, y_lab, ax, 'y')
     return hm
 
-def setup_ticks(pos, lab, ax, axis):
-    if axis == 'x':
-        ax.set_xticks(pos)
-        ax.set_xticklabels(lab)
-    elif axis == 'y':
-        ax.set_yticks(pos)
-        ax.set_yticklabels(lab)
-
 def make_violin(data, positions, ax, axis, alpha):
-    violins = get_violin(data, positions, ax, axis)
+    values = []
+    i, j = (0, 1) if axis == 'x' else (1, 0)
+    values = [data[data[:, i] == pos, j].tolist() for pos in positions]
+    violins = ax.violinplot(dataset=values, showmedians=True,
+                            vert=False if axis == 'y' else True)
+    setup_ticks(np.array(positions) + 1, positions, ax, axis)
     for part in violins['bodies']:
         part.set_edgecolor('black')
         part.set_alpha(alpha)
-    for part in ('cbars', 'cmins', 'cmaxes', 'cmedians'):
-        vp = violins[part]
+    for component in ('cbars', 'cmins', 'cmaxes', 'cmedians'):
+        vp = violins[component]
         vp.set_edgecolor('black')
         vp.set_linewidth(1)
     return violins
 
-def get_violin(data, positions, ax, axis):
-    values = []
-    if axis == 'x':
-        for i in positions:
-            values.append(data[data[:, 0] == i, 1].tolist())
-    elif axis == 'y':
-        for i in positions:
-            values.append(data[data[:, 1] == i, 0].tolist())
-    violins = ax.violinplot(dataset=values, showmedians=True,
-                            vert=False if axis == 'y' else True)
-    setup_ticks(np.array(positions) + 1, positions, ax, axis)
-    return violins
 
-
-def marginal_impulse(count, height, color, ax_marg, alpha, axis):
-    key = list(count.keys())
-    val = list(height)
+def make_marginal_impulse(count, color, ax_marg, alpha, axis):
+    key, val = list(count.keys()), list(count.values())
     tot = sum(val)
     val = [i / tot for i in val]
     if axis == 'x':
@@ -142,7 +133,7 @@ def marginal_impulse(count, height, color, ax_marg, alpha, axis):
     elif axis == 'y':
         ax_marg.hlines(key, 0, val, color=color, alpha=alpha)
 
-def density2D(x, y, ax):
+def make_density2D(x, y, ax):
     res = np.vstack([x, y])
     density = gaussian_kde(res)
     xmax, xmin = max(x), min(x)
