@@ -59,26 +59,22 @@ def compute_density(values):
 	density._compute_covariance()
 	return density
     
-def add_colorbar(fig, type, mappable):
+def add_colorbar(fig, type, mappable, label):
     if 'marginal' not in type:
         caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
     else:
         caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
-        
     cbar = plt.colorbar(mappable=mappable, cax=caxes)
     caxes.yaxis.set_ticks_position('left')
-    cbar.set_label('Density')
+    cbar.set_label(label)
     caxes.yaxis.set_label_position('left')
     return cbar, caxes
 
 def setup_tile(v, bins, discrete):
     if not discrete:
-        v_bin = np.linspace(min(v), max(v) + 1, bins)
-        v_lab = [min(v)]
-        for i in range(len(v_bin) - 1):
-            v_lab.append(0.5 * (v_bin[i] + v_bin[i+1]))
+        v_lab = np.linspace(min(v), max(v) + 1, bins)
         v_pos = range(len(v_lab))
-        v_vect = np.digitize(v, v_bin)
+        v_vect = np.digitize(v, v_lab)
     else:
         v_lab = np.unique(v)
         v_pos = range(len(v_lab))
@@ -99,7 +95,9 @@ def make_tile(x, y, bins, discrete_x, discrete_y, ax):
     ax.xaxis.set_ticks_position('bottom')
     if not discrete_x: x_lab = np.around(x_lab, decimals=1)
     if not discrete_y: y_lab = np.around(y_lab, decimals=1)
-    return hm, x_lab, y_lab, x_pos, y_pos
+    setup_ticks(x_pos, x_lab, ax, 'x')
+    setup_ticks(y_pos, y_lab, ax, 'y')
+    return hm
 
 def setup_ticks(pos, lab, ax, axis):
     if axis == 'x':
@@ -110,19 +108,7 @@ def setup_ticks(pos, lab, ax, axis):
         ax.set_yticklabels(lab)
 
 def make_violin(data, positions, ax, axis, alpha):
-    values = []
-    if axis == 'x':
-        for i in positions:
-            values.append(data[data[:, 0] == i, 1].tolist())
-        violins = ax.violinplot(dataset=values, showmedians=True)
-        ax.set_xticks(np.array(positions) + 1)
-        ax.set_xticklabels(positions)
-    elif axis == 'y':
-        for i in positions:
-            values.append(data[data[:, 1] == i, 0].tolist())
-        violins = ax.violinplot(dataset=values, showmedians=True, vert=False)
-        ax.set_yticks(np.array(positions) + 1)
-        ax.set_yticklabels(positions)
+    violins = get_violin(data, positions, ax, axis)
     for part in violins['bodies']:
         part.set_edgecolor('black')
         part.set_alpha(alpha)
@@ -131,6 +117,20 @@ def make_violin(data, positions, ax, axis, alpha):
         vp.set_edgecolor('black')
         vp.set_linewidth(1)
     return violins
+
+def get_violin(data, positions, ax, axis):
+    values = []
+    if axis == 'x':
+        for i in positions:
+            values.append(data[data[:, 0] == i, 1].tolist())
+    elif axis == 'y':
+        for i in positions:
+            values.append(data[data[:, 1] == i, 0].tolist())
+    violins = ax.violinplot(dataset=values, showmedians=True,
+                            vert=False if axis == 'y' else True)
+    setup_ticks(np.array(positions) + 1, positions, ax, axis)
+    return violins
+
 
 def marginal_impulse(count, height, color, ax_marg, alpha, axis):
     key = list(count.keys())
