@@ -345,7 +345,7 @@ class RVResults(Results):
                     self = self + np.random.normal(loc=0, scale=.002 * (max(self) - min(self)), size=len(self))
                 ax.plot(list(self), [0.001]*len(self), '|', linewidth = 5, color='k')
                 if len(type) == 1:
-                    setup_ticks([], [], ax, 'y')
+                    setup_ticks([], [], ax.yaxis)
         elif dim == 2:
             x, y = zip(*self)
 
@@ -405,7 +405,7 @@ class RVResults(Results):
                 ax.scatter(x, y, alpha=alpha, c=color, **kwargs)
             elif 'hist' in type:
                 histo = ax.hist2d(x, y, bins=bins, cmap='Blues')
-                cbar, caxes = add_colorbar(fig, type, histo[3], 'Density')
+                caxes = add_colorbar(fig, type, histo[3], 'Density')
                 #change scale to density instead of counts
                 new_labels = []
                 for label in caxes.get_yticklabels():
@@ -413,20 +413,18 @@ class RVResults(Results):
                 caxes.set_yticklabels(new_labels)
             elif 'density' in type:
                 den = make_density2D(x, y, ax)
-                cbar, caxes = add_colorbar(fig, type, den, 'Density')
+                add_colorbar(fig, type, den, 'Density')
             elif 'tile' in type:
-                if not discrete_x and not discrete_y:
-                   raise Exception("type='tile' is only valid for 2 discrete variables" )
                 hm = make_tile(x, y, bins, discrete_x, discrete_y, ax)
-                cbar, caxes = add_colorbar(fig, type, hm, 'Relative Frequency')
+                add_colorbar(fig, type, hm, 'Relative Frequency')
             elif 'violin' in type:
                 res = np.array(self)
                 if discrete_x and not discrete_y:
                     positions = sorted(list(x_count.keys()))
-                    violins = make_violin(res, positions, ax, 'x', alpha)
+                    make_violin(res, positions, ax, 'x', alpha)
                 elif not discrete_x and discrete_y: 
                     positions = sorted(list(y_count.keys()))
-                    violins = make_violin(res, positions, ax, 'y', alpha)
+                    make_violin(res, positions, ax, 'y', alpha)
         else:
             if alpha is None:
                 alpha = .1

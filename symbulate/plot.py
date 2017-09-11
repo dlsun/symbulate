@@ -54,37 +54,34 @@ def count_var(x):
     return counts
     
 def compute_density(values):
-	density = gaussian_kde(values)
-	density.covariance_factor = lambda: 0.25
-	density._compute_covariance()
-	return density
+    density = gaussian_kde(values)
+    density.covariance_factor = lambda: 0.25
+    density._compute_covariance()
+    return density
 
-def setup_ticks(pos, lab, ax, axis):
-    if axis == 'x':
-        ax.set_xticks(pos)
-        ax.set_xticklabels(lab)
-    elif axis == 'y':
-        ax.set_yticks(pos)
-        ax.set_yticklabels(lab)
+def setup_ticks(pos, lab, ax):
+    ax.set_ticks(pos)
+    ax.set_ticklabels(lab)
     
 def add_colorbar(fig, type, mappable, label):
-    if 'marginal' not in type:
+    #create axis for cbar to place on left
+    if 'marginal' not in type: 
         caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
-    else:
+    else: #adjust height if marginals
         caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
     cbar = plt.colorbar(mappable=mappable, cax=caxes)
     caxes.yaxis.set_ticks_position('left')
     cbar.set_label(label)
     caxes.yaxis.set_label_position('left')
-    return cbar, caxes
+    return caxes
 
 def setup_tile(v, bins, discrete):
     if not discrete:
         v_lab = np.linspace(min(v), max(v) + 1, bins)
-        v_pos = range(len(v_lab))
+        v_pos = np.arange(len(v_lab)) + 0.5
         v_vect = np.digitize(v, v_lab)
     else:
-        v_lab = np.unique(v)
+        v_lab = np.unique(v) #returns sorted array
         v_pos = range(len(v_lab))
         v_map = dict(zip(v_lab, v_pos))
         v_vect = np.vectorize(v_map.get)(v)
@@ -103,8 +100,8 @@ def make_tile(x, y, bins, discrete_x, discrete_y, ax):
     ax.xaxis.set_ticks_position('bottom')
     if not discrete_x: x_lab = np.around(x_lab, decimals=1)
     if not discrete_y: y_lab = np.around(y_lab, decimals=1)
-    setup_ticks(x_pos, x_lab, ax, 'x')
-    setup_ticks(y_pos, y_lab, ax, 'y')
+    setup_ticks(x_pos, x_lab, ax.xaxis)
+    setup_ticks(y_pos, y_lab, ax.yaxis)
     return hm
 
 def make_violin(data, positions, ax, axis, alpha):
@@ -113,7 +110,8 @@ def make_violin(data, positions, ax, axis, alpha):
     values = [data[data[:, i] == pos, j].tolist() for pos in positions]
     violins = ax.violinplot(dataset=values, showmedians=True,
                             vert=False if axis == 'y' else True)
-    setup_ticks(np.array(positions) + 1, positions, ax, axis)
+    setup_ticks(np.array(positions) + 1, positions, 
+                ax.xaxis if axis == 'x' else ax.yaxis)
     for part in violins['bodies']:
         part.set_edgecolor('black')
         part.set_alpha(alpha)
@@ -121,8 +119,6 @@ def make_violin(data, positions, ax, axis, alpha):
         vp = violins[component]
         vp.set_edgecolor('black')
         vp.set_linewidth(1)
-    return violins
-
 
 def make_marginal_impulse(count, color, ax_marg, alpha, axis):
     key, val = list(count.keys()), list(count.values())
