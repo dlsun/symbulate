@@ -78,8 +78,8 @@ def add_colorbar(fig, type, mappable, label):
 def setup_tile(v, bins, discrete):
     if not discrete:
         v_lab = np.linspace(min(v), max(v), bins + 1)
-        v_pos = np.arange(len(v_lab)) + 0.5
-        v_vect = np.digitize(v, v_lab)
+        v_pos = np.arange(0, len(v_lab)) - 0.5
+        v_vect = np.digitize(v, v_lab, right=True) - 1
     else:
         v_lab = np.unique(v) #returns sorted array
         v_pos = range(len(v_lab))
@@ -87,28 +87,19 @@ def setup_tile(v, bins, discrete):
         v_vect = np.vectorize(v_map.get)(v)
     return v_vect, v_lab, v_pos
 
-def adjust_tile(intensity, lab, pos, bins, axis):
-    intensity = np.delete(intensity, 0, axis)
-    intensity = np.delete(intensity, bins, axis)
-    pos = pos - 1
-    lab = np.around(lab, decimals=1)
-    return intensity, lab, pos
-
 def make_tile(x, y, bins, discrete_x, discrete_y, ax):
     x_vect, x_lab, x_pos = setup_tile(x, bins, discrete_x)
     y_vect, y_lab, y_pos = setup_tile(y, bins, discrete_y)
     nums = len(x_vect)
     counts = count_var(list(zip(y_vect, x_vect)))
-    y_shape = len(y_lab) if discrete_y else len(y_lab) + 1
-    x_shape = len(x_lab) if discrete_x else len(x_lab) + 1
+    y_shape = len(y_lab) if discrete_y else len(y_lab) - 1
+    x_shape = len(x_lab) if discrete_x else len(x_lab) - 1
     intensity = np.zeros(shape=(y_shape, x_shape))
         
     for key, val in counts.items():
         intensity[key] = val / nums
-    if not discrete_x: 
-        intensity, x_lab, x_pos = adjust_tile(intensity, x_lab, x_pos, bins, 1)
-    if not discrete_y: 
-        intensity, y_lab, y_pos = adjust_tile(intensity, y_lab, y_pos, bins, 0)
+    if not discrete_x: x_lab = np.around(x_lab, decimals=1)
+    if not discrete_y: y_lab = np.around(y_lab, decimals=1)
     hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto')
     ax.xaxis.set_ticks_position('bottom')
     setup_ticks(x_pos, x_lab, ax.xaxis)
