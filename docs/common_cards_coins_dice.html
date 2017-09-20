@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>common</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>common_cards_coins_dice</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -11778,7 +11778,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Symbulate-Documentation">Symbulate Documentation<a class="anchor-link" href="#Symbulate-Documentation">&#182;</a></h1><h1 id="Common-Probability-Models">Common Probability Models<a class="anchor-link" href="#Common-Probability-Models">&#182;</a></h1>
+<h1 id="Symbulate-Documentation">Symbulate Documentation<a class="anchor-link" href="#Symbulate-Documentation">&#182;</a></h1><h1 id="Cards,-coins,-and-dice">Cards, coins, and dice<a class="anchor-link" href="#Cards,-coins,-and-dice">&#182;</a></h1>
 </div>
 </div>
 </div>
@@ -11787,7 +11787,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Many commonly used probability models are built into Symbulate.  These models can be used to either specify probability spaces or distributions of random variables or processes.</p>
+<p>Many probabilistic situations involving physical objects like cards, coins, and dice can be specified with <a href="probspace.html#boxmodel">BoxModel</a>.</p>
 
 </div>
 </div>
@@ -11797,14 +11797,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<ol>
-<li><a href="#box"><strong>Cards, coins, dice</strong></a></li>
-<li><a href="#discrete"><strong>Discrete distributions</strong></a></li>
-<li><a href="#continuous"><strong>Continuous distributions</strong></a></li>
-<li><a href="#common_general_comments"><strong>Methods for common discrete and continuous distributions</strong></a></li>
-<li><a href="#joint"><strong>Joint distributions</strong></a></li>
-<li><a href="#process"><strong>Common random processes</strong></a></li>
-</ol>
+<p>&lt; <a href="common.html">Common probability models</a> | <a href="index.html">Contents</a> | <a href="common_discrete.html">Common discrete distributions</a> &gt;</p>
 
 </div>
 </div>
@@ -11814,7 +11807,353 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>&lt; <a href="rv.html">Random variables</a> | <a href="index.html">Contents</a> | <a href="common_cards_coins_dice.html">Cards, coins, dice</a> &gt;</p>
+<p>Be sure to import Symbulate using the following commands.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">symbulate</span> <span class="k">import</span> <span class="o">*</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><em>Example</em>.  Rolling a fair n-sided die (with n=6).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">die</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">BoxModel</span><span class="p">(</span><span class="n">die</span><span class="p">)</span>
+<span class="n">RV</span><span class="p">(</span><span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZIAAAD8CAYAAABdCyJkAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
+AAALEgAACxIB0t1+/AAAGFxJREFUeJzt3X+wX3Wd3/HniwCry48FJWIGEgmdLCy71UgzgNU66zJY
+YNVAnVrYXWQpNVIBpV2nG7Wzy053WnVQO24ZYtTsYhel+IOabrPQwDJad0WS0JQQMCVmoSQNJEol
+CC0QePeP7wn97uXm3pOcnHv55j4fM9/5nvM553Pu+wwzeXE+55zPN1WFJEn765DpLkCSNNoMEklS
+JwaJJKkTg0SS1IlBIknqxCCRJHVikEiSOjFIJEmdGCSSpE4One4CpsJxxx1XJ5100nSXIUkjZd26
+dT+uqtmT7TcjguSkk05i7dq1012GJI2UJI+02c+hLUlSJwaJJKkTg0SS1EmvQZLk3CSbkmxOsnSc
+7acm+X6SZ5N8dKj9lCTrhz67klzTbLs2ybahbef3eQ6SpIn1drM9ySzgeuAcYCuwJsnKqnpgaLcn
+gA8DFwz3rapNwMKh42wDbh3a5XNVdV1ftUuS2uvziuQMYHNVbamq54CbgcXDO1TVjqpaAzw/wXHO
+Bn5UVa2eHpAkTa0+g+QE4NGh9a1N2766CPjamLark9yXZEWSY/e3QElSd6/om+1JDgfeA3x9qPkG
+4GQGQ1/bgc/spe+SJGuTrN25c2fvtUrSTNVnkGwD5g6tn9i07YvzgHur6vE9DVX1eFW9UFUvAl9k
+MIT2MlW1vKoWVdWi2bMnfTFTkrSf+gySNcCCJPObK4uLgJX7eIyLGTOslWTO0OqFwP2dqpSkg9Sf
+3PMof3LPo5Pv2FFvT21V1e4kVwG3A7OAFVW1MckVzfZlSV4PrAWOBl5sHvE9rap2JTmCwRNfHxxz
+6E8nWQgU8PA42yVJU6jXubaqahWwakzbsqHlxxgMeY3X92ngteO0X3KAy5QkdfCKvtkuSQfKVA3z
+zEQGiSSpE4NEktSJQSJJ6sQgkSR1YpBoxvMmrNSNQSLNQIanDiSDRH+D/8BI2lcGiSSpE4NEktSJ
+QSJJ6sQgkSR1YpBIkjoxSCRJnRgkkqRODJIJ+E6FJE3OIJEkdWKQSJI6MUgkSZ0YJJKkTgwSSVIn
+vQZJknOTbEqyOcnScbafmuT7SZ5N8tEx2x5OsiHJ+iRrh9pfk2R1koea72P7PAdJ0sR6C5Iks4Dr
+gfOA04CLk5w2ZrcngA8D1+3lMO+oqoVVtWiobSlwZ1UtAO5s1iVJ06TPK5IzgM1VtaWqngNuBhYP
+71BVO6pqDfD8Phx3MXBjs3wjcMGBKFaStH/6DJITgOG3+bY2bW0VcEeSdUmWDLUfX1Xbm+XHgOO7
+lSlJ6uLQ6S5gAm+rqm1JXgesTvLDqvru8A5VVUlqvM5N+CwBmDdvXv/VStIM1ecVyTZg7tD6iU1b
+K1W1rfneAdzKYKgM4PEkcwCa7x176b+8qhZV1aLZs2fvR/mSpDb6DJI1wIIk85McDlwErGzTMckR
+SY7aswy8E7i/2bwSuLRZvhT49gGtWpK0T3ob2qqq3UmuAm4HZgErqmpjkiua7cuSvB5YCxwNvJjk
+GgZPeB0H3JpkT41frarbmkN/ErglyeXAI8D7+joHSdLker1HUlWrgFVj2pYNLT/GYMhrrF3Am/Zy
+zJ8AZx/AMiVJHfhmuySpE4NEktSJQSJJ6sQgkSR1YpBIkjoxSCRJnRgkkqRODBJJUicGiSSpE4NE
+ktSJQSJJ6sQgkSR1YpBIkjoxSCRJnRgkkqRODBJJUicGiSSpE4NEktTJpEGS5LVTUYgkaTS1uSK5
+O8nXk5yfJL1XJEkaKW2C5BeB5cAlwENJ/nWSX+y3LEnSqJg0SGpgdVVdDHwAuBS4J8l3krxlor5J
+zk2yKcnmJEvH2X5qku8neTbJR4fa5ya5K8kDSTYm+cjQtmuTbEuyvvmcv09nLEk6oA6dbIfmHslv
+MbgieRy4GlgJLAS+DszfS79ZwPXAOcBWYE2SlVX1wNBuTwAfBi4Y03038DtVdW+So4B1SVYP9f1c
+VV3X8hwlST1qM7T1feBo4IKq+vWq+lZV7a6qtcCyCfqdAWyuqi1V9RxwM7B4eIeq2lFVa4Dnx7Rv
+r6p7m+WngAeBE1qflSRpykx6RQKcUlU13oaq+tQE/U4AHh1a3wqcuQ+1AZDkJODNwA+Gmq9O8n5g
+LYMrl/+9r8eVJB0Yba5I/kuSY/asJDk2ye091vSSJEcC3wSuqapdTfMNwMkMhta2A5/ZS98lSdYm
+Wbtz586pKFeSZqQ2QTK7qn66Z6X5v//Xtei3DZg7tH5i09ZKksMYhMhNVfWtob//eFW9UFUvAl9k
+MIT2MlW1vKoWVdWi2bNnt/2zkqR91CZIXkgyb89KkjcA4w51jbEGWJBkfpLDgYsY3KSfVPO+ypeB
+B6vqs2O2zRlavRC4v80xJUn9aHOP5BPA95J8Bwjw94Alk3Wqqt1JrgJuB2YBK6pqY5Irmu3Lkrye
+wX2Oo4EXk1wDnAa8kcFTYhuSrG8O+fGqWgV8OslCBmH2MPDB1mcrSTrgJg2SqrotyenAWU3TNVX1
+4zYHb/7hXzWmbdnQ8mMMhrzG+h6D0BrvmJe0+duSpKnR5ooE4OcYvPNxKHBaEqrqu/2VJUkaFW1e
+SPwU8I+AjcCLTXMBBokkqdUVyQUM3iV5tu9iJEmjp81TW1uAw/ouRJI0mtpckTwDrE9yJ/DSVUlV
+fbi3qiRJI6NNkKyk5fsfkqSZp83jvzcmeTUwr6o2TUFNkqQR0uandt8NrAdua9YXJvEKRZIEtLvZ
+fi2D+ax+ClBV6xlMmihJUqsgeb6qnhzT9uK4e0qSZpw2N9s3JvkNYFaSBQx+0fCv+i1LkjQq2lyR
+XA38MoNHf78G7AKu6bMoSdLoaPPU1jMMZgD+RP/lSJJGTZu5tu5inN8fqapf66UiSdJIaXOP5KND
+y68C3gvs7qccSdKoaTO0tW5M018muaeneiRJI6bN0NZrhlYPAf4O8Au9VSRJGilthrbWMbhHEgZD
+Wn8NXN5nUZKk0dFmaGv+VBQiSRpNbYa2/sFE26vqWweuHEnSqGkztHU58HeBv2jW38HgzfadDIa8
+DBJJmsHavNl+GHBaVb23qt7L4C33w6rqsqr6xxN1THJukk1JNidZOs72U5N8P8mzST7apm+S1yRZ
+neSh5vvYdqcqSepDmyCZW1Xbh9YfB+ZN1inJLOB64DzgNODiJKeN2e0JBnN3XbcPfZcCd1bVAuDO
+Zl2SNE3aBMmdSW5P8ttJfhv4z8AdLfqdAWyuqi1V9RxwM7B4eIeq2lFVa4Dn96HvYuDGZvlG4IIW
+tUiSetLmqa2rklwIvL1pWl5Vt7Y49gnAo0PrW4EzW9Y1Ud/jh66QHgOOH+8ASZYASwDmzZv0AkqS
+tJ/a3GwHuBd4qqruSPLzSY6qqqf6LKyNqqokL5sHrNm2HFgOsGjRonH3kSR11+andj8AfAP4QtN0
+AvAfWxx7GzB3aP3Epq2Nifo+nmROU9scYEfLY0qSetDmHsmVwFsZ/A4JVfUQ8LoW/dYAC5LMT3I4
+cBHQ9rfeJ+q7Eri0Wb4U+HbLY0qSetBmaOvZqnouCQBJDmWcaeXHqqrdSa4CbgdmASuqamOSK5rt
+y5K8HlgLHA28mOQaBo8a7xqvb3PoTwK3JLkceAR43z6cryTpAGsTJN9J8nHg1UnOAT4E/Kc2B6+q
+VcCqMW3LhpYfYzBs1apv0/4T4Ow2f1+S1L82Q1tLGbzFvgH4IIN/3P9ln0VJkkbHhFckzYuBX6mq
+3wS+ODUlSZJGyYRXJFX1AvCG5oa3JEkv0+YeyRYGv4q4Enh6T2NVfba3qiRJI6NNkPyo+RwCHNVv
+OZKkUbPXIElyaFXtrqo/mMqCJEmjZaJ7JPfsWUjyR1NQiyRpBE0UJBlafmvfhUiSRtNEQeJEh5Kk
+SU10s/3UJPcxuDL5W80yzXpV1Rt7r06S9Io3UZD80pRVIUkaWXsNkqp6ZCoLkSSNpjZzbUmStFcG
+iSSpk1ZBkuTVSU7puxhJ0uhp81O77wbWA7c16wubebckSWp1RXItcAbwU4CqWg/M77EmSdIIaRMk
+z1fVk2PafFlRkgS0m/13Y5LfAGYlWQB8GPirfsuSJI2KNlckVwO/DDwLfBV4Erimz6IkSaOjzRXJ
+qVX1CeATfRcjSRo9ba5IPpPkwST/Ksmv7MvBk5ybZFOSzUmWjrM9ST7fbL8vyelN+ylJ1g99diW5
+ptl2bZJtQ9vO35eaJEkH1qRXJFX1jiSvB94HfCHJ0cB/qKo/nKhfklnA9cA5wFZgTZKVVfXA0G7n
+AQuaz5nADcCZVbUJWDh0nG3ArUP9PldV17U8R0lSj1q9kFhVj1XV54ErGLxT8nstup0BbK6qLVX1
+HHAzsHjMPouBr9TA3cAxSeaM2eds4EfO/SVJr0xtXkj8pWY4aQPwRwye2DqxxbFPAB4dWt/atO3r
+PhcBXxvTdnUzFLYiybF7qXtJkrVJ1u7cubNFuZKk/dHmimQFg5cR/35V/WpV3VBVO3quC4AkhwPv
+Ab4+1HwDcDKDoa/twGfG61tVy6tqUVUtmj17du+1StJM1eYeyVv289jbgLlD6yc2bfuyz3nAvVX1
++FA9Ly0n+SLwZ/tZnyTpANjrFUmSW5rvDc0w0p7PhqFfS5zIGmBBkvnNlcVFwNg5ulYC72+e3joL
+eLKqtg9tv5gxw1pj7qFcCNzfohZJUk8muiL5SPP9rv05cFXtTnIVcDswC1hRVRuTXNFsXwasAs4H
+NgPPAJft6Z/kCAZPfH1wzKE/nWQhg2laHh5nuyRpCk30C4l7rgw+VFW/O7wtyaeA3315r5cdYxWD
+sBhuWza0XMCVe+n7NPDacdovmezvSpKmTpub7eeM03begS5EkjSa9npFkuSfAh8CTh5zT+Qo4C/7
+LkySNBomukfyVeDPgX8DDE9v8lRVPdFrVZKkkTHRPZInGcz0ezFAktcBrwKOTHJkVf3PqSlRkvRK
+1uqndpM8BPw18B0GT0r9ec91SZJGRJub7X8InAX8j6qaz2Duq7t7rUqSNDLa/tTuT4BDkhxSVXcB
+i3quS5I0Itr8sNVPkxwJfBe4KckO4Ol+y5IkjYo2VySLgf8D/DPgNuBHwLv7LEqSNDraTNo4fPVx
+Y4+1SJJG0EQvJD7FYD6rl5qa9TCY3eTonmuTJI2Aid4jOWoqC5EkjaZWP7Wb5G1JLmuWj0syv9+y
+JEmjos0Lib/PYKbfjzVNhwN/2mdRkqTR0eaK5EIGP3f7NEBV/S8GEzdKktQqSJ5rfjek4KUfnJIk
+CWgXJLck+QJwTJIPAHcAX+q3LEnSqGjzHsl1Sc4BdgGnAL9XVat7r0ySNBLaTJFCExyrAZIckuQ3
+q+qmXiuTJI2EvQ5tJTk6yceS/Lsk78zAVcAW4H1TV6Ik6ZVsonsk/57BUNYG4J8AdwH/ELigqha3
+OXiSc5NsSrI5ydJxtifJ55vt9yU5fWjbw0k2JFmfZO1Q+2uSrE7yUPN9bMtzlST1YKKhrZOr6m8D
+JPkSsB2YV1X/t82Bk8wCrgfOAbYCa5KsrKoHhnY7D1jQfM4Ebmi+93hHVf14zKGXAndW1SebcFrK
+4D0XSdI0mOiK5Pk9C1X1ArC1bYg0zgA2V9WWqnoOuJnBTMLDFgNfqYG7GTwZNmeS4y7m/08eeSNw
+wT7UJEk6wCYKkjcl2dV8ngLeuGc5ya4Wxz4BeHRofWvT1nafAu5Isi7JkqF9jq+q7c3yY8DxLWqR
+JPVkokkbZ01lIeN4W1VtS/I6YHWSH1bVd4d3qKpKUuN1bsJnCcC8efP6r1aSZqhWkzbup23A3KH1
+E5u2VvtU1Z7vHcCtDIbKAB7fM/zVfO8Y749X1fKqWlRVi2bPnt3xVCRJe9NnkKwBFiSZn+Rw4CJg
+5Zh9VgLvb57eOgt4sqq2JzkiyVHw0pQs7wTuH+pzabN8KfDtHs9BkjSJVi8k7o+q2t28d3I7MAtY
+UVUbk1zRbF8GrALOBzYDzwCXNd2PB25NsqfGr1bVbc22TzKYtuVy4BF8p0WSplVvQQJQVasYhMVw
+27Kh5QKuHKffFuBNeznmT4CzD2ylkqT91efQliRpBjBIJEmdGCSSpE4MEklSJwaJJKkTg0SS1IlB
+IknqxCCRJHVikEiSOjFIJEmdGCSSpE4MEklSJwaJJKkTg0SS1IlBIknqxCCRJHVikEiSOjFIJEmd
+GCSSpE4MEklSJwaJJKmTXoMkyblJNiXZnGTpONuT5PPN9vuSnN60z01yV5IHkmxM8pGhPtcm2ZZk
+ffM5v89zkCRN7NC+DpxkFnA9cA6wFViTZGVVPTC023nAguZzJnBD870b+J2qujfJUcC6JKuH+n6u
+qq7rq3ZJUnt9XpGcAWyuqi1V9RxwM7B4zD6Lga/UwN3AMUnmVNX2qroXoKqeAh4ETuixVknSfuoz
+SE4AHh1a38rLw2DSfZKcBLwZ+MFQ89XNUNiKJMceqIIlSfvuFX2zPcmRwDeBa6pqV9N8A3AysBDY
+DnxmL32XJFmbZO3OnTunpF5Jmon6DJJtwNyh9RObtlb7JDmMQYjcVFXf2rNDVT1eVS9U1YvAFxkM
+ob1MVS2vqkVVtWj27NmdT0aSNL4+g2QNsCDJ/CSHAxcBK8fssxJ4f/P01lnAk1W1PUmALwMPVtVn
+hzskmTO0eiFwf3+nIEmaTG9PbVXV7iRXAbcDs4AVVbUxyRXN9mXAKuB8YDPwDHBZ0/2twCXAhiTr
+m7aPV9Uq4NNJFgIFPAx8sK9zkCRNrrcgAWj+4V81pm3Z0HIBV47T73tA9nLMSw5wmZKkDl7RN9sl
+Sa98BokkqRODRJLUiUEiSerEIJEkdWKQSJI6MUgkSZ0YJJKkTgwSSVInBokkqRODRJLUiUEiSerE
+IJEkdWKQSJI6MUgkSZ0YJJKkTgwSSVInBokkqRODRJLUiUEiSerEIJEkddJrkCQ5N8mmJJuTLB1n
+e5J8vtl+X5LTJ+ub5DVJVid5qPk+ts9zkCRNrLcgSTILuB44DzgNuDjJaWN2Ow9Y0HyWADe06LsU
+uLOqFgB3NuuSpGnS5xXJGcDmqtpSVc8BNwOLx+yzGPhKDdwNHJNkziR9FwM3Nss3Ahf0eA6SpEn0
+GSQnAI8OrW9t2trsM1Hf46tqe7P8GHD8gSpYkrTvDp3uArqoqkpS421LsoTBcBnAz5Js2s8/c9xl
+8OP97DuqPOeZwXOeGbqc8xva7NRnkGwD5g6tn9i0tdnnsAn6Pp5kTlVtb4bBdoz3x6tqObB8/8sf
+SLK2qhZ1Pc4o8ZxnBs95ZpiKc+5zaGsNsCDJ/CSHAxcBK8fssxJ4f/P01lnAk82w1UR9VwKXNsuX
+At/u8RwkSZPo7YqkqnYnuQq4HZgFrKiqjUmuaLYvA1YB5wObgWeAyybq2xz6k8AtSS4HHgHe19c5
+SJIm1+s9kqpaxSAshtuWDS0XcGXbvk37T4CzD2ylE+o8PDaCPOeZwXOeGXo/5wz+LZckaf84RYok
+qRODZC+SrEiyI8n9013LVEkyN8ldSR5IsjHJR6a7pj4leVWSe5L89+Z8/2C6a5oqSWYl+W9J/my6
+a5kKSR5OsiHJ+iRrp7ueqZDkmCTfSPLDJA8meUtvf8uhrfEleTvwMwZv3v/KdNczFZrHqedU1b1J
+jgLWARdU1QPTXFovkgQ4oqp+luQw4HvAR5pZFg5qSf45sAg4uqreNd319C3Jw8Ciqpox75AkuRH4
+r1X1pebp15+vqp/28be8ItmLqvou8MR01zGVqmp7Vd3bLD8FPMjLZyM4aDRT8/ysWT2s+Rz0/2eV
+5ETg14EvTXct6keSXwDeDnwZoKqe6ytEwCDRXiQ5CXgz8IPpraRfzRDPegYvtq6uqoP6fBv/FvgX
+wIvTXcgUKuCOJOuaWS8OdvOBncAfN0OYX0pyRF9/zCDRyyQ5EvgmcE1V7ZruevpUVS9U1UIGsyec
+keSgHsZM8i5gR1Wtm+5aptjbmv/O5wFXNkPXB7NDgdOBG6rqzcDT9DhTukGiv6G5V/BN4Kaq+tZ0
+1zNVmsv+u4Bzp7uWnr0VeE9zz+Bm4NeS/On0ltS/qtrWfO8AbmUww/jBbCuwdegK+xsMgqUXBole
+0tx8/jLwYFV9drrr6VuS2UmOaZZfDZwD/HB6q+pXVX2sqk6sqpMYTD30F1X1W9NcVq+SHNE8PEIz
+vPNO4KB+GrOqHgMeTXJK03Q20NtDMyM9+2+fknwN+FXguCRbgd+vqi9Pb1W9eytwCbChuW8A8PFm
+loGD0RzgxuaH1A4BbqmqGfE47AxzPHDr4P+TOBT4alXdNr0lTYmrgZuaJ7a20ExB1Qcf/5UkdeLQ
+liSpE4NEktSJQSJJ6sQgkSR1YpBIkjoxSCRJnRgkkqRODBJJUif/D4DexV94nPZfAAAAAElFTkSu
+QmCC
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><em>Example.</em> Flipping a fair coin twice and recording the results in sequence.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">BoxModel</span><span class="p">([</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">order_matters</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">P</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[3]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+    <table>
+      <thead>
+        <th width="80%">Outcome</th>
+        <th width="20%">Value</th>
+      </thead>
+      <tbody>
+        <tr><td>('H', 'H')</td><td>0.2518</td></tr><tr><td>('H', 'T')</td><td>0.2457</td></tr><tr><td>('T', 'H')</td><td>0.2503</td></tr><tr><td>('T', 'T')</td><td>0.2522</td></tr><tr><td><b>Total</b></td><td><b>1.0</b></td></tr>
+      </tbody>
+    </table>
+    
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><em>Example.</em> Unequally likely outcomes on a colored "spinner".</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">BoxModel</span><span class="p">([</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="s1">&#39;brown&#39;</span><span class="p">,</span> <span class="s1">&#39;yellow&#39;</span><span class="p">],</span> <span class="n">probs</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">])</span>
+<span class="n">P</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[4]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+    <table>
+      <thead>
+        <th width="80%">Outcome</th>
+        <th width="20%">Value</th>
+      </thead>
+      <tbody>
+        <tr><td>brown</td><td>0.2458</td></tr><tr><td>orange</td><td>0.5065</td></tr><tr><td>yellow</td><td>0.2477</td></tr><tr><td><b>Total</b></td><td><b>1.0</b></td></tr>
+      </tbody>
+    </table>
+    
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><code>DeckOfCards()</code> is a special case of BoxModel for drawing from a standard deck of 52 cards.  By default <code>replace=False</code>.</p>
+<p><em>Example.</em> Simulated hands of 5 cards each.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">DeckOfCards</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[5]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+    <table>
+      <thead>
+        <th width="10%">Index</th>
+        <th width="90%">Result</th>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>0</td><td>((2, 'Clubs'), (4, 'Clubs'), ('A', 'Diamonds'), ('Q', 'Spades'), (3, 'Hearts'))</td>
+        </tr>
+        
+        <tr>
+          <td>1</td><td>((7, 'Hearts'), ('J', 'Spades'), (5, 'Hearts'), ('A', 'Diamonds'), (5, 'Spades'))</td>
+        </tr>
+        
+        <tr>
+          <td>2</td><td>((2, 'Clubs'), ('Q', 'Spades'), ('A', 'Diamonds'), ('K', 'Spades'), (2, 'Hearts'))</td>
+        </tr>
+        
+      </tbody>
+    </table>
+    
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>&lt; <a href="common.html">Common probability models</a> | <a href="index.html">Contents</a> | <a href="common_discrete.html">Common discrete distributions</a> &gt;</p>
 
 </div>
 </div>

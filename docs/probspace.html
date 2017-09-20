@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>probspace</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>probspace</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -13,8 +11,8 @@
 *
 */
 /*!
- * Bootstrap v3.3.6 (http://getbootstrap.com)
- * Copyright 2011-2015 Twitter, Inc.
+ * Bootstrap v3.3.7 (http://getbootstrap.com)
+ * Copyright 2011-2016 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
@@ -1109,7 +1107,6 @@ a:focus {
   text-decoration: underline;
 }
 a:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -2538,7 +2535,6 @@ select[size] {
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -3029,7 +3025,6 @@ select[multiple].input-lg {
 .btn.focus,
 .btn:active.focus,
 .btn.active.focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -8760,6 +8755,9 @@ body > #header .header-bar {
     margin-left: 10px;
   }
 }
+[dir="rtl"] #ipython_notebook {
+  float: right !important;
+}
 #noscript {
   width: auto;
   padding-top: 16px;
@@ -8962,8 +8960,14 @@ span#login_widget > .button .badge,
  *
  * Author: Jupyter Development Team
  */
+[dir="rtl"] #tabs li {
+  float: right;
+}
 ul#tabs {
   margin-bottom: 4px;
+}
+[dir="rtl"] ul#tabs {
+  margin-right: 0px;
 }
 ul#tabs a {
   padding-top: 6px;
@@ -8986,6 +8990,16 @@ ul.breadcrumb span {
 }
 .list_toolbar .tree-buttons {
   padding-top: 1px;
+}
+[dir="rtl"] .list_toolbar .tree-buttons {
+  float: left !important;
+}
+[dir="rtl"] .list_toolbar .pull-right {
+  padding-top: 1px;
+  float: left !important;
+}
+[dir="rtl"] .list_toolbar .pull-left {
+  float: right !important;
 }
 .dynamic-buttons {
   padding-top: 3px;
@@ -9122,6 +9136,9 @@ ul.breadcrumb span {
 #tree-selector {
   padding-right: 0px;
 }
+[dir="rtl"] #tree-selector a {
+  float: right;
+}
 #button-select-all {
   min-width: 50px;
 }
@@ -9211,6 +9228,9 @@ ul#new-menu {
   left: auto;
   right: 0;
 }
+[dir="rtl"] #new-menu {
+  text-align: right;
+}
 .kernel-menu-icon {
   padding-right: 12px;
   width: 24px;
@@ -9255,6 +9275,9 @@ ul#new-menu {
 }
 #running .panel-group .panel .panel-body .list_container .list_item:last-child {
   border-bottom: 0px;
+}
+[dir="rtl"] #running .col-sm-8 {
+  float: right !important;
 }
 .delete-button {
   display: none;
@@ -9551,6 +9574,7 @@ div.cell.selected.jupyter-soft-selected {
   }
 }
 div.inner_cell {
+  min-width: 0;
   /* Old browsers */
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -9571,11 +9595,6 @@ div.inner_cell {
   box-flex: 1;
   /* Modern browsers */
   flex: 1;
-}
-@-moz-document url-prefix() {
-  div.inner_cell {
-    overflow-x: hidden;
-  }
 }
 /* input_area and input_prompt must match in top border and margin for alignment */
 div.input_area {
@@ -11246,7 +11265,7 @@ div#pager .ui-resizable-handle::after {
 }
 .shortcut_key {
   display: inline-block;
-  width: 20ex;
+  width: 21ex;
   text-align: right;
   font-family: monospace;
 }
@@ -11558,6 +11577,7 @@ ul.typeahead-list > li > a {
   box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.2);
 }
 .terminal-app .terminal {
+  width: 100%;
   float: left;
   font-family: monospace;
   color: white;
@@ -11571,6 +11591,9 @@ ul.typeahead-list > li > a {
 .terminal-app .terminal dummy-screen {
   line-height: 1em;
   font-size: 14px;
+}
+.terminal-app .terminal .xterm-rows {
+  padding: 10px;
 }
 .terminal-app .terminal-cursor {
   color: black;
@@ -11631,8 +11654,10 @@ ul.typeahead-list > li > a {
 .highlight .mh { color: #666666 } /* Literal.Number.Hex */
 .highlight .mi { color: #666666 } /* Literal.Number.Integer */
 .highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.highlight .sa { color: #BA2121 } /* Literal.String.Affix */
 .highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
 .highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
 .highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
 .highlight .s2 { color: #BA2121 } /* Literal.String.Double */
 .highlight .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
@@ -11643,9 +11668,11 @@ ul.typeahead-list > li > a {
 .highlight .s1 { color: #BA2121 } /* Literal.String.Single */
 .highlight .ss { color: #19177C } /* Literal.String.Symbol */
 .highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #0000FF } /* Name.Function.Magic */
 .highlight .vc { color: #19177C } /* Name.Variable.Class */
 .highlight .vg { color: #19177C } /* Name.Variable.Global */
 .highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.highlight .vm { color: #19177C } /* Name.Variable.Magic */
 .highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
     </style>
 <style type="text/css">
@@ -11751,7 +11778,37 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Symbulate-Documentation:-Probability-Spaces">Symbulate Documentation: Probability Spaces<a class="anchor-link" href="#Symbulate-Documentation:-Probability-Spaces">&#182;</a></h1>
+<h1 id="Symbulate-Documentation">Symbulate Documentation<a class="anchor-link" href="#Symbulate-Documentation">&#182;</a></h1><h1 id="Probability-Spaces">Probability Spaces<a class="anchor-link" href="#Probability-Spaces">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>&lt; <a href="index.html">Contents</a> | <a href="sim.html">Simulation tools</a> &gt;</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a id='probspace'></a></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>A <strong>probability space</strong> consists of a <strong>sample space</strong> of possible outcomes and a <strong>probability measure</strong> which specifies how to assign probabilities to related events.  Several common probability spaces are available in Symbulate.  Users can also define their own probability spaces.</p>
+
 </div>
 </div>
 </div>
@@ -11771,21 +11828,10 @@ div#notebook {
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <ol>
-<li><a href="index.html"><strong>Introduction and installing Symbulate</strong></a></li>
-<li><a href="#probspace"><strong>Probability spaces</strong></a><ol>
 <li><a href="#boxmodel"><strong>BoxModel:</strong></a> Define a simple box model probability space.</li>
 <li><a href="#draw"><strong>Draw:</strong></a> Draw an outcome according to a probability model.</li>
 <li><a href="#probability_space"><strong>ProbabilitySpace:</strong></a> Define more general probability spaces.</li>
 <li><a href="#indep"><strong>Independent spaces:</strong></a> Combine independent probability spaces.</li>
-</ol>
-</li>
-<li><a href="sim.html"><strong>Simulation tools</strong></a></li>
-<li><a href="rv.html"><strong>Random variables</strong></a></li>
-<li><a href="common.html"><strong>Commonly used probability models</strong></a></li>
-<li><a href="joint.html"><strong>Multiple random variables and joint distributions</strong></a></li>
-<li><a href="conditioning.html"><strong>Conditioning</strong></a></li>
-<li><a href="process.html"><strong>Random processes</strong></a></li>
-<li><a href="mc.html"><strong>Markov processes</strong></a></li>
 </ol>
 
 </div>
@@ -11796,7 +11842,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Instructions for downloading and installing Symbulate can be found <a href="http://calpoly.edu/~dsun09/python.html">here</a>.  During a session, be sure to import Symbulate using the following commands.
+<p>Be sure to import Symbulate during a session  using the following commands.
 <a id='prob'></a></p>
 
 </div>
@@ -11821,8 +11867,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='probspace'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='boxmodel'></a></p>
 
 </div>
 </div>
@@ -11832,28 +11877,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Probability-Spaces">Probability Spaces<a class="anchor-link" href="#Probability-Spaces">&#182;</a></h2><p>A probability space consists of a sample space of possible outcomes and a probability measure which specifies how to assign probabilities to related events.  Several common probability models are available in Symbulate.  Users can also define their own probability spaces.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='boxmodel'></a>
-<a href="#contents">Back to contents</a></p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="BoxModel">BoxModel<a class="anchor-link" href="#BoxModel">&#182;</a></h3><p>The box model representation can be used for many probability models.  Enter a list repesenting the tickets in the box.  For example, rolling a fair six-sided die could be represented as a box model with six tickets labeled 1 through 6.</p>
+<h3 id="BoxModel">BoxModel<a class="anchor-link" href="#BoxModel">&#182;</a></h3><p>The probability space in many elementary situations can be defined via a "box model." To define a Symbulate <code>BoxModel</code> enter a list repesenting the tickets in the box.  For example, rolling a fair six-sided die could be represented as a box model with six tickets labeled 1 through 6.</p>
 
 </div>
 </div>
@@ -11901,8 +11925,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='draw'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='draw'></a></p>
 
 </div>
 </div>
@@ -11912,7 +11935,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Draw">Draw<a class="anchor-link" href="#Draw">&#182;</a></h3><p>BoxModel itself just defines the model; it does return any values.  (The same is true for any probability space.) The <code>.draw()</code> method can be used to simulate one draw from the BoxModel (or any probability space).</p>
+<h3 id="Draw">Draw<a class="anchor-link" href="#Draw">&#182;</a></h3><p><code>BoxModel</code> itself just defines the model; it does not return any values.  (The same is true for any probability space.) The <code>.draw()</code> method can be used to simulate one draw from the <code>BoxModel</code> (or any probability space).</p>
 
 </div>
 </div>
@@ -11933,11 +11956,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[4]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[4]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>1</pre>
+<pre>5</pre>
 </div>
 
 </div>
@@ -11958,7 +11983,7 @@ div#notebook {
 <li><code>probs</code>: Probabilities that the tickets are selected.  By default, all tickets are equally likely.</li>
 <li><code>order_matters</code>: <code>True</code> if different orderings of the same tickets drawn are counted as different outcomes; <code>False</code> if the order in which the tickets are drawn is irrelevant.</li>
 </ul>
-<p>Multiple tickets can be drawn from the box using the <strong>size</strong> argument.</p>
+<p>Multiple tickets can be drawn from the box using the <code>size</code> argument.</p>
 
 </div>
 </div>
@@ -11968,7 +11993,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">BoxModel</span><span class="p">(</span><span class="n">die</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">BoxModel</span><span class="p">(</span><span class="n">die</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
 
 </div>
@@ -11979,11 +12004,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[5]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[5]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(3, 4, 1)</pre>
+<pre>(4, 4, 3)</pre>
 </div>
 
 </div>
@@ -11997,7 +12024,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>BoxModel by default assumes equally likely tickets.  This can be changed using the <strong>probs</strong> argument, by specifying a probability value for each ticket.</p>
+<p>By default <code>BoxModel</code> assumes equally likely tickets.  This can be changed using the <code>probs</code> argument, by specifying a probability value for each ticket.</p>
 <p><em>Example.</em> Suppose 32% of Americans are Democrats, 27% are Republican, and 41% are Independent.  Five randomly selected Americans are surveyed about their political party affiliation.</p>
 <p>This situation could be represented as sampling with replacement from a box with 100 tickets, 32 of which are Democrat, etc, from which 5 tickets are drawn.  But rather than specifying a list of 100 tickets, we can just specify the three tickets and the corresponding probabilities with <code>probs</code>.</p>
 
@@ -12009,7 +12036,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">BoxModel</span><span class="p">([</span><span class="s1">&#39;D&#39;</span><span class="p">,</span><span class="s1">&#39;R&#39;</span><span class="p">,</span><span class="s1">&#39;I&#39;</span><span class="p">],</span> <span class="n">probs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">],</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">BoxModel</span><span class="p">([</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">],</span> <span class="n">probs</span><span class="o">=</span><span class="p">[</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
 
 </div>
@@ -12020,11 +12047,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[6]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[6]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(&#39;R&#39;, &#39;I&#39;, &#39;D&#39;, &#39;R&#39;, &#39;I&#39;)</pre>
+<pre>(&#39;D&#39;, &#39;R&#39;, &#39;R&#39;, &#39;I&#39;, &#39;D&#39;)</pre>
 </div>
 
 </div>
@@ -12038,8 +12067,9 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>BoxModel by default assumes sampling with replacement; each ticket is placed back in the box before the next ticket is selected.  Sampling <em>without replacement</em> can be handled with <code>replace = False</code>.  (The default is <code>replace = True</code>.)</p>
-<p><em>Example.</em>  Two people are selected at random from Anakin, Bella, Frodo, Harry, Katniss to go on a quest.</p>
+<p><a id='dictionary'></a>
+The <code>probs</code> argument requires that the probabilities are already normalized to sum to 1.  Non-normalized values can be handled by entering the tickets as a dictionary, specifying the label on each ticket and the number of tickets in the  box with that label.  Note that a dictionary is enclosed in braces <code>{}</code> rather than brackets <code>[]</code>.</p>
+<p>The following code is equivalent to the previous code which used the <code>probs</code> option.</p>
 
 </div>
 </div>
@@ -12049,7 +12079,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">BoxModel</span><span class="p">([</span><span class="s1">&#39;A&#39;</span><span class="p">,</span><span class="s1">&#39;B&#39;</span><span class="p">,</span><span class="s1">&#39;F&#39;</span><span class="p">,</span><span class="s1">&#39;H&#39;</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">],</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">replace</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">BoxModel</span><span class="p">({</span><span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span><span class="s1">&#39;R&#39;</span><span class="p">:</span> <span class="mi">27</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span> <span class="mi">41</span><span class="p">},</span> <span class="n">size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
 
 </div>
@@ -12060,11 +12090,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[7]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[7]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(&#39;F&#39;, &#39;A&#39;)</pre>
+<pre>(&#39;I&#39;, &#39;I&#39;, &#39;D&#39;, &#39;R&#39;, &#39;R&#39;)</pre>
 </div>
 
 </div>
@@ -12078,30 +12110,8 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Note that by default, BoxModel returns ordered outcomes, e.g. ('A', 'B') is distinct from ('B', 'A'). To return unordered outcomes, set <code>order_matters=False</code>.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='probability_space'></a>
-<a href="#contents">Back to contents</a></p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="ProbabilitySpace">ProbabilitySpace<a class="anchor-link" href="#ProbabilitySpace">&#182;</a></h3><p>Symbulate has many <a href="common.html">common probability models</a> built in.  <strong>ProbabilitySpace</strong> allows for user defined probability models.  The first step in creating a probability space is to define a function that explains how to draw one outcome.</p>
-<p><em>Example.</em> Ten percent of all e-mail is spam. Thirty percent of spam e-mails contain the word "money", while 2% of non-spam e-mails contain the word "money". Suppose an e-mail contains the word "money". What is the probability that it is spam?</p>
-<p>We can think of the sample space of outcomes of pairs of the possible email types (spam or not) and wordings (money or not), with the probability measure following the above specifications.  The function spam_sim below encodes these specifications; note the use of .draw().</p>
+<p>By default <code>BoxModel</code> assumes sampling with replacement; each ticket is placed back in the box before the next ticket is selected.  Sampling <em>without replacement</em> can be handled with <code>replace=False</code>.  (The default is <code>replace=True</code>.)</p>
+<p><em>Example.</em>  Two people are selected at random from Anakin, Bella, Frodo, Harry, Katniss to go on a quest.</p>
 
 </div>
 </div>
@@ -12109,6 +12119,69 @@ div#notebook {
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">BoxModel</span><span class="p">([</span><span class="s1">&#39;A&#39;</span><span class="p">,</span><span class="s1">&#39;B&#39;</span><span class="p">,</span><span class="s1">&#39;F&#39;</span><span class="p">,</span><span class="s1">&#39;H&#39;</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[8]:</div>
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(&#39;A&#39;, &#39;F&#39;)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Note that by default, <code>BoxModel</code> returns ordered outcomes, e.g. ('A', 'B') is distinct from ('B', 'A'). To return unordered outcomes, set <code>order_matters=False</code>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a id='probability_space'></a></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="ProbabilitySpace">ProbabilitySpace<a class="anchor-link" href="#ProbabilitySpace">&#182;</a></h3><p>Symbulate has many <a href="common.html">common probability models</a> built in.  The <code>ProbabilitySpace</code> command allows for user defined probability models.  The first step in creating a probability space is to define a function that explains how to draw one outcome.</p>
+<p><em>Example.</em> Ten percent of all e-mail is spam. Thirty percent of spam e-mails contain the word "money", while 2% of non-spam e-mails contain the word "money". Suppose an e-mail contains the word "money". What is the probability that it is spam?</p>
+<p>We can think of the sample space of outcomes of pairs of the possible email types (spam or not) and wordings (money or not), with the probability measure following the above specifications.  First we draw from a <code>BoxModel</code> to determine the email type.  Then, depending on the result of the first draw, we draw from one of two <code>BoxModel</code>s to determine the wording.  The function <code>spam_sim</code> below encodes these specifications; note the use of <code>.draw()</code>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">spam_sim</span><span class="p">():</span>
@@ -12130,14 +12203,14 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>A probability space can be created once the specifications of the simulation have been defined through a function.</p>
+<p>A <code>ProbabilitySpace</code> can be created once the specifications of the simulation have been defined through a function.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">ProbabilitySpace</span><span class="p">(</span><span class="n">spam_sim</span><span class="p">)</span>
@@ -12152,7 +12225,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[9]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[10]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -12177,39 +12252,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Binomial</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[10]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>7</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 <div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Normal</span><span class="p">(</span><span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sd</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
 
 </div>
@@ -12220,11 +12266,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[11]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[11]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>-1.3249295364553557</pre>
+<pre>6</pre>
 </div>
 
 </div>
@@ -12236,6 +12284,37 @@ div#notebook {
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[12]:</div>
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.3619289993227831</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">mean_vector</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
@@ -12254,11 +12333,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[12]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[13]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(-0.065568635668065395, 1.2692697449258947, 1.928610867543689)</pre>
+<pre>(-0.22749679873889656, 1.6296631715075314, 0.79580835264536565)</pre>
 </div>
 
 </div>
@@ -12272,8 +12353,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='indep'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='indep'></a></p>
 
 </div>
 </div>
@@ -12283,7 +12363,8 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Independent-probability-spaces">Independent probability spaces<a class="anchor-link" href="#Independent-probability-spaces">&#182;</a></h3><p><strong>Independent</strong> probability spaces can be constructed by multiplying (<code>*</code> in Python) two probability spaces. Multiple independent copies of a probability space can be created by raising a probability space to a power (<code>**</code> in Python).</p>
+<h3 id="Independent-probability-spaces">Independent probability spaces<a class="anchor-link" href="#Independent-probability-spaces">&#182;</a></h3><p><strong>Independent</strong> probability spaces can be constructed by multiplying (<code>*</code> in Python) two probability spaces. The product <code>*</code> syntax reflects that under independence joint probabilities are products of marginal probabilities: For example, events $A$ and $B$ are independent if and only if $P(A\cap B) = P(A)P(B)$.</p>
+<p>Multiple independent copies of a probability space can be created by raising a probability space to a power (<code>**</code> in Python).</p>
 <p><em>Example.</em>  Roll a fair six-sided die and a fair four-sided die.</p>
 
 </div>
@@ -12291,7 +12372,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">die6</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
@@ -12308,11 +12389,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[13]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[14]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(5, 2)</pre>
+<pre>(4, 2)</pre>
 </div>
 
 </div>
@@ -12333,50 +12416,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="p">(</span><span class="n">BoxModel</span><span class="p">([</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="n">Poisson</span><span class="p">(</span><span class="n">lam</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">Exponential</span><span class="p">(</span><span class="n">rate</span> <span class="o">=</span> <span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[14]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>(&#39;T&#39;, 3, 0.40229734124550787)</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p><em>Example.</em> Four independent N(0,1) values.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 <div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">4</span>
-<span class="n">P</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="p">(</span><span class="n">BoxModel</span><span class="p">([</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="n">Poisson</span><span class="p">(</span><span class="n">lam</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">Exponential</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
 
 </div>
@@ -12387,14 +12430,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[15]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[15]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(-0.5942325331223908,
- -1.8622308020163767,
- -1.0777368034751102,
- -0.025400549187354817)</pre>
+<pre>(&#39;H&#39;, 3, 0.17962033022575485)</pre>
 </div>
 
 </div>
@@ -12408,8 +12450,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Infinite independent copies of a probability space can be created using ** inf</p>
-<p><em>Example</em>. Infinitely many independent Normal(0, 1) values.</p>
+<p><em>Example.</em> Four independent Normal(0,1) values.</p>
 
 </div>
 </div>
@@ -12419,7 +12460,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">inf</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">4</span>
 <span class="n">P</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
 
@@ -12431,11 +12472,16 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[16]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[16]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(0.6722891735702804, 1.2499180505441077, 0.819429146265528, -1.09366418183122, 0.32100719142896283, 0.8634169850744681, -0.21346277249458961, 0.9366764316012709, -0.5515302396866277, -1.4762852618994453, &#39;...&#39;)</pre>
+<pre>(1.500833820300937,
+ 0.5960138782343144,
+ -0.015339890428991629,
+ -0.48063522961405397)</pre>
 </div>
 
 </div>
@@ -12449,13 +12495,72 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='simulation'></a>
-<a href="#contents">Back to contents</a></p>
+<p>Infinitely many independent copies of a probability space can be created by raising the  probabilty space to the <code>inf</code> power, i.e. <code>** inf</code></p>
+<p><em>Example</em>. Infinitely many independent Normal(0, 1) values.</p>
 
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">P</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">inf</span>
+<span class="n">P</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[17]:</div>
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(0.9051545133819178, -0.6795117235056013, -0.18059828981272197, -0.16974084974970854, -0.7238363446156592, -0.8130618472750923, -0.5101024347016073, 1.9570595463860194, 1.9213150322634953, 1.55599067233092, &#39;...&#39;)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>&lt; <a href="index.html">Contents</a> | <a href="sim.html">Simulation tools</a> &gt;</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
     </div>
   </div>
 </body>
+
+ 
+
+
 </html>
