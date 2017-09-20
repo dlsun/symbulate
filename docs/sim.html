@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>sim</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>sim</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -13,8 +11,8 @@
 *
 */
 /*!
- * Bootstrap v3.3.6 (http://getbootstrap.com)
- * Copyright 2011-2015 Twitter, Inc.
+ * Bootstrap v3.3.7 (http://getbootstrap.com)
+ * Copyright 2011-2016 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
@@ -1109,7 +1107,6 @@ a:focus {
   text-decoration: underline;
 }
 a:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -2538,7 +2535,6 @@ select[size] {
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -3029,7 +3025,6 @@ select[multiple].input-lg {
 .btn.focus,
 .btn:active.focus,
 .btn.active.focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -8760,6 +8755,9 @@ body > #header .header-bar {
     margin-left: 10px;
   }
 }
+[dir="rtl"] #ipython_notebook {
+  float: right !important;
+}
 #noscript {
   width: auto;
   padding-top: 16px;
@@ -8962,8 +8960,14 @@ span#login_widget > .button .badge,
  *
  * Author: Jupyter Development Team
  */
+[dir="rtl"] #tabs li {
+  float: right;
+}
 ul#tabs {
   margin-bottom: 4px;
+}
+[dir="rtl"] ul#tabs {
+  margin-right: 0px;
 }
 ul#tabs a {
   padding-top: 6px;
@@ -8986,6 +8990,16 @@ ul.breadcrumb span {
 }
 .list_toolbar .tree-buttons {
   padding-top: 1px;
+}
+[dir="rtl"] .list_toolbar .tree-buttons {
+  float: left !important;
+}
+[dir="rtl"] .list_toolbar .pull-right {
+  padding-top: 1px;
+  float: left !important;
+}
+[dir="rtl"] .list_toolbar .pull-left {
+  float: right !important;
 }
 .dynamic-buttons {
   padding-top: 3px;
@@ -9122,6 +9136,9 @@ ul.breadcrumb span {
 #tree-selector {
   padding-right: 0px;
 }
+[dir="rtl"] #tree-selector a {
+  float: right;
+}
 #button-select-all {
   min-width: 50px;
 }
@@ -9211,6 +9228,9 @@ ul#new-menu {
   left: auto;
   right: 0;
 }
+[dir="rtl"] #new-menu {
+  text-align: right;
+}
 .kernel-menu-icon {
   padding-right: 12px;
   width: 24px;
@@ -9255,6 +9275,9 @@ ul#new-menu {
 }
 #running .panel-group .panel .panel-body .list_container .list_item:last-child {
   border-bottom: 0px;
+}
+[dir="rtl"] #running .col-sm-8 {
+  float: right !important;
 }
 .delete-button {
   display: none;
@@ -9551,6 +9574,7 @@ div.cell.selected.jupyter-soft-selected {
   }
 }
 div.inner_cell {
+  min-width: 0;
   /* Old browsers */
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -9571,11 +9595,6 @@ div.inner_cell {
   box-flex: 1;
   /* Modern browsers */
   flex: 1;
-}
-@-moz-document url-prefix() {
-  div.inner_cell {
-    overflow-x: hidden;
-  }
 }
 /* input_area and input_prompt must match in top border and margin for alignment */
 div.input_area {
@@ -11246,7 +11265,7 @@ div#pager .ui-resizable-handle::after {
 }
 .shortcut_key {
   display: inline-block;
-  width: 20ex;
+  width: 21ex;
   text-align: right;
   font-family: monospace;
 }
@@ -11558,6 +11577,7 @@ ul.typeahead-list > li > a {
   box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.2);
 }
 .terminal-app .terminal {
+  width: 100%;
   float: left;
   font-family: monospace;
   color: white;
@@ -11571,6 +11591,9 @@ ul.typeahead-list > li > a {
 .terminal-app .terminal dummy-screen {
   line-height: 1em;
   font-size: 14px;
+}
+.terminal-app .terminal .xterm-rows {
+  padding: 10px;
 }
 .terminal-app .terminal-cursor {
   color: black;
@@ -11631,8 +11654,10 @@ ul.typeahead-list > li > a {
 .highlight .mh { color: #666666 } /* Literal.Number.Hex */
 .highlight .mi { color: #666666 } /* Literal.Number.Integer */
 .highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.highlight .sa { color: #BA2121 } /* Literal.String.Affix */
 .highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
 .highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
 .highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
 .highlight .s2 { color: #BA2121 } /* Literal.String.Double */
 .highlight .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
@@ -11643,9 +11668,11 @@ ul.typeahead-list > li > a {
 .highlight .s1 { color: #BA2121 } /* Literal.String.Single */
 .highlight .ss { color: #19177C } /* Literal.String.Symbol */
 .highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #0000FF } /* Name.Function.Magic */
 .highlight .vc { color: #19177C } /* Name.Variable.Class */
 .highlight .vg { color: #19177C } /* Name.Variable.Global */
 .highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.highlight .vm { color: #19177C } /* Name.Variable.Magic */
 .highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
     </style>
 <style type="text/css">
@@ -11751,7 +11778,17 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Symbulate-Documentation:-Simulation-tools">Symbulate Documentation: Simulation tools<a class="anchor-link" href="#Symbulate-Documentation:-Simulation-tools">&#182;</a></h1>
+<h1 id="Symbulate-Documentation">Symbulate Documentation<a class="anchor-link" href="#Symbulate-Documentation">&#182;</a></h1><h1 id="Simulation-tools">Simulation tools<a class="anchor-link" href="#Simulation-tools">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There are several tools available for simulating outcomes from a probability space (or values of random variables or random processes) and analyzing the results.  In general, the methods below can be chained, one after the other, e.g. <code>P.sim(1000).apply(sum).tabulate()</code>.</p>
+
 </div>
 </div>
 </div>
@@ -11771,23 +11808,13 @@ div#notebook {
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <ol>
-<li><a href="index.html"><strong>Introduction and installing Symbulate</strong></a></li>
-<li><a href="probspace.html"><strong>Probability spaces</strong></a></li>
-<li><a href="#sim"><strong>Simulation tools</strong></a><ol>
-<li><a href="#sim"><strong>Simulate:</strong></a> Use <strong>.sim()</strong> to simulate outcomes of a probability model, or to simulate values of a random variable</li>
-<li><a href="#get"><strong>Get:</strong></a> Use <strong>.get()</strong> to get the results from one realization of the simulation.</li>
-<li><a href="#apply"><strong>Apply:</strong></a> Use <strong>.apply()</strong> to apply a function to each simulated outcome or value</li>
-<li><a href="#tabulate"><strong>Tabulate:</strong></a> Use <strong>.tabulate()</strong> to tabulate simulated outcomes of a probability model or simulated values of a random variable</li>
-<li><a href="#filter"><strong>Filter:</strong></a> Create a <em>subset</em> of the values which satsify some criteria.</li>
-<li><a href="#count"><strong>Count:</strong></a> Count the values which satsify some criteria.</li>
-</ol>
-</li>
-<li><a href="rv.html"><strong>Random variables</strong></a></li>
-<li><a href="common.html"><strong>Commonly used probability models</strong></a></li>
-<li><a href="joint.html"><strong>Multiple random variables and joint distributions</strong></a></li>
-<li><a href="conditioning.html"><strong>Conditioning</strong></a></li>
-<li><a href="process.html"><strong>Random processes</strong></a></li>
-<li><a href="mc.html"><strong>Markov processes</strong></a></li>
+<li><a href="#sim"><strong>Simulate:</strong></a> <code>.sim()</code> simulates outcomes of a probability model, or values of random variables or process</li>
+<li><a href="#get"><strong>Get:</strong></a> <code>.get()</code> returns the results of a particular realization of the simulation.</li>
+<li><a href="#apply"><strong>Apply:</strong></a> <code>.apply()</code> applies a function to each outcome or value</li>
+<li><a href="#tabulate"><strong>Tabulate:</strong></a> <code>.tabulate()</code> creates a table summary of simulated outcomes of a probability model or simulated values of random variables</li>
+<li><a href="#filter"><strong>Filter:</strong></a> <code>.filter()</code> and its relatives create <em>subsets</em> of the values which satsify some criteria.</li>
+<li><a href="#count"><strong>Count:</strong></a> <code>.count()</code> and its relatives count the values which satsify some criteria.</li>
+<li><a href="#recap"><strong>Summary:</strong></a>  Examples using <code>tabulate</code>, <code>filter</code>, and <code>count</code> to manipulate simulation results.</li>
 </ol>
 
 </div>
@@ -11798,7 +11825,17 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Instructions for downloading and installing Symbulate can be found <a href="http://calpoly.edu/~dsun09/python.html">here</a>.  During a session, be sure to import Symbulate using the following commands.
+<p>&lt; <a href="probspace.html">Probability spaces</a> | <a href="index.html">Contents</a> | <a href="rv.html">Random variables</a> &gt;</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Be sure to import Symbulate using the following commands.
 <a id='simulation'></a></p>
 
 </div>
@@ -11823,7 +11860,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Simulation-tools">Simulation tools<a class="anchor-link" href="#Simulation-tools">&#182;</a></h2><p>There are several tools available for simulating outcomes from a probability space and analyzing the results.  In general, the methods below can be chained, one after the other, e.g. <code>P.sim(1000).apply(sum).tabulate()</code>.</p>
+<p><a id='sim'></a></p>
 
 </div>
 </div>
@@ -11833,18 +11870,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='sim'></a>
-<a href="#contents">Back to contents</a></p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Simulate">Simulate<a class="anchor-link" href="#Simulate">&#182;</a></h3><p>The .draw() extension simulates one outcome from a probability space.  Many draws can be simulated <strong>.sim()</strong>.  The argument is the number of outcomes to simulate.</p>
+<h3 id="Simulate">Simulate<a class="anchor-link" href="#Simulate">&#182;</a></h3><p>The <code>.draw()</code> extension simulates one outcome from a probability space.  Many draws can be simulated <code>.sim()</code>; the argument is the number of outcomes or values to simulate.</p>
 <p><em>Example.</em>  Simulate 100 repetitions of rolling two fair six-sided dice; each repetition involves a pair of values.</p>
 
 </div>
@@ -11868,7 +11894,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[2]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[2]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -11880,7 +11908,7 @@ div#notebook {
       <tbody>
         
         <tr>
-          <td>0</td><td>(3, 5)</td>
+          <td>0</td><td>(3, 6)</td>
         </tr>
         
         <tr>
@@ -11888,35 +11916,35 @@ div#notebook {
         </tr>
         
         <tr>
-          <td>2</td><td>(5, 1)</td>
+          <td>2</td><td>(6, 3)</td>
         </tr>
         
         <tr>
-          <td>3</td><td>(2, 6)</td>
+          <td>3</td><td>(5, 5)</td>
         </tr>
         
         <tr>
-          <td>4</td><td>(5, 5)</td>
+          <td>4</td><td>(3, 2)</td>
         </tr>
         
         <tr>
-          <td>5</td><td>(3, 2)</td>
+          <td>5</td><td>(6, 1)</td>
         </tr>
         
         <tr>
-          <td>6</td><td>(6, 4)</td>
+          <td>6</td><td>(5, 3)</td>
         </tr>
         
         <tr>
-          <td>7</td><td>(4, 5)</td>
+          <td>7</td><td>(5, 1)</td>
         </tr>
         
         <tr>
-          <td>8</td><td>(1, 3)</td>
+          <td>8</td><td>(6, 1)</td>
         </tr>
         <tr><td>...</td><td>...</td></tr>
         <tr>
-          <td>99</td><td>(6, 2)</td>
+          <td>99</td><td>(3, 6)</td>
         </tr>
         
       </tbody>
@@ -11935,7 +11963,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><strong>Caution:</strong> Note that every time .sim() is called new values are simulated.  Store simulated values as a variable in order to perform multiple operations in different lines of code on the same set of values.</p>
+<p><strong>Caution:</strong> Note that every time <code>.sim()</code> is called new values are simulated.  Store simulated values as a variable in order to perform multiple operations in different lines of code on the same set of values.</p>
 
 </div>
 </div>
@@ -11976,7 +12004,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[3]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[3]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12004,7 +12034,7 @@ div#notebook {
         </tr>
         
         <tr>
-          <td>4</td><td>('spam', 'money')</td>
+          <td>4</td><td>('not spam', 'no money')</td>
         </tr>
         
         <tr>
@@ -12012,7 +12042,7 @@ div#notebook {
         </tr>
         
         <tr>
-          <td>6</td><td>('not spam', 'no money')</td>
+          <td>6</td><td>('not spam', 'money')</td>
         </tr>
         
         <tr>
@@ -12020,7 +12050,7 @@ div#notebook {
         </tr>
         
         <tr>
-          <td>8</td><td>('spam', 'money')</td>
+          <td>8</td><td>('not spam', 'no money')</td>
         </tr>
         <tr><td>...</td><td>...</td></tr>
         <tr>
@@ -12043,8 +12073,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='get'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='get'></a></p>
 
 </div>
 </div>
@@ -12054,7 +12083,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Get">Get<a class="anchor-link" href="#Get">&#182;</a></h3><p>The outcome of a particular repetition of the simulation can be accessed with <code>.get()</code>.  Recall that Python starts an index at 0, so .get(0) returns the first simulated value, .get(1) the second, etc.</p>
+<h3 id="Get">Get<a class="anchor-link" href="#Get">&#182;</a></h3><p>The outcome of a particular repetition of the simulation can be accessed with <code>.get()</code>.  Recall that Python starts an index at 0, so <code>.get(0)</code> returns the first simulated value, <code>.get(1)</code> the second, etc.</p>
 
 </div>
 </div>
@@ -12078,7 +12107,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[4]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[4]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12090,19 +12121,19 @@ div#notebook {
       <tbody>
         
         <tr>
-          <td>0</td><td>(6, 4)</td>
+          <td>0</td><td>(5, 6)</td>
         </tr>
         
         <tr>
-          <td>1</td><td>(4, 3)</td>
+          <td>1</td><td>(4, 2)</td>
         </tr>
         
         <tr>
-          <td>2</td><td>(1, 2)</td>
+          <td>2</td><td>(3, 2)</td>
         </tr>
         
         <tr>
-          <td>3</td><td>(3, 6)</td>
+          <td>3</td><td>(2, 6)</td>
         </tr>
         
       </tbody>
@@ -12132,11 +12163,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[5]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[5]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(6, 4)</pre>
+<pre>(5, 6)</pre>
 </div>
 
 </div>
@@ -12161,11 +12194,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[6]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[6]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(1, 2)</pre>
+<pre>(3, 2)</pre>
 </div>
 
 </div>
@@ -12179,8 +12214,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='apply'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='apply'></a></p>
 
 </div>
 </div>
@@ -12203,7 +12237,7 @@ div#notebook {
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">die</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="c1"># this is just a list of the number 1 through 6</span>
 <span class="n">roll</span> <span class="o">=</span> <span class="n">BoxModel</span><span class="p">(</span><span class="n">die</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
-<span class="n">roll</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">sum</span><span class="p">)</span>
+<span class="n">roll</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">sum</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12214,7 +12248,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[7]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[7]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12226,11 +12262,11 @@ div#notebook {
       <tbody>
         
         <tr>
-          <td>0</td><td>7</td>
+          <td>0</td><td>10</td>
         </tr>
         
         <tr>
-          <td>1</td><td>12</td>
+          <td>1</td><td>7</td>
         </tr>
         
         <tr>
@@ -12238,7 +12274,7 @@ div#notebook {
         </tr>
         
         <tr>
-          <td>3</td><td>6</td>
+          <td>3</td><td>2</td>
         </tr>
         
         <tr>
@@ -12246,23 +12282,23 @@ div#notebook {
         </tr>
         
         <tr>
-          <td>5</td><td>3</td>
+          <td>5</td><td>7</td>
         </tr>
         
         <tr>
-          <td>6</td><td>9</td>
+          <td>6</td><td>4</td>
         </tr>
         
         <tr>
-          <td>7</td><td>9</td>
+          <td>7</td><td>11</td>
         </tr>
         
         <tr>
-          <td>8</td><td>5</td>
+          <td>8</td><td>7</td>
         </tr>
         <tr><td>...</td><td>...</td></tr>
         <tr>
-          <td>99</td><td>4</td>
+          <td>999</td><td>7</td>
         </tr>
         
       </tbody>
@@ -12307,7 +12343,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[8]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[8]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12319,43 +12357,43 @@ div#notebook {
       <tbody>
         
         <tr>
-          <td>0</td><td>(8, 6, 0, 1, 3, 4, 9, 7, 2, 5)</td>
+          <td>0</td><td>(1, 4, 6, 9, 2, 3, 0, 7, 8, 5)</td>
         </tr>
         
         <tr>
-          <td>1</td><td>(9, 5, 8, 2, 0, 1, 6, 3, 7, 4)</td>
+          <td>1</td><td>(0, 2, 4, 7, 5, 6, 8, 9, 1, 3)</td>
         </tr>
         
         <tr>
-          <td>2</td><td>(6, 4, 1, 8, 2, 9, 3, 5, 0, 7)</td>
+          <td>2</td><td>(7, 5, 4, 8, 1, 0, 2, 9, 6, 3)</td>
         </tr>
         
         <tr>
-          <td>3</td><td>(0, 8, 5, 6, 4, 1, 3, 7, 2, 9)</td>
+          <td>3</td><td>(4, 0, 9, 3, 7, 8, 6, 2, 5, 1)</td>
         </tr>
         
         <tr>
-          <td>4</td><td>(1, 7, 4, 9, 8, 3, 0, 6, 2, 5)</td>
+          <td>4</td><td>(9, 7, 0, 8, 4, 6, 3, 2, 5, 1)</td>
         </tr>
         
         <tr>
-          <td>5</td><td>(9, 4, 7, 3, 5, 8, 1, 0, 6, 2)</td>
+          <td>5</td><td>(2, 7, 8, 3, 4, 5, 1, 9, 0, 6)</td>
         </tr>
         
         <tr>
-          <td>6</td><td>(9, 1, 8, 5, 2, 4, 0, 6, 3, 7)</td>
+          <td>6</td><td>(7, 9, 4, 3, 8, 0, 5, 6, 1, 2)</td>
         </tr>
         
         <tr>
-          <td>7</td><td>(5, 6, 0, 3, 9, 1, 7, 4, 8, 2)</td>
+          <td>7</td><td>(9, 4, 7, 3, 2, 5, 1, 8, 6, 0)</td>
         </tr>
         
         <tr>
-          <td>8</td><td>(2, 9, 0, 7, 6, 3, 8, 1, 5, 4)</td>
+          <td>8</td><td>(2, 1, 0, 6, 4, 7, 8, 3, 9, 5)</td>
         </tr>
         <tr><td>...</td><td>...</td></tr>
         <tr>
-          <td>9999</td><td>(7, 3, 9, 4, 2, 6, 1, 5, 8, 0)</td>
+          <td>9999</td><td>(4, 9, 6, 7, 8, 0, 2, 5, 1, 3)</td>
         </tr>
         
       </tbody>
@@ -12391,7 +12429,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[9]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[9]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12419,7 +12459,7 @@ div#notebook {
         </tr>
         
         <tr>
-          <td>4</td><td>No match</td>
+          <td>4</td><td>At least one match</td>
         </tr>
         
         <tr>
@@ -12435,11 +12475,11 @@ div#notebook {
         </tr>
         
         <tr>
-          <td>8</td><td>No match</td>
+          <td>8</td><td>At least one match</td>
         </tr>
         <tr><td>...</td><td>...</td></tr>
         <tr>
-          <td>9999</td><td>At least one match</td>
+          <td>9999</td><td>No match</td>
         </tr>
         
       </tbody>
@@ -12458,8 +12498,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='tabulate'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='tabulate'></a></p>
 
 </div>
 </div>
@@ -12469,7 +12508,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Tabulate">Tabulate<a class="anchor-link" href="#Tabulate">&#182;</a></h3><p>The outcomes of a simulation can be quickly tabulated using <code>.tabulate()</code>.  Tabulate counts the number of times each outcome occurs among the simulated values.  Use <code>.tabulate(normalize = True)</code> to find the proportion (relative frequency) of times each outcome occurs.</p>
+<h3 id="Tabulate">Tabulate<a class="anchor-link" href="#Tabulate">&#182;</a></h3><p>The outcomes of a simulation can be quickly tabulated using <code>.tabulate()</code>.  Tabulate counts the number of times each outcome occurs among the simulated values.  Use <code>.tabulate(normalize=True)</code> to find the proportion (relative frequency) of times each outcome occurs.</p>
 <p><strong>Example.</strong> Roll two fair six-sided.</p>
 
 </div>
@@ -12481,7 +12520,7 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">die</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="c1"># this is just a list of the number 1 through 6</span>
-<span class="n">roll</span> <span class="o">=</span> <span class="n">BoxModel</span><span class="p">(</span><span class="n">die</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">roll</span> <span class="o">=</span> <span class="n">BoxModel</span><span class="p">(</span><span class="n">die</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">rolls</span> <span class="o">=</span> <span class="n">roll</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
 <span class="n">rolls</span><span class="o">.</span><span class="n">tabulate</span><span class="p">()</span>
 </pre></div>
@@ -12494,7 +12533,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[10]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[10]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12504,7 +12545,7 @@ div#notebook {
         <th width="20%">Value</th>
       </thead>
       <tbody>
-        <tr><td>(1, 1)</td><td>303</td></tr><tr><td>(1, 2)</td><td>281</td></tr><tr><td>(1, 3)</td><td>285</td></tr><tr><td>(1, 4)</td><td>250</td></tr><tr><td>(1, 5)</td><td>237</td></tr><tr><td>(1, 6)</td><td>265</td></tr><tr><td>(2, 1)</td><td>292</td></tr><tr><td>(2, 2)</td><td>293</td></tr><tr><td>(2, 3)</td><td>281</td></tr><tr><td>(2, 4)</td><td>285</td></tr><tr><td>(2, 5)</td><td>293</td></tr><tr><td>(2, 6)</td><td>264</td></tr><tr><td>(3, 1)</td><td>282</td></tr><tr><td>(3, 2)</td><td>249</td></tr><tr><td>(3, 3)</td><td>245</td></tr><tr><td>(3, 4)</td><td>270</td></tr><tr><td>(3, 5)</td><td>307</td></tr><tr><td>(3, 6)</td><td>288</td></tr><tr><td>(4, 1)</td><td>276</td></tr><tr><td>...</td><td>...</td></tr><tr><td>(6, 6)</td><td>273</td></tr><tr><td><b>Total</b></td><td><b>10000</b></td></tr>
+        <tr><td>(1, 1)</td><td>272</td></tr><tr><td>(1, 2)</td><td>281</td></tr><tr><td>(1, 3)</td><td>262</td></tr><tr><td>(1, 4)</td><td>267</td></tr><tr><td>(1, 5)</td><td>292</td></tr><tr><td>(1, 6)</td><td>274</td></tr><tr><td>(2, 1)</td><td>278</td></tr><tr><td>(2, 2)</td><td>259</td></tr><tr><td>(2, 3)</td><td>277</td></tr><tr><td>(2, 4)</td><td>275</td></tr><tr><td>(2, 5)</td><td>268</td></tr><tr><td>(2, 6)</td><td>278</td></tr><tr><td>(3, 1)</td><td>276</td></tr><tr><td>(3, 2)</td><td>292</td></tr><tr><td>(3, 3)</td><td>248</td></tr><tr><td>(3, 4)</td><td>274</td></tr><tr><td>(3, 5)</td><td>275</td></tr><tr><td>(3, 6)</td><td>252</td></tr><tr><td>(4, 1)</td><td>284</td></tr><tr><td>...</td><td>...</td></tr><tr><td>(6, 6)</td><td>284</td></tr><tr><td><b>Total</b></td><td><b>10000</b></td></tr>
       </tbody>
     </table>
     
@@ -12531,7 +12572,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rolls</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">sum</span><span class="p">)</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rolls</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">sum</span><span class="p">)</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12542,7 +12583,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[11]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[11]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12552,7 +12595,7 @@ div#notebook {
         <th width="20%">Value</th>
       </thead>
       <tbody>
-        <tr><td>2</td><td>0.0303</td></tr><tr><td>3</td><td>0.0573</td></tr><tr><td>4</td><td>0.086</td></tr><tr><td>5</td><td>0.1056</td></tr><tr><td>6</td><td>0.1366</td></tr><tr><td>7</td><td>0.1652</td></tr><tr><td>8</td><td>0.1395</td></tr><tr><td>9</td><td>0.1077</td></tr><tr><td>10</td><td>0.0834</td></tr><tr><td>11</td><td>0.0611</td></tr><tr><td>12</td><td>0.0273</td></tr><tr><td><b>Total</b></td><td><b>1.0</b></td></tr>
+        <tr><td>2</td><td>0.0272</td></tr><tr><td>3</td><td>0.0559</td></tr><tr><td>4</td><td>0.0797</td></tr><tr><td>5</td><td>0.112</td></tr><tr><td>6</td><td>0.1419</td></tr><tr><td>7</td><td>0.1698</td></tr><tr><td>8</td><td>0.1395</td></tr><tr><td>9</td><td>0.1072</td></tr><tr><td>10</td><td>0.086</td></tr><tr><td>11</td><td>0.0524</td></tr><tr><td>12</td><td>0.0284</td></tr><tr><td><b>Total</b></td><td><b>0.9999999999999999</b></td></tr>
       </tbody>
     </table>
     
@@ -12590,11 +12633,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[12]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[12]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>285</pre>
+<pre>275</pre>
 </div>
 
 </div>
@@ -12620,11 +12665,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[13]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[13]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1718</pre>
+<pre>0.1668</pre>
 </div>
 
 </div>
@@ -12661,7 +12708,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[14]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[14]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12671,7 +12720,7 @@ div#notebook {
         <th width="20%">Value</th>
       </thead>
       <tbody>
-        <tr><td>1</td><td>1</td></tr><tr><td>2</td><td>1</td></tr><tr><td>3</td><td>2</td></tr><tr><td>4</td><td>0</td></tr><tr><td>5</td><td>0</td></tr><tr><td>6</td><td>1</td></tr><tr><td><b>Total</b></td><td><b>5</b></td></tr>
+        <tr><td>1</td><td>1</td></tr><tr><td>2</td><td>0</td></tr><tr><td>3</td><td>1</td></tr><tr><td>4</td><td>0</td></tr><tr><td>5</td><td>1</td></tr><tr><td>6</td><td>2</td></tr><tr><td><b>Total</b></td><td><b>5</b></td></tr>
       </tbody>
     </table>
     
@@ -12700,7 +12749,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[15]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[15]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12710,7 +12761,7 @@ div#notebook {
         <th width="20%">Value</th>
       </thead>
       <tbody>
-        <tr><td>1</td><td>1</td></tr><tr><td>2</td><td>1</td></tr><tr><td>3</td><td>2</td></tr><tr><td>6</td><td>1</td></tr><tr><td><b>Total</b></td><td><b>5</b></td></tr>
+        <tr><td>1</td><td>1</td></tr><tr><td>3</td><td>1</td></tr><tr><td>5</td><td>1</td></tr><tr><td>6</td><td>2</td></tr><tr><td><b>Total</b></td><td><b>5</b></td></tr>
       </tbody>
     </table>
     
@@ -12748,7 +12799,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[16]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[16]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12758,7 +12811,7 @@ div#notebook {
         <th width="20%">Value</th>
       </thead>
       <tbody>
-        <tr><td>3</td><td>1</td></tr><tr><td>a</td><td>3</td></tr><tr><td>2</td><td>0</td></tr><tr><td>b</td><td>3</td></tr><tr><td>1</td><td>3</td></tr><tr><td><b>Total</b></td><td><b>10</b></td></tr>
+        <tr><td>3</td><td>2</td></tr><tr><td>a</td><td>2</td></tr><tr><td>2</td><td>2</td></tr><tr><td>b</td><td>2</td></tr><tr><td>1</td><td>2</td></tr><tr><td><b>Total</b></td><td><b>10</b></td></tr>
       </tbody>
     </table>
     
@@ -12775,8 +12828,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='filter'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='filter'></a></p>
 
 </div>
 </div>
@@ -12808,7 +12860,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[17]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[17]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -12856,7 +12910,7 @@ div#notebook {
         </tr>
         <tr><td>...</td><td>...</td></tr>
         <tr>
-          <td>4981</td><td>H</td>
+          <td>5015</td><td>H</td>
         </tr>
         
       </tbody>
@@ -12896,11 +12950,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[18]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[18]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>4982</pre>
+<pre>5016</pre>
 </div>
 
 </div>
@@ -12932,7 +12988,7 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">die</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">+</span><span class="mi">6</span><span class="p">))</span> <span class="c1"># this is just a list of the number 1 through 6</span>
-<span class="n">sims</span> <span class="o">=</span> <span class="n">BoxModel</span><span class="p">(</span><span class="n">die</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">sum</span><span class="p">)</span>
+<span class="n">sims</span> <span class="o">=</span> <span class="n">BoxModel</span><span class="p">(</span><span class="n">die</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">sum</span><span class="p">)</span>
 <span class="nb">len</span><span class="p">(</span><span class="n">sims</span><span class="o">.</span><span class="n">filter_geq</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1000</span>
 </pre></div>
 
@@ -12944,11 +13000,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[19]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[19]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.171</pre>
+<pre>0.162</pre>
 </div>
 
 </div>
@@ -12986,11 +13044,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[20]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[20]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.171</pre>
+<pre>0.162</pre>
 </div>
 
 </div>
@@ -13004,8 +13064,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a id='count'></a>
-<a href="#contents">Back to contents</a></p>
+<p><a id='count'></a></p>
 
 </div>
 </div>
@@ -13036,11 +13095,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[21]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[21]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>5010</pre>
+<pre>4997</pre>
 </div>
 
 </div>
@@ -13068,11 +13129,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[22]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[22]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>293</pre>
+<pre>304</pre>
 </div>
 
 </div>
@@ -13114,11 +13177,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[23]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[23]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1728</pre>
+<pre>0.1632</pre>
 </div>
 
 </div>
@@ -13156,11 +13221,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[24]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[24]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1728</pre>
+<pre>0.1632</pre>
 </div>
 
 </div>
@@ -13196,11 +13263,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[25]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[25]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1728</pre>
+<pre>0.1632</pre>
 </div>
 
 </div>
@@ -13235,11 +13304,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[26]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[26]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1728</pre>
+<pre>0.1632</pre>
 </div>
 
 </div>
@@ -13253,7 +13324,8 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Recap">Recap<a class="anchor-link" href="#Recap">&#182;</a></h3><p>With tabulate, filter, and count, Symbulate allows for several ways of manipulating the outcomes of a simulation.  As an example, here is a recap of some of the ways Symbulate can be used to estimate the probability that the sum of two fair six-sided dice is at least 10.</p>
+<p><a id='recap'></a></p>
+<h3 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h3><p>The tabulate, filter, and count functions in Symbulate allow for several ways of manipulating the outcomes of a simulation.  As an example, here is a recap of some of the ways Symbulate can be used to estimate the probability that the sum of two fair six-sided dice is at least 10.</p>
 
 </div>
 </div>
@@ -13290,11 +13362,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[28]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[28]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1705</pre>
+<pre>0.166</pre>
 </div>
 
 </div>
@@ -13308,7 +13382,7 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="p">(</span><span class="n">rollsums</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)[</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="n">rollsums</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)[</span><span class="mi">11</span><span class="p">]</span> <span class="o">+</span> <span class="n">rollsums</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)[</span><span class="mi">12</span><span class="p">])</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="p">(</span><span class="n">rollsums</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="n">rollsums</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">11</span><span class="p">]</span> <span class="o">+</span> <span class="n">rollsums</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">12</span><span class="p">])</span>
 </pre></div>
 
 </div>
@@ -13319,11 +13393,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[29]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[29]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.17049999999999998</pre>
+<pre>0.16599999999999998</pre>
 </div>
 
 </div>
@@ -13348,11 +13424,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[30]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[30]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1705</pre>
+<pre>0.166</pre>
 </div>
 
 </div>
@@ -13377,11 +13455,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[31]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[31]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1705</pre>
+<pre>0.166</pre>
 </div>
 
 </div>
@@ -13406,11 +13486,13 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[32]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[32]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1705</pre>
+<pre>0.166</pre>
 </div>
 
 </div>
@@ -13435,11 +13517,54 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[33]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[33]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.1705</pre>
+<pre>0.166</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rollsums</span> <span class="o">=</span> <span class="n">RV</span><span class="p">(</span><span class="n">roll</span><span class="p">,</span> <span class="nb">sum</span><span class="p">)</span>
+<span class="p">(</span><span class="n">rollsums</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">sim</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span><span class="o">.</span><span class="n">tabulate</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[34]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+    <table>
+      <thead>
+        <th width="80%">Outcome</th>
+        <th width="20%">Value</th>
+      </thead>
+      <tbody>
+        <tr><td>False</td><td>0.8342</td></tr><tr><td>True</td><td>0.1658</td></tr><tr><td><b>Total</b></td><td><b>1.0</b></td></tr>
+      </tbody>
+    </table>
+    
 </div>
 
 </div>
@@ -13453,7 +13578,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><a href="#contents">Back to contents</a></p>
+<p>&lt; <a href="probspace.html">Probability spaces</a> | <a href="index.html">Contents</a> | <a href="rv.html">Random variables</a> &gt;</p>
 
 </div>
 </div>
@@ -13474,4 +13599,8 @@ div#notebook {
     </div>
   </div>
 </body>
+
+ 
+
+
 </html>
