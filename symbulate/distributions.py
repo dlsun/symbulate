@@ -25,17 +25,26 @@ class Distribution(ProbabilitySpace):
         self.discrete = discrete
 
         self.xlim = (
-            scipy.ppf(0.01, **self.params),
-            scipy.ppf(0.99, **self.params)
+            scipy.ppf(0.001, **self.params),
+            scipy.ppf(0.999, **self.params)
             )
     
-    def plot(self, type = None, alpha = None, xlim = None, **kwargs):
-        # if no limits for x-axis are specified, then use the default from plt        
-        xlower, xupper = xlim if xlim is not None else self.xlim
+    def plot(self, type=None, alpha=None, xlim=None, **kwargs):
+
+        new_fig = len(plt.gcf().axes) == 0
         
+        # use limits if specified
+        if xlim is not None:
+            xlower, xupper = xlim
+        # use distribution defaults if new figure
+        elif new_fig:
+            xlower, xupper = self.xlim
+        # otherwise, use limits of existing figure
+        else:
+            xlower, xupper = plt.gca().get_xlim()
+
         if self.discrete:
-            xlower = int(xlower)
-            xupper = int(xupper)        
+            xlower, xupper = int(xlower), int(xupper)
             xvals = np.arange(xlower, xupper+1)
         else:
             xvals = np.linspace(xlower, xupper, 100)
@@ -47,11 +56,10 @@ class Distribution(ProbabilitySpace):
         color = get_next_color(axes)
         
         if self.discrete:
-            plt.scatter(xvals, yvals, s = 40, color = color, alpha = alpha, **kwargs)
+            plt.scatter(xvals, yvals, s=40, color=color, alpha=alpha, **kwargs)
         
-        plt.plot(xvals, yvals, color = color, alpha = alpha, **kwargs)
-        
-        configure_axes(axes, xvals, yvals)
+        plt.plot(xvals, yvals, color=color, alpha=alpha, **kwargs)
+        plt.xlim(xlower, xupper)
 
 ## Discrete Distributions
 
