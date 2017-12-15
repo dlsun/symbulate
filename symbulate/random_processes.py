@@ -13,7 +13,7 @@ from .utils import is_scalar, is_vector, get_dimension
 
 class RandomProcess:
 
-    def __init__(self, probSpace, timeIndex=TimeIndex(fs=1), fun=lambda x, t: None):
+    def __init__(self, probSpace, timeIndex=TimeIndex(fs=1), fun=lambda x, t: x(t)):
         self.probSpace = probSpace
         self.timeIndex = timeIndex
         self.fun = fun
