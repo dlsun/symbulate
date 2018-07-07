@@ -1,62 +1,68 @@
-import numpy as np
-
-from math import floor
 from copy import deepcopy
 
-from .probability_space import ArbitrarySpace
+from .index_sets import (
+    IndexSet, Reals, Integers, Naturals,
+    DiscreteTimeSequence
+)
 from .random_variables import RV
+from .result import (
+    DiscreteTimeFunction, ContinuousTimeFunction,
+    InfiniteVector, TimeFunction
+)
 from .results import RandomProcessResults
-from .seed import get_seed
-from .sequences import TimeFunction
-from .time_index import TimeIndex
 from .utils import is_scalar, is_vector, get_dimension
 
+    
 class RandomProcess:
 
-    def __init__(self, probSpace, timeIndex=TimeIndex(fs=1), fun=lambda x, t: x(t)):
+    def __init__(self, probSpace,
+                 fun=lambda outcome, t: outcome[t],
+                 index_set=Reals()):
         self.probSpace = probSpace
-        self.timeIndex = timeIndex
         self.fun = fun
+        self.index_set = index_set
+        self.rvs = {}
 
     def draw(self):
         outcome = self.probSpace.draw()
-        def f(t):
+        def fn(t):
             return self.fun(outcome, t)
-        return TimeFunction(f, self.timeIndex)
+        return TimeFunction.from_index_set(self.index_set, fn)
 
     def sim(self, n):
-        return RandomProcessResults([self.draw() for _ in range(n)], self.timeIndex)
+        return RandomProcessResults(
+            [self.draw() for _ in range(n)],
+            self.index_set                        
+        )
 
     def __getitem__(self, t):
+        # TODO: Check that t is in indexSet
         fun_copy = deepcopy(self.fun)
-        if is_scalar(t):
-            return RV(self.probSpace, lambda x: fun_copy(x, t))
+        if t in self.rvs:
+            return self.rvs[t]
+        elif is_scalar(t):
+            def fn(outcome):
+                return fun_copy(outcome, t)
+            return RV(self.probSpace, fn)
         elif isinstance(t, RV):
-            return RV(self.probSpace, lambda x: fun_copy(x, t.fun(x)))
+            def fn(outcome):
+                time = t(outcome)
+                if time in self.rvs:
+                    return self.rvs[time](outcome)
+                else:
+                    return fun_copy(outcome, time)
+            return RV(self.probSpace, fn)
+        else:
+            raise KeyError("I don't know how to evaluate the RandomProcess "
+                           "at that time.")
     
     def __setitem__(self, t, value):
-        # copy existing function to use inside redefined function
-        fun_copy = deepcopy(self.fun)
-        if is_scalar(value):
-            def fun_new(x, s):
-                if s == t:
-                    return value
-                else:
-                    return fun_copy(x, s)
-        elif isinstance(value, RV):
-            def fun_new(x, s):
-                if s == t:
-                    return value.fun(x)
-                else:
-                    return fun_copy(x, s)
-        else:
-            raise Exception("The value of the process at any time t must be a RV.")
-        self.fun = fun_new
+        self.rvs[t] = value
 
     def apply(self, function):
-        def fun(x, t):
+        def fn(x, t):
             return function(self.fun(x, t))
-        return RandomProcess(self.probSpace, self.timeIndex, fun)
+        return RandomProcess(self.probSpace, fn, self.index_set)
 
     def check_same_probSpace(self, other):
         if is_scalar(other):
@@ -64,11 +70,11 @@ class RandomProcess:
         else:
             self.probSpace.check_same(other.probSpace)
 
-    def check_same_timeIndex(self, other):
+    def check_same_index_set(self, other):
         if is_scalar(other) or isinstance(other, RV):
             return
         elif isinstance(other, RandomProcess):
-            self.timeIndex.check_same(other.timeIndex)
+            self.index_set.check_same(other.index_set)
         else:
             raise Exception("Cannot add object to random process.")
 
@@ -84,17 +90,17 @@ class RandomProcess:
 
         def op_fun(self, other):
             self.check_same_probSpace(other)
-            self.check_same_timeIndex(other)
+            self.check_same_index_set(other)
             if is_scalar(other):
-                def fun(x, t):
+                def fn(x, t):
                     return op(self.fun(x, t), other)
             elif isinstance(other, RV):
-                def fun(x, t):
+                def fn(x, t):
                     return op(self.fun(x, t), other.fun(x))
             elif isinstance(other, RandomProcess):
-                def fun(x, t):
+                def fn(x, t):
                     return op(self.fun(x, t), other.fun(x, t))
-            return RandomProcess(self.probSpace, self.timeIndex, fun)
+            return RandomProcess(self.probSpace, fn, self.index_set)
 
         return op_fun
 
@@ -154,16 +160,17 @@ class RandomProcess:
     # Define a joint distribution of two random processes
     def __and__(self, other):
         self.check_same_probSpace(other)
-        self.check_same_timeIndex(other)
+        self.check_same_index_set(other)
 
         if isinstance(other, RandomProcess):
-            def fun(x, t):
+            def fn(x, t):
                 a = self.fun(x, t)
                 b = other.fun(x, t)
                 a = tuple(a) if is_vector(a) else (a, )
                 b = tuple(b) if is_vector(b) else (b, )
                 return a + b
-            return RandomProcess(self.probSpace, self.timeIndex, fun)
+            return RandomProcess(self.probSpace, fn, self.index_set)
         else:
-            raise Exception("Joint distributions are only defined for random processes.")
+            raise Exception("Joint distributions are only defined "
+                            "for two random processes.")
 

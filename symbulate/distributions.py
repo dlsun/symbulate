@@ -4,10 +4,17 @@ import matplotlib.pyplot as plt
 
 from .probability_space import ProbabilitySpace
 from .plot import configure_axes, get_next_color
+from .result import (
+    Scalar,
+    Vector,
+    InfiniteVector
+)
 
 class Distribution(ProbabilitySpace):
-    def __init__(self, params, scipy, discrete = True):
+    def __init__(self, params, scipy, discrete=True):
         self.params = params
+
+        self.discrete = discrete
         
         if discrete:
             self.pdf = lambda x: scipy.pmf(x, **self.params)
@@ -21,13 +28,30 @@ class Distribution(ProbabilitySpace):
         self.mean = lambda : scipy.mean(**self.params)
         self.var = lambda : scipy.var(**self.params)
         self.sd = lambda : scipy.std(**self.params)
-        
-        self.discrete = discrete
+        self.sim_fn = scipy.rvs
 
         self.xlim = (
             scipy.ppf(0.001, **self.params),
             scipy.ppf(0.999, **self.params)
             )
+
+    def draw(self):
+        return Scalar(self.sim_fn(**self.params))
+
+    # Override the inherited __pow__ function to take advantage
+    # of vectorized simulations.
+    def __pow__(self, exponent):
+        if exponent == float("inf"):
+            def draw():
+                result = InfiniteVector()
+                def fn(n):
+                    return self.sim_fn(**self.params)
+                result.fn = fn
+                return result
+        else:
+            def draw():
+                return Vector(self.sim_fn(**self.params, size=exponent))
+        return ProbabilitySpace(draw)
     
     def plot(self, type=None, alpha=None, xlim=None, **kwargs):
 
@@ -61,6 +85,7 @@ class Distribution(ProbabilitySpace):
         plt.plot(xvals, yvals, color=color, alpha=alpha, **kwargs)
         plt.xlim(xlower, xupper)
 
+        
 ## Discrete Distributions
 
 class Bernoulli(Distribution):
@@ -84,12 +109,7 @@ class Bernoulli(Distribution):
         super().__init__(params, stats.bernoulli, True)
         self.xlim = (0, 1) # Bernoulli distributions are not defined for x < 0 and x > 1
  
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Bernoulli distribution."""
-        
-        return np.random.binomial(n=1, p=self.p)
-
+    
 class Binomial(Distribution):
     """Defines a probability space for a binomial
          distribution.
@@ -122,17 +142,12 @@ class Binomial(Distribution):
         super().__init__(params, stats.binom, True)
         self.xlim = (0, n) # Binomial distributions are not defined for x < 0 and x > n
 
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Binomial distribution."""
-
-        return np.random.binomial(n=self.n, p=self.p)
 
 class Hypergeometric(Distribution):
     """Defines a probability space for a hypergeometric
          distribution (which represents the number of
          ones in n draws without replacement from a box
-         containing zeros and ones.
+         containing zeros and ones).
 
     Attributes:
       n (int): number of draws (without replacement)
@@ -170,11 +185,6 @@ class Hypergeometric(Distribution):
         super().__init__(params, stats.hypergeom, True)
         self.xlim = (0, n) # Hypergeometric distributions are not defined for x < 0 and x > n
         
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Hypergeometric distribution."""
-
-        return np.random.hypergeometric(ngood=self.N1, nbad=self.N0, nsample=self.n)
 
 class Geometric(Distribution):
     """Defines a probability space for a geometric
@@ -200,11 +210,6 @@ class Geometric(Distribution):
         super().__init__(params, stats.geom, True)
         self.xlim = (1, self.xlim[1]) # Geometric distributions are not defined for x < 1
         
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Geometric distribution."""
-
-        return np.random.geometric(p=self.p)
 
 class NegativeBinomial(Distribution):
     """Defines a probability space for a negative
@@ -246,6 +251,7 @@ class NegativeBinomial(Distribution):
         # but we want numbers in [r, inf).
         return self.r + np.random.negative_binomial(n=self.r, p=self.p)
 
+    
 class Pascal(Distribution):
     """Defines a probability space for a Pascal
          distribution (which represents the number
@@ -277,13 +283,7 @@ class Pascal(Distribution):
         super().__init__(params, stats.nbinom, True)
         self.xlim = (0, self.xlim[1]) # Pascal distributions are not defined for x < 0
     
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Pascal distribution."""
-
-        # Numpy's negative binomial returns numbers in [0, inf).
-        return np.random.negative_binomial(n=self.r, p=self.p)
-
+    
 class Poisson(Distribution):
     """Defines a probability space for a Poisson distribution.
 
@@ -304,11 +304,6 @@ class Poisson(Distribution):
         super().__init__(params, stats.poisson, True)
         self.xlim = (0, self.xlim[1]) # Poisson distributions are not defined for x < 0
 
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Poisson distribution."""
-
-        return np.random.poisson(lam=self.lam)
 
 class DiscreteUniform(Distribution):
     """Defines a probability space for a discrete uniform distribution.
@@ -333,11 +328,6 @@ class DiscreteUniform(Distribution):
         super().__init__(params, stats.randint, True)
         self.xlim = (a, b) # Uniform distributions are not defined for x < a and x > b
         
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Discrete Uniform distribution."""
-
-        return np.random.randint(low=self.a, high=self.b)
 
 ## Continuous Distributions
 
@@ -364,11 +354,6 @@ class Uniform(Distribution):
         super().__init__(params, stats.uniform, False)
         self.xlim = (a, b) # Uniform distributions are not defined for x < a and x > b
         
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Uniform distribution."""
-
-        return np.random.uniform(low=self.a, high=self.b)
 
 class Normal(Distribution):
     """Defines a probability space for a normal distribution.
@@ -408,12 +393,7 @@ class Normal(Distribution):
             "scale" : self.scale
             }
         super().__init__(params, stats.norm, False)
-    
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Normal distribution."""
-    
-        return np.random.normal(loc=self.mean(), scale=self.scale)
+        
 
 class Exponential(Distribution):
     """Defines a probability space for an exponential distribution.
@@ -447,14 +427,6 @@ class Exponential(Distribution):
         super().__init__(params, stats.expon, False)
         self.xlim = (0, self.xlim[1]) # Exponential distributions are not defined for x < 0
         
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Exponential distribution."""
-
-        if self.scale is None:
-            return np.random.exponential(scale=1. / self.rate)
-        else:
-            return np.random.exponential(scale=self.scale)
 
 class Gamma(Distribution):
     """Defines a probability space for a gamma distribution.
@@ -496,14 +468,6 @@ class Gamma(Distribution):
         super().__init__(params, stats.gamma, False)
         self.xlim = (0, self.xlim[1]) # Gamma distributions are not defined for x < 0
             
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Gamma distribution."""
-
-        if self.scale is None:
-            return np.random.gamma(self.shape, 1. / self.rate)
-        else:
-            return np.random.gamma(self.shape, self.scale)
 
 class Beta(Distribution):
     """Defines a probability space for a beta distribution.
@@ -532,11 +496,6 @@ class Beta(Distribution):
         super().__init__(params, stats.beta, False)
         self.xlim = (0, 1) # Beta distributions are not defined for x < 0 and x > 1
 
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the Beta distribution."""
-
-        return np.random.beta(self.a, self.b)
 
 class StudentT(Distribution):
     """Defines a probability space for Student's t distribution.
@@ -560,11 +519,6 @@ class StudentT(Distribution):
             self.sd = lambda : float('nan') 
             self.var = lambda : float('nan') 
     
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the T distribution."""
-
-        return np.random.standard_t(self.df)
 
 class ChiSquare(Distribution):
     """Defines a probability space for a chi-square distribution
@@ -585,11 +539,6 @@ class ChiSquare(Distribution):
         super().__init__(params, stats.chi2, False)
         self.xlim = (0, self.xlim[1]) # Chi-Square distributions are not defined for x < 0
     
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the ChiSquare distribution."""
-        
-        return np.random.chisquare(self.df)
 
 class F(Distribution):
     """Defines a probability space for an F distribution
@@ -618,11 +567,6 @@ class F(Distribution):
         super().__init__(params, stats.f, False)
         self.xlim = (0, self.xlim[1]) # F distributions are not defined for x < 0
     
-    def draw(self):
-        """A function that takes no arguments and 
-            returns a single draw from the F distribution."""
-
-        return np.random.f(self.dfN, self.dfD)
 
 class Cauchy(Distribution):
     """Defines a probability space for a Cauchy distribution
@@ -645,6 +589,7 @@ class Cauchy(Distribution):
     def draw(self):
         return self.loc + (self.scale * np.random.standard_cauchy())
 
+    
 class LogNormal(Distribution):
     """Defines a probability space for a Log-Normal distribution
 
@@ -673,8 +618,6 @@ class LogNormal(Distribution):
         super().__init__(params, stats.lognorm, False)
         self.xlim = (0, self.xlim[1]) # Log-Normal distributions are not defined for x < 0
 
-    def draw(self):
-        return np.random.lognormal(self.norm_mean, self.norm_sd)
 
 class Pareto(Distribution):
     """Defines a probability space for a Pareto distribution.
@@ -696,9 +639,6 @@ class Pareto(Distribution):
         super().__init__(params, stats.pareto, False)
         self.xlim = (0, self.xlim[1]) # Pareto distributions are not defined for x < 0
         
-    def draw(self):
-        return np.random.pareto(self.b)
-
 # class Weibull(Distribution):
 #     
 #     def __init__(self, eta, beta= ):
@@ -714,9 +654,7 @@ class Rayleigh(Distribution):
         params = {}
         super().__init__(params, stats.rayleigh, False)
 
-    def draw(self):
-        return np.random.rayleigh()
-
+        
 ## Multivariate Distributions
 
 class MultivariateNormal(Distribution):
@@ -738,10 +676,10 @@ class MultivariateNormal(Distribution):
             self.mean = mean 
         else:
             raise Exception("Mean vector and Cov matrix cannot be empty")      
- 
+        
         if len(cov) >= 1:
             if all(len(row) == len(mean) for row in cov):
-                    if np.all(np.linalg.eigvals(cov) >= 0) and np.allclose(cov,np.transpose(cov)):
+                    if np.all(np.linalg.eigvals(cov) >= 0) and np.allclose(cov, np.transpose(cov)):
                         self.cov = cov
                     else:
                         raise Exception("Cov matrix is not symmetric and positive semi-definite")
@@ -760,8 +698,9 @@ class MultivariateNormal(Distribution):
         """A function that takes no arguments and 
             returns a single draw from the Multivariate Normal distribution."""
 
-        return tuple(np.random.multivariate_normal(self.mean, self.cov))
+        return Vector(np.random.multivariate_normal(self.mean, self.cov))
 
+    
 class BivariateNormal(MultivariateNormal):
     """Defines a probability space for a bivariate normal 
        distribution.

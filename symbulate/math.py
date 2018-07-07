@@ -4,6 +4,7 @@ import operator as op
 
 from .random_variables import RV
 from .random_processes import RandomProcess
+from .result import ContinuousTimeFunction, DiscreteValued
 from .results import *
 
 pi = math.pi
@@ -45,12 +46,7 @@ def mean(x):
     return sum(x) / len(x)
 
 def cumsum(x):
-    total = 0
-    sums = [total]
-    for i in x:
-        total += i
-        sums.append(total)
-    return tuple(sums)
+    return x.cumsum()
 
 def var(x):
     return mean([(i - mean(x)) ** 2 for i in x])
@@ -99,4 +95,61 @@ def count_geq(value):
 def count_leq(value):
     def fun(x):
         return comparefun(x, op.le, value)
-    return fun 
+    return fun
+
+def interarrival_times(continuous_time_function):
+    """Given a realization of a continuous-time,
+       discrete-state process, returns the interarrival 
+       times (i.e., the times between each state change).
+
+    Args:
+      continuous_time_function: A ContinuousTimeFunction
+        object, such as ContinuousTimeMarkovChainResult or
+        PoissonProcessResult.
+    """
+    if not (isinstance(continuous_time_function,
+                       ContinuousTimeFunction) or
+            isinstance(continuous_time_function,
+                       DiscreteValued)):
+        raise TypeError(
+            "Interarrival times are only defined for "
+            "continuous-time, discrete-valued functions." 
+        )
+    return continuous_time_function.get_interarrival_times()
+
+def arrival_times(continuous_time_function):
+    """Given a realization of a continuous-time,
+       discrete-state process, returns the arrival 
+       times (i.e., the times when the state changes).
+
+    Args:
+      continuous_time_function: A ContinuousTimeFunction
+        object, such as ContinuousTimeMarkovChainResult or
+        PoissonProcessResult.
+    """
+    if not (isinstance(continuous_time_function,
+                       ContinuousTimeFunction) or
+            isinstance(continuous_time_function,
+                       DiscreteValued)):
+        raise TypeError(
+            "Interarrival times are only defined for "
+            "continuous-time, discrete-valued functions." 
+        )
+    return continuous_time_function.get_arrival_times()
+
+def states(discrete_valued_function):
+    """Given a realization of a discrete-valued function,
+       returns an InfiniteVector of the sequence of 
+       values (or states).
+
+    Args:
+      discrete_valued_function: A DiscreteValued object
+                                (e.g., MarkovChainResult or
+                                       PoissonProcessResult)
+    """
+    if not isinstance(discrete_valued_function, DiscreteValued):
+        raise TypeError(
+            "States are only defined for discrete-valued "
+            "functions."
+        )
+    return discrete_valued_function.get_states()

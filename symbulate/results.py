@@ -10,19 +10,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-from numbers import Number
-from collections import Counter
-
-from .sequences import TimeFunction
-from .table import Table
-from .utils import is_scalar, is_vector, get_dimension
-from .plot import (configure_axes, get_next_color, is_discrete,
-    count_var, compute_density, add_colorbar, make_tile,
-    setup_ticks, make_violin, make_marginal_impulse, make_density2D)
 from scipy.stats import gaussian_kde
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
+
+from .plot import (configure_axes, get_next_color, is_discrete,
+    count_var, compute_density, add_colorbar, make_tile,
+    setup_ticks, make_violin, make_marginal_impulse, make_density2D)
+from .result import TimeFunction
+from .table import Table
+from .utils import is_scalar, get_dimension
 
 plt.style.use('seaborn-colorblind')
 
@@ -106,7 +104,7 @@ class Results(list):
 
         Args:
           fun (outcome -> bool): A function that
-            takes in an outcome and returns a
+            takes in an outcome and returns
             True / False. Only the outcomes that
             return True will be kept; the others
             will be filtered out.
@@ -471,11 +469,11 @@ class RVResults(Results):
         elif get_dimension(self) > 0:
             return tuple(np.array(self).std(0))
         else:
-            raise Exception("I don't know how to take the variance of these values.")
+            raise Exception("I don't know how to take the SD of these values.")
 
     def standardize(self):
         mean_ = self.mean()
-        sd_ = self.sd() 
+        sd_ = self.sd()
         if all(is_scalar(x) for x in self):
             return RVResults((x - mean_) / sd_ for x in self)
         elif get_dimension(self) > 0:
@@ -484,25 +482,19 @@ class RVResults(Results):
 
 class RandomProcessResults(Results):
 
-    def __init__(self, results, timeIndex):
-        self.timeIndex = timeIndex
+    def __init__(self, results, index_set):
+        self.index_set = index_set
         super().__init__(results)
 
     def __getitem__(self, t):
         return RVResults(x[t] for x in self)
 
-    def plot(self, tmin=0, tmax=10, alpha=.1, **kwargs):
-        if self.timeIndex.fs == float("inf"):
-            ts = np.linspace(tmin, tmax, 200)
-            style = "k-"
-        else:
-            nmin = int(np.floor(tmin * self.timeIndex.fs))
-            nmax = int(np.ceil(tmax * self.timeIndex.fs))
-            ts = [self.timeIndex[n] for n in range(nmin, nmax)]
-            style = "k.--"
-        for x in self:
-            y = [x[t] for t in ts]
-            plt.plot(ts, y, style, alpha=alpha, **kwargs)
+    def plot(self, tmin=0, tmax=10, **kwargs):
+        ax = plt.gca()
+        alpha = np.log(2) / np.log(len(self) + 1)
+        color = get_next_color(ax)
+        for result in self:
+            result.plot(tmin, tmax, alpha=alpha, color=color)
         plt.xlabel("Time (t)")
 
         # expand the y-axis slightly
@@ -512,17 +504,17 @@ class RandomProcessResults(Results):
         plt.ylim(ymin - buff, ymax + buff)
 
     def mean(self):
-        def fun(t):
+        def fn(t):
             return self[t].mean()
-        return TimeFunction(fun, self.timeIndex)
+        return TimeFunction.from_index_set(self.index_set, fn)
 
     def var(self):
-        def fun(t):
+        def fn(t):
             return self[t].var()
-        return TimeFunction(fun, self.timeIndex)
+        return TimeFunction.from_index_set(self.index_set, fn)
 
     def sd(self):
-        def fun(t):
+        def fn(t):
             return self[t].sd()
-        return TimeFunction(fun, self.timeIndex)
+        return TimeFunction.from_index_set(self.index_set, fn)
 

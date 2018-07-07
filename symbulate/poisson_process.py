@@ -1,34 +1,56 @@
 from .distributions import Exponential
 from .math import inf
-from .random_processes import RandomProcess, TimeIndex
+from .probability_space import ProbabilitySpace
+from .result import ContinuousTimeFunction, DiscreteValued
+from .random_processes import RandomProcess
+from .time_index import TimeIndex
 
+
+class PoissonProcessResult(ContinuousTimeFunction,
+                           DiscreteValued):
+
+    def __init__(self, interarrival_times):
+        self.interarrival_times = interarrival_times
+        
+        def fn(t):
+            total_time = 0
+            for n, time in enumerate(self.interarrival_times):
+                total_time += time
+                if t < total_time:
+                    return n
+
+        return super().__init__(fn)
+
+    def get_states(self):
+        return InfiniteVector(lambda n: n)
+
+
+class PoissonProcessProbabilitySpace(ProbabilitySpace):
+
+    def __init__(self, rate):
+        """Initialize probability space for a Poisson process.
+
+        Args:
+          rate: rate of the Poisson process
+        """
+        self.rate = rate
+
+        def draw():
+            interarrival_times = (Exponential(rate=self.rate) ** inf).draw()
+            return PoissonProcessResult(interarrival_times)
+
+        super().__init__(draw)
+    
+    
 class PoissonProcess(RandomProcess):
 
     def __init__(self, rate):
+        """Initialize a Poisson process.
+
+        Args:
+          rate: rate of the Poisson process
+        """
         self.rate = rate
-        self.probSpace = Exponential(rate=rate) ** inf
-        self.timeIndex = TimeIndex(fs=inf)
-        def fun(x, t):
-            n = 0
-            total_time = 0
-            while True:
-                total_time += x[n]
-                if total_time > t:
-                    break
-                else:
-                    n += 1
-            return n
-        self.fun = fun
+        probSpace = PoissonProcessProbabilitySpace(self.rate)
+        super().__init__(probSpace)
 
-    def ArrivalTimes(self):
-        def fun(x, n):
-            total = 0
-            for i in range(int(n)):
-                total += x[i]
-            return total
-        return RandomProcess(self.probSpace, TimeIndex(1), fun)
-
-    def InterarrivalTimes(self):
-        def fun(x, n):
-            return x[n]
-        return RandomProcess(self.probSpace, TimeIndex(1), fun)

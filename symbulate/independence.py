@@ -27,10 +27,11 @@ def AssumeIndependent(*args):
         for j in range(i + 1, len(args)):
             if args[i].probSpace == args[j].probSpace:
                 raise Exception(
-                    "The RVs or RandomProcesses must be "
-                    "currently defined on different "
-                    "probability spaces in order to use "
-                    "this function.")
+                    "AssumeIndependent(...) can only be "
+                    "called on RVs and RandomProcesses "
+                    "defined on different probability "
+                    "spaces."
+                    )
     
     def draw():
         outcome = []
@@ -50,7 +51,8 @@ def AssumeIndependent(*args):
             # i=i forces Python to bind i now
             def f(x, t, fun=arg.fun, i=i):
                 return fun(x[i], t)
-            outputs.append(RandomProcess(
-                P, arg.timeIndex, f))
+            outputs.append(
+                RandomProcess(P, f, arg.index_set)
+            )
     
     return tuple(outputs)

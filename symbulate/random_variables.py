@@ -37,7 +37,7 @@ class RV:
       X = RV(P, sum)
 
       # the function is the identity, so Y has a Normal(0, 1) distribution
-      Y = RV(Normal(0, 1)
+      Y = RV(Normal(0, 1))
 
       # a single draw from BivariateNormal is a tuple of two numbers
       P = BivariateNormal()

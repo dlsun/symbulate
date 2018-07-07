@@ -1,8 +1,8 @@
 import numpy as np
 
+from .result import Vector, InfiniteVector
 from .results import Results
-from .sequences import InfiniteSequence
-from .seed import get_seed
+
 
 class ProbabilitySpace:
     """Defines a probability space.
@@ -27,47 +27,27 @@ class ProbabilitySpace:
         return Results(self.draw() for _ in range(n))
         
     def check_same(self, other):
-        if isinstance(other, ArbitrarySpace):
-            return
-        elif self != other:
+        if self != other:
             raise Exception("Events must be defined on same probability space.")
 
     def __mul__(self, other):
         def draw():
-            a = self.draw() if type(self.draw()) == tuple else (self.draw(),)
-            b = other.draw() if type(other.draw()) == tuple else (other.draw(),)
-            return a + b
+            return self.draw().join(other.draw())
         return ProbabilitySpace(draw)
 
     def __pow__(self, exponent):
         if exponent == float("inf"):
             def draw():
-                seed = get_seed()
-                def x(n):
-                    np.random.seed(seed)
-                    for _ in range(int(n)):
-                        self.draw()
+                result = InfiniteVector()
+                def fn(n):
                     return self.draw()
-                return InfiniteSequence(x)
+                result.fn = fn
+                return result
         else:
             def draw():
-                return tuple(self.draw() for _ in range(exponent))
+                return Vector(self.draw() for _ in range(exponent))
         return ProbabilitySpace(draw)
-        
-
-
-class ArbitrarySpace(ProbabilitySpace):
-    """Defines an arbitrary probability space for 
-         deterministic phenomena, which is
-         compatible with any other probability space.
-    """
-
-    def __init__(self):
-        self.draw = lambda: 1
-
-    def check_same(self, other):
-        pass
-    
+            
 
 class Event:
 
@@ -143,10 +123,20 @@ class BoxModel(ProbabilitySpace):
                 self.box.extend([k] * v)
             self.probs = None
         else:
-            raise Exception("Box must be specified either as a list or a dict.")
+            raise Exception(
+                "Box must be specified either as a list or a dict."
+            )
         self.size = None if size == 1 else size
         self.replace = replace
         self.order_matters = order_matters
+
+        # If drawing without replacement, check to make sure that
+        # the number of draws does not exceed the number in the box.
+        if not self.replace and self.size > len(self.box):
+            raise Exception(
+                "I cannot draw more tickets without replacement "
+                "than there are tickets in the box."
+            )
 
     def draw(self):
         """
@@ -164,23 +154,18 @@ class BoxModel(ProbabilitySpace):
 
         def draw_inds(size):
             return np.random.choice(len(self.box), size, self.replace, self.probs)
+        
         if self.size is None:
             return self.box[draw_inds(None)]
         elif self.size == float("inf"):
-            if self.replace == False:
-                raise Exception("Cannot draw an infinite number of tickets without replacement.")
-            seed = get_seed()
-            def x(n):
-                np.random.seed(seed)
-                for _ in range(int(n)):
-                    draw_inds(None)
+            def f(n, vector):
                 return self.box[draw_inds(None)]
-            return InfiniteSequence(x)
+            return InfiniteVector(f)
         else:
             draws = [self.box[i] for i in draw_inds(self.size)]
             if not self.order_matters:
                 draws.sort()
-            return tuple(draws)
+            return Vector(draws)
 
 class DeckOfCards(BoxModel):
     """Defines the probability space for drawing from a deck of cards.

@@ -27,8 +27,21 @@ from .distributions import (
     BivariateNormal
 )
 from .independence import AssumeIndependent
-from .gaussian_process import GaussianProcess
-from .markov_chains import MarkovChain, ContinuousTimeMarkovChain
-from .poisson_process import PoissonProcess
+from .gaussian_process import (
+    GaussianProcess,
+    GaussianProcessProbabilitySpace,
+    BrownianMotion,
+    BrownianMotionProbabilitySpace
+)
+from .poisson_process import (
+    PoissonProcess,
+    PoissonProcessProbabilitySpace
+)
+from .markov_chains import (
+    MarkovChain,
+    MarkovChainProbabilitySpace,
+    ContinuousTimeMarkovChain,
+    ContinuousTimeMarkovChainProbabilitySpace
+)
 from .plot import figure, xlabel, ylabel, xlim, ylim, plot
 from .math import *
