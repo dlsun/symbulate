@@ -5,7 +5,7 @@ import operator as op
 from .random_variables import RV
 from .random_processes import RandomProcess
 from .result import ContinuousTimeFunction, DiscreteValued
-from .results import *
+from .results import RVResults
 
 pi = math.pi
 e = math.e
@@ -108,7 +108,7 @@ def interarrival_times(continuous_time_function):
         PoissonProcessResult.
     """
     if not (isinstance(continuous_time_function,
-                       ContinuousTimeFunction) or
+                       ContinuousTimeFunction) and
             isinstance(continuous_time_function,
                        DiscreteValued)):
         raise TypeError(
@@ -128,7 +128,7 @@ def arrival_times(continuous_time_function):
         PoissonProcessResult.
     """
     if not (isinstance(continuous_time_function,
-                       ContinuousTimeFunction) or
+                       ContinuousTimeFunction) and
             isinstance(continuous_time_function,
                        DiscreteValued)):
         raise TypeError(

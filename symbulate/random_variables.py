@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-
 from .probability_space import Event
 from .results import RVResults
 from .utils import is_scalar, is_vector, get_dimension

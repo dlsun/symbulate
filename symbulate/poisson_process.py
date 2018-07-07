@@ -3,7 +3,6 @@ from .math import inf
 from .probability_space import ProbabilitySpace
 from .result import ContinuousTimeFunction, DiscreteValued
 from .random_processes import RandomProcess
-from .time_index import TimeIndex
 
 
 class PoissonProcessResult(ContinuousTimeFunction,

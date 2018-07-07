@@ -8,9 +8,7 @@ random process.
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 
-from scipy.stats import gaussian_kde
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D

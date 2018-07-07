@@ -3,7 +3,7 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 
 from .probability_space import ProbabilitySpace
-from .plot import configure_axes, get_next_color
+from .plot import get_next_color
 from .result import (
     Scalar,
     Vector,
