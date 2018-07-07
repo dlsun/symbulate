@@ -21,12 +21,17 @@ class RandomProcess:
         self.probSpace = probSpace
         self.fun = fun
         self.index_set = index_set
+        # This dict stores random variables at times
+        # that were manually set by the user.
         self.rvs = {}
 
     def draw(self):
         outcome = self.probSpace.draw()
         def fn(t):
-            return self.fun(outcome, t)
+            if t in self.rvs:
+                return self.rvs[t].fun(outcome)
+            else:
+                return self.fun(outcome, t)
         return TimeFunction.from_index_set(self.index_set, fn)
 
     def sim(self, n):
@@ -36,7 +41,7 @@ class RandomProcess:
         )
 
     def __getitem__(self, t):
-        # TODO: Check that t is in indexSet
+        # TODO: Check that t is in index set
         fun_copy = deepcopy(self.fun)
         if t in self.rvs:
             return self.rvs[t]
@@ -46,9 +51,9 @@ class RandomProcess:
             return RV(self.probSpace, fn)
         elif isinstance(t, RV):
             def fn(outcome):
-                time = t(outcome)
+                time = t.fun(outcome)
                 if time in self.rvs:
-                    return self.rvs[time](outcome)
+                    return self.rvs[time].fun(outcome)
                 else:
                     return fun_copy(outcome, time)
             return RV(self.probSpace, fn)
@@ -57,11 +62,17 @@ class RandomProcess:
                            "at that time.")
     
     def __setitem__(self, t, value):
-        self.rvs[t] = value
+        # TODO: Check that t is in index_set
+        # If value is a RV, store it in self.rvs
+        if isinstance(value, RV):
+            self.rvs[t] = value
+        # If value is a scalar, create and store a constant random variable
+        elif is_scalar(value):
+            self.rvs[t] = RV(self.probSpace, lambda outcome: value)
 
     def apply(self, function):
-        def fn(x, t):
-            return function(self.fun(x, t))
+        def fn(outcome, t):
+            return function(self[t].fun(outcome))
         return RandomProcess(self.probSpace, fn, self.index_set)
 
     def check_same_probSpace(self, other):
@@ -93,13 +104,13 @@ class RandomProcess:
             self.check_same_index_set(other)
             if is_scalar(other):
                 def fn(x, t):
-                    return op(self.fun(x, t), other)
+                    return op(self[t].fun(x), other)
             elif isinstance(other, RV):
                 def fn(x, t):
-                    return op(self.fun(x, t), other.fun(x))
+                    return op(self[t].fun(x), other.fun(x))
             elif isinstance(other, RandomProcess):
                 def fn(x, t):
-                    return op(self.fun(x, t), other.fun(x, t))
+                    return op(self[t].fun(x), other[t].fun(x))
             return RandomProcess(self.probSpace, fn, self.index_set)
 
         return op_fun
@@ -164,8 +175,8 @@ class RandomProcess:
 
         if isinstance(other, RandomProcess):
             def fn(x, t):
-                a = self.fun(x, t)
-                b = other.fun(x, t)
+                a = self[t].fun(x)
+                b = other[t].fun(x)
                 a = tuple(a) if is_vector(a) else (a, )
                 b = tuple(b) if is_vector(b) else (b, )
                 return a + b

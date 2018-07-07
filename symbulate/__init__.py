@@ -1,7 +1,6 @@
 from .probability_space import ProbabilitySpace, BoxModel, DeckOfCards
 from .random_variables import RV
 from .random_processes import RandomProcess
-from .time_index import TimeIndex
 from .distributions import (
     Bernoulli,
     Binomial,
@@ -27,6 +26,12 @@ from .distributions import (
     BivariateNormal
 )
 from .independence import AssumeIndependent
+from .index_sets import (
+    Naturals,
+    Integers,
+    Reals,
+    DiscreteTimeSequence
+)
 from .gaussian_process import (
     GaussianProcess,
     GaussianProcessProbabilitySpace,
