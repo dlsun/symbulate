@@ -65,7 +65,7 @@ class Vector:
     def cumsum(self):
         total = 0
         sums = [total]
-        for i in x:
+        for i in self:
             total += i
             sums.append(total)
         return Vector(sums)
