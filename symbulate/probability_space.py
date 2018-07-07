@@ -158,9 +158,9 @@ class BoxModel(ProbabilitySpace):
         if self.size is None:
             return self.box[draw_inds(None)]
         elif self.size == float("inf"):
-            def f(n, vector):
+            def fn(n):
                 return self.box[draw_inds(None)]
-            return InfiniteVector(f)
+            return InfiniteVector(fn)
         else:
             draws = [self.box[i] for i in draw_inds(self.size)]
             if not self.order_matters:
