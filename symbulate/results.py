@@ -199,11 +199,11 @@ class Results(list):
 
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "
-                        "can be plotted, but you simulated from a " 
+                        "can be plotted, but you simulated from a "
                         "probability space. You must first define a RV "
                         "on your probability space and simulate it. "
                         "Then call .plot() on those simulations.")
- 
+
     def mean(self):
         raise Exception("You can only call .mean() on simulations of "
                         "random variables (RV), but you simulated from "
@@ -231,7 +231,7 @@ class Results(list):
                         "a probability space. You must first define "
                         " a RV on your probability space and simulate it "
                         "Then call .corr() on those simulations.")
-   
+
     def cov(self):
         raise Exception("You can only call .cov() on simulations of "
                         "random variables (RV), but you simulated from "
@@ -279,14 +279,14 @@ class Results(list):
 
 class RVResults(Results):
 
-    def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
+    def plot(self, type=None, alpha=None, normalize=True, jitter=False,
         bins=None, **kwargs):
         if type is not None:
             if isinstance(type, str):
                 type = (type,)
             elif not isinstance(type, (tuple, list)):
                 raise Exception("I don't know how to plot a " + str(type))
-        
+
         dim = get_dimension(self)
         if dim == 1:
             counts = self._get_counts()
@@ -305,7 +305,7 @@ class RVResults(Results):
             fig = plt.gcf()
             ax = plt.gca()
             color = get_next_color(ax)
-            
+
             if 'density' in type:
                 if discrete:
                     xs = sorted(list(counts.keys()))
@@ -323,7 +323,9 @@ class RVResults(Results):
                         plt.ylabel('Density')
 
             if 'hist' in type or 'bar' in type:
-                ax.hist(self, color=color, bins=bins, alpha=alpha, normed=True, **kwargs)
+                density = True if normalize else False
+
+                ax.hist(self, color=color, bins=bins, alpha=alpha, normed=density, **kwargs)
                 plt.ylabel("Density" if normalize else "Count")
             elif 'impulse' in type:
                 x = list(counts.keys())
@@ -376,13 +378,13 @@ class RVResults(Results):
                     x_lines = np.linspace(min(x), max(x), 1000)
                     y_lines = np.linspace(min(y), max(y), 1000)
                     ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2, color=get_next_color(ax))
-                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2, color=get_next_color(ax), 
+                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2, color=get_next_color(ax),
                                   transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
                 else:
                     if discrete_x:
                         make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
                     else:
-                        ax_marg_x.hist(x, color=get_next_color(ax), normed=True, 
+                        ax_marg_x.hist(x, color=get_next_color(ax), normed=True,
                                        alpha=alpha, bins=bins)
                     if discrete_y:
                         make_marginal_impulse(y_count, get_next_color(ax), ax_marg_y, alpha, 'y')
@@ -422,7 +424,7 @@ class RVResults(Results):
                 if discrete_x and not discrete_y:
                     positions = sorted(list(x_count.keys()))
                     make_violin(res, positions, ax, 'x', alpha)
-                elif not discrete_x and discrete_y: 
+                elif not discrete_x and discrete_y:
                     positions = sorted(list(y_count.keys()))
                     make_violin(res, positions, ax, 'y', alpha)
         else:
@@ -475,7 +477,7 @@ class RVResults(Results):
 
     def standardize(self):
         mean_ = self.mean()
-        sd_ = self.sd() 
+        sd_ = self.sd()
         if all(is_scalar(x) for x in self):
             return RVResults((x - mean_) / sd_ for x in self)
         elif get_dimension(self) > 0:
