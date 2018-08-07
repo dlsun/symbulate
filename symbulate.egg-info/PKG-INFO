@@ -1,0 +1,17 @@
+Metadata-Version: 1.1
+Name: symbulate
+Version: 0.2.0
+Summary: A symbolic algebra for specifying simulations.
+Home-page: https://github.com/dlsun/symbulate
+Author: Dennis Sun
+Author-email: dsun09@calpoly.edu
+License: GPLv3
+Description-Content-Type: UNKNOWN
+Description: UNKNOWN
+Keywords: probability simulation
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Education
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Programming Language :: Python :: 3
