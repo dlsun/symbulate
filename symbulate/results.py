@@ -323,7 +323,7 @@ class RVResults(Results):
                         plt.ylabel('Density')
 
             if 'hist' in type or 'bar' in type:
-                ax.hist(self, color=color, bins=bins, alpha=alpha, normed=normalize, **kwargs)
+                ax.hist(self, color=color, bins=bins, alpha=alpha, density=normalize, **kwargs)
                 plt.ylabel("Density" if normalize else "Count")
             elif 'impulse' in type:
                 x = list(counts.keys())
@@ -382,12 +382,12 @@ class RVResults(Results):
                     if discrete_x:
                         make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
                     else:
-                        ax_marg_x.hist(x, color=get_next_color(ax), normed=normalize,
+                        ax_marg_x.hist(x, color=get_next_color(ax), density=normalize,
                                        alpha=alpha, bins=bins)
                     if discrete_y:
                         make_marginal_impulse(y_count, get_next_color(ax), ax_marg_y, alpha, 'y')
                     else:
-                        ax_marg_y.hist(y, color=get_next_color(ax), normed=normalize,
+                        ax_marg_y.hist(y, color=get_next_color(ax), density=normalize,
                                        alpha=alpha, bins=bins, orientation='horizontal')
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
