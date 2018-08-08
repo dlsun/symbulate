@@ -526,9 +526,6 @@ class RVResults(Results):
             d["Correlation"] = self.corr()
             return d
 
-    def _get_row_html(self, key, val):
-        return "<tr><td>%s</td><td>%s</td></tr>" % (key, val)
-
     def standardize(self):
         mean_ = self.mean()
         sd_ = self.sd()
