@@ -199,11 +199,11 @@ class Results(list):
 
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "
-                        "can be plotted, but you simulated from a " 
+                        "can be plotted, but you simulated from a "
                         "probability space. You must first define a RV "
                         "on your probability space and simulate it. "
                         "Then call .plot() on those simulations.")
- 
+
     def mean(self):
         raise Exception("You can only call .mean() on simulations of "
                         "random variables (RV), but you simulated from "
@@ -225,13 +225,34 @@ class Results(list):
                         " a RV on your probability space and simulate it "
                         "Then call .sd() on those simulations.")
 
+    def summary(self):
+        raise Exception("You can only call .summary() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .summary() on those simulations.")
+
+    def min(self):
+        raise Exception("You can only call .min() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .min() on those simulations.")
+
+    def max(self):
+        raise Exception("You can only call .max() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .max() on those simulations.")
+
     def corr(self):
         raise Exception("You can only call .corr() on simulations of "
                         "random variables (RV), but you simulated from "
                         "a probability space. You must first define "
                         " a RV on your probability space and simulate it "
                         "Then call .corr() on those simulations.")
-   
+
     def cov(self):
         raise Exception("You can only call .cov() on simulations of "
                         "random variables (RV), but you simulated from "
@@ -279,14 +300,14 @@ class Results(list):
 
 class RVResults(Results):
 
-    def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
+    def plot(self, type=None, alpha=None, normalize=True, jitter=False,
         bins=None, **kwargs):
         if type is not None:
             if isinstance(type, str):
                 type = (type,)
             elif not isinstance(type, (tuple, list)):
                 raise Exception("I don't know how to plot a " + str(type))
-        
+
         dim = get_dimension(self)
         if dim == 1:
             counts = self._get_counts()
@@ -305,7 +326,7 @@ class RVResults(Results):
             fig = plt.gcf()
             ax = plt.gca()
             color = get_next_color(ax)
-            
+
             if 'density' in type:
                 if discrete:
                     xs = sorted(list(counts.keys()))
@@ -323,7 +344,7 @@ class RVResults(Results):
                         plt.ylabel('Density')
 
             if 'hist' in type or 'bar' in type:
-                ax.hist(self, color=color, bins=bins, alpha=alpha, normed=True, **kwargs)
+                ax.hist(self, color=color, bins=bins, alpha=alpha, density=normalize, **kwargs)
                 plt.ylabel("Density" if normalize else "Count")
             elif 'impulse' in type:
                 x = list(counts.keys())
@@ -376,18 +397,18 @@ class RVResults(Results):
                     x_lines = np.linspace(min(x), max(x), 1000)
                     y_lines = np.linspace(min(y), max(y), 1000)
                     ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2, color=get_next_color(ax))
-                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2, color=get_next_color(ax), 
+                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2, color=get_next_color(ax),
                                   transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
                 else:
                     if discrete_x:
                         make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
                     else:
-                        ax_marg_x.hist(x, color=get_next_color(ax), normed=True, 
+                        ax_marg_x.hist(x, color=get_next_color(ax), density=normalize,
                                        alpha=alpha, bins=bins)
                     if discrete_y:
                         make_marginal_impulse(y_count, get_next_color(ax), ax_marg_y, alpha, 'y')
                     else:
-                        ax_marg_y.hist(y, color=get_next_color(ax), normed=True,
+                        ax_marg_y.hist(y, color=get_next_color(ax), density=normalize,
                                        alpha=alpha, bins=bins, orientation='horizontal')
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
@@ -405,12 +426,17 @@ class RVResults(Results):
                 ax.scatter(x, y, alpha=alpha, c=color, **kwargs)
             elif 'hist' in type:
                 histo = ax.hist2d(x, y, bins=bins, cmap='Blues')
-                caxes = add_colorbar(fig, type, histo[3], 'Density')
-                #change scale to density instead of counts
-                new_labels = []
-                for label in caxes.get_yticklabels():
-                    new_labels.append(int(label.get_text()) / len(x))
-                caxes.set_yticklabels(new_labels)
+
+                # When normalize = True, use density instead of counts
+                if normalize:
+                    caxes = add_colorbar(fig, type, histo[3], 'Density')
+                    #change scale to density instead of counts
+                    new_labels = []
+                    for label in caxes.get_yticklabels():
+                        new_labels.append(int(label.get_text()) / len(x))
+                    caxes.set_yticklabels(new_labels)
+                else:
+                    caxes = add_colorbar(fig, type, histo[3], 'Count')
             elif 'density' in type:
                 den = make_density2D(x, y, ax)
                 add_colorbar(fig, type, den, 'Density')
@@ -422,7 +448,7 @@ class RVResults(Results):
                 if discrete_x and not discrete_y:
                     positions = sorted(list(x_count.keys()))
                     make_violin(res, positions, ax, 'x', alpha)
-                elif not discrete_x and discrete_y: 
+                elif not discrete_x and discrete_y:
                     positions = sorted(list(y_count.keys()))
                     make_violin(res, positions, ax, 'y', alpha)
         else:
@@ -473,9 +499,39 @@ class RVResults(Results):
         else:
             raise Exception("I don't know how to take the variance of these values.")
 
+    def min(self):
+        if all(is_scalar(x) for x in self):
+            return np.array(self).min()
+        elif get_dimension(self) > 0:
+            return tuple(np.array(self).min(0))
+        else:
+            raise Exception("I don't know how to take the min of these values.")
+
+    def max(self):
+        if all(is_scalar(x) for x in self):
+            return np.array(self).max()
+        elif get_dimension(self) > 0:
+            return tuple(np.array(self).max(0))
+        else:
+            raise Exception("I don't know how to take the max of these values.")
+
+    def summary(self):
+        self.plot()
+        d = {"Mean": self.mean(),
+             "Standard Deviation" : self.sd()}
+
+        if get_dimension(self) == 1:
+            return d
+        else:
+            d["Correlation"] = self.corr()
+            return d
+
+    def _get_row_html(self, key, val):
+        return "<tr><td>%s</td><td>%s</td></tr>" % (key, val)
+
     def standardize(self):
         mean_ = self.mean()
-        sd_ = self.sd() 
+        sd_ = self.sd()
         if all(is_scalar(x) for x in self):
             return RVResults((x - mean_) / sd_ for x in self)
         elif get_dimension(self) > 0:

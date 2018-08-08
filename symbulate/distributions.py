@@ -8,31 +8,31 @@ from .plot import configure_axes, get_next_color
 class Distribution(ProbabilitySpace):
     def __init__(self, params, scipy, discrete = True):
         self.params = params
-        
+
         if discrete:
             self.pdf = lambda x: scipy.pmf(x, **self.params)
         else:
             self.pdf = lambda x: scipy.pdf(x, **self.params)
-        
+
         self.cdf = lambda x: scipy.cdf(x, **self.params)
         self.quantile = lambda x: scipy.ppf(x, **self.params)
-        
+
         self.median = lambda : scipy.median(**self.params)
         self.mean = lambda : scipy.mean(**self.params)
         self.var = lambda : scipy.var(**self.params)
         self.sd = lambda : scipy.std(**self.params)
-        
+
         self.discrete = discrete
 
         self.xlim = (
             scipy.ppf(0.001, **self.params),
             scipy.ppf(0.999, **self.params)
             )
-    
+
     def plot(self, type=None, alpha=None, xlim=None, **kwargs):
 
         new_fig = len(plt.gcf().axes) == 0
-        
+
         # use limits if specified
         if xlim is not None:
             xlower, xupper = xlim
@@ -48,16 +48,16 @@ class Distribution(ProbabilitySpace):
             xvals = np.arange(xlower, xupper+1)
         else:
             xvals = np.linspace(xlower, xupper, 100)
-        
+
         yvals = self.pdf(xvals)
-        
+
         # get next color in cycle
         axes = plt.gca()
         color = get_next_color(axes)
-        
+
         if self.discrete:
             plt.scatter(xvals, yvals, s=40, color=color, alpha=alpha, **kwargs)
-        
+
         plt.plot(xvals, yvals, color=color, alpha=alpha, **kwargs)
         plt.xlim(xlower, xupper)
 
@@ -77,17 +77,17 @@ class Bernoulli(Distribution):
             self.p = p
         else:
             raise Exception("p must be between 0 and 1")
-        
+
         params = {
             "p" : p
             }
         super().__init__(params, stats.bernoulli, True)
         self.xlim = (0, 1) # Bernoulli distributions are not defined for x < 0 and x > 1
- 
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Bernoulli distribution."""
-        
+
         return np.random.binomial(n=1, p=self.p)
 
 class Binomial(Distribution):
@@ -101,7 +101,7 @@ class Binomial(Distribution):
     """
 
     def __init__(self, n, p):
-        
+
         if n >= 0 and isinstance(n, int):
             self.n = n
         #elif n == 0:
@@ -114,7 +114,7 @@ class Binomial(Distribution):
             self.p = p
         else:
             raise Exception("p must be between 0 and 1")
-        
+
         params = {
             "n" : n,
             "p" : p
@@ -123,7 +123,7 @@ class Binomial(Distribution):
         self.xlim = (0, n) # Binomial distributions are not defined for x < 0 and x > n
 
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Binomial distribution."""
 
         return np.random.binomial(n=self.n, p=self.p)
@@ -142,17 +142,17 @@ class Hypergeometric(Distribution):
     """
 
     def __init__(self, n, N0, N1):
-        
+
         if n > 0 and isinstance(n, int):
             self.n = n
         else:
             raise Exception("n must be a positive integer")
-        
+
         if N0 >= 0 and isinstance(N0, int):
             self.N0 = N0
         else:
             raise Exception("N0 must be a non-negative integer")
-        
+
         if N1 >= 0 and isinstance(N1, int):
             self.N1 = N1
         else:
@@ -169,9 +169,9 @@ class Hypergeometric(Distribution):
 
         super().__init__(params, stats.hypergeom, True)
         self.xlim = (0, n) # Hypergeometric distributions are not defined for x < 0 and x > n
-        
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Hypergeometric distribution."""
 
         return np.random.hypergeometric(ngood=self.N1, nbad=self.N0, nsample=self.n)
@@ -188,27 +188,27 @@ class Geometric(Distribution):
     """
 
     def __init__(self, p):
-        
+
         if 0 < p < 1:
             self.p = p
         else:
-            raise Exception("p must be between 0 and 1")        
+            raise Exception("p must be between 0 and 1")
 
         params = {
             "p" : p
             }
         super().__init__(params, stats.geom, True)
         self.xlim = (1, self.xlim[1]) # Geometric distributions are not defined for x < 1
-        
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Geometric distribution."""
 
         return np.random.geometric(p=self.p)
 
 class NegativeBinomial(Distribution):
     """Defines a probability space for a negative
-         binomial distribution (which represents the 
+         binomial distribution (which represents the
          number of trials until r successes), including
          the r successes.
 
@@ -229,7 +229,7 @@ class NegativeBinomial(Distribution):
             self.p = p
         else:
             raise Exception("p must be between 0 and 1")
-        
+
         params = {
             "n" : r,
             "p" : p,
@@ -239,7 +239,7 @@ class NegativeBinomial(Distribution):
         self.xlim = (r, self.xlim[1]) # Negative Binomial distributions are not defined for x < r
 
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Negative Binomial distribution."""
 
         # Numpy's negative binomial returns numbers in [0, inf),
@@ -257,9 +257,9 @@ class Pascal(Distribution):
       p (float): probability (number between 0 and 1)
         that each trial results in a "success" (i.e., 1)
     """
-    
+
     def __init__(self, r, p):
-        
+
         if 0 < r and isinstance(r, int):
             self.r = r
         else:
@@ -269,16 +269,16 @@ class Pascal(Distribution):
             self.p = p
         else:
             raise Exception("p must be between 0 and 1")
-     
+
         params = {
             "n" : r,
             "p" : p
             }
         super().__init__(params, stats.nbinom, True)
         self.xlim = (0, self.xlim[1]) # Pascal distributions are not defined for x < 0
-    
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Pascal distribution."""
 
         # Numpy's negative binomial returns numbers in [0, inf).
@@ -292,7 +292,7 @@ class Poisson(Distribution):
     """
 
     def __init__(self, lam):
-        
+
         if 0 < lam:
             self.lam = lam
         else:
@@ -305,7 +305,7 @@ class Poisson(Distribution):
         self.xlim = (0, self.xlim[1]) # Poisson distributions are not defined for x < 0
 
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Poisson distribution."""
 
         return np.random.poisson(lam=self.lam)
@@ -321,7 +321,7 @@ class DiscreteUniform(Distribution):
     def __init__(self, a=0, b=1):
         self.a = a
         self.b = b + 1
-        
+
         params = {
             "low" : self.a,
             "high" : self.b
@@ -332,9 +332,9 @@ class DiscreteUniform(Distribution):
 
         super().__init__(params, stats.randint, True)
         self.xlim = (a, b) # Uniform distributions are not defined for x < a and x > b
-        
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Discrete Uniform distribution."""
 
         return np.random.randint(low=self.a, high=self.b)
@@ -352,7 +352,7 @@ class Uniform(Distribution):
     def __init__(self, a=0.0, b=1.0):
         self.a = a
         self.b = b
-        
+
         params = {
             "loc" : a,
             "scale" : b - a
@@ -363,9 +363,9 @@ class Uniform(Distribution):
 
         super().__init__(params, stats.uniform, False)
         self.xlim = (a, b) # Uniform distributions are not defined for x < a and x > b
-        
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Uniform distribution."""
 
         return np.random.uniform(low=self.a, high=self.b)
@@ -375,25 +375,17 @@ class Normal(Distribution):
 
     Attributes:
       mean (float): mean parameter of the normal distribution
-      var (float): variance parameter of the normal distribution
-      sd (float): standard deviation parameter of the normal 
+      sd (float): standard deviation parameter of the normal
         distribution (if specified, var parameter will be ignored)
+      var (float): variance parameter of the normal distribution
+
     """
     #TODO edit docstring for Normal Distribution
 
-    def __init__(self, mean=0.0, var=1.0, sd=None):
-
+    def __init__(self, mean=0.0, sd=1.0, var=None):
         #Note: cleaner way to implement this
-
-        if sd is None:
-            if var > 0:
-                self.scale = np.sqrt(var)
-            elif var == 0: 
-                raise NotImplementedError
-                #TODO
-            else:
-                raise Exception("var cannot be less than 0")
-        
+        if var is not None:
+            raise Exception("At most one of sd and var can be specified.")
         else:
             if sd > 0:
                 self.scale = sd
@@ -408,11 +400,11 @@ class Normal(Distribution):
             "scale" : self.scale
             }
         super().__init__(params, stats.norm, False)
-    
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Normal distribution."""
-    
+
         return np.random.normal(loc=self.mean(), scale=self.scale)
 
 class Exponential(Distribution):
@@ -428,7 +420,7 @@ class Exponential(Distribution):
     """
 
     def __init__(self, rate=1.0, scale=None):
-        
+
         if scale is None:
             if rate > 0:
                 self.rate = rate
@@ -440,15 +432,15 @@ class Exponential(Distribution):
                 self.scale = scale
             else:
                 raise Exception("scale must be positive")
-        
+
         params = {
             "scale" : 1. / rate if scale is None else scale
             }
         super().__init__(params, stats.expon, False)
         self.xlim = (0, self.xlim[1]) # Exponential distributions are not defined for x < 0
-        
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Exponential distribution."""
 
         if self.scale is None:
@@ -471,12 +463,12 @@ class Gamma(Distribution):
     """
 
     def __init__(self, shape, rate=1.0, scale=None):
-        
+
         if 0 < shape:
             self.shape = shape
         else:
             raise Exception("shape parameter must be positive")
-        
+
         if scale is None:
             if rate > 0:
                 self.rate = rate
@@ -487,7 +479,7 @@ class Gamma(Distribution):
             if scale > 0:
                 self.scale = scale
             else:
-                raise Exception("scale must be positive")        
+                raise Exception("scale must be positive")
 
         params = {
             "a" : shape,
@@ -495,9 +487,9 @@ class Gamma(Distribution):
             }
         super().__init__(params, stats.gamma, False)
         self.xlim = (0, self.xlim[1]) # Gamma distributions are not defined for x < 0
-            
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Gamma distribution."""
 
         if self.scale is None:
@@ -513,17 +505,20 @@ class Beta(Distribution):
       b (float): beta parameter for beta distribution
     """
 
-    def __init__(self, a, b, scale=None):
-        
+    def __init__(self, a, b, xmin=0, xmax=1, scale=None):
+
         if 0 < a:
             self.a = a
         else:
             raise Exception("a must be positive")
-            
+
         if 0 < b:
             self.b = b
-        else:        
+        else:
             raise Exception("b must be positive")
+
+        self.xmin = xmin
+        self.xmax = xmax
 
         params = {
             "a" : a,
@@ -533,16 +528,16 @@ class Beta(Distribution):
         self.xlim = (0, 1) # Beta distributions are not defined for x < 0 and x > 1
 
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Beta distribution."""
 
-        return np.random.beta(self.a, self.b)
+        return (self.xmin + (self.xmax - self.xmin)*np.random.beta(self.a, self.b))
 
 class StudentT(Distribution):
     """Defines a probability space for Student's t distribution.
 
     Attributes:
-      df (int): degrees of freedom  
+      df (int): degrees of freedom
     """
 
     def __init__(self, df):
@@ -552,16 +547,16 @@ class StudentT(Distribution):
             raise Exception("df must be greater than 0")
 
         params = {
-            "df" : df 
+            "df" : df
             }
         super().__init__(params, stats.t, False)
         if df == 1:
-            self.mean = lambda : float('nan') 
-            self.sd = lambda : float('nan') 
-            self.var = lambda : float('nan') 
-    
+            self.mean = lambda : float('nan')
+            self.sd = lambda : float('nan')
+            self.var = lambda : float('nan')
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the T distribution."""
 
         return np.random.standard_t(self.df)
@@ -570,7 +565,7 @@ class ChiSquare(Distribution):
     """Defines a probability space for a chi-square distribution
 
     Attributes:
-      df (int): degrees of freedom  
+      df (int): degrees of freedom
     """
 
     def __init__(self, df):
@@ -580,27 +575,27 @@ class ChiSquare(Distribution):
             raise Exception("df must be a positive integer")
 
         params = {
-            "df" : df 
+            "df" : df
             }
         super().__init__(params, stats.chi2, False)
         self.xlim = (0, self.xlim[1]) # Chi-Square distributions are not defined for x < 0
-    
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the ChiSquare distribution."""
-        
+
         return np.random.chisquare(self.df)
 
 class F(Distribution):
     """Defines a probability space for an F distribution
 
     Attributes:
-      dfN (int): degrees of freedom in the numerator  
+      dfN (int): degrees of freedom in the numerator
       dfD (int): degrees of freedom in the denominator
     """
 
     def __init__(self, dfN, dfD):
-        
+
         if dfN > 0:
             self.dfN = dfN
         else:
@@ -617,9 +612,9 @@ class F(Distribution):
             }
         super().__init__(params, stats.f, False)
         self.xlim = (0, self.xlim[1]) # F distributions are not defined for x < 0
-    
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the F distribution."""
 
         return np.random.f(self.dfN, self.dfD)
@@ -628,7 +623,7 @@ class Cauchy(Distribution):
     """Defines a probability space for a Cauchy distribution
 
     Attributes:
-      The Cauchy distribution has no parameters  
+      The Cauchy distribution has no parameters
     """
 
     def __init__(self, loc=0, scale=1):
@@ -648,17 +643,17 @@ class Cauchy(Distribution):
 class LogNormal(Distribution):
     """Defines a probability space for a Log-Normal distribution
 
-       If Y has a LogNormal distribution with parameters mu and sigma, then 
+       If Y has a LogNormal distribution with parameters mu and sigma, then
        log(Y) has a normal distribution with mean mu and sd sigma.
 
     Attributes:
-      mu (float): mean of the underlying normal distribution 
+      mu (float): mean of the underlying normal distribution
       sigma (float): standard deviation of the underlying normal distribution
     """
 
     def __init__(self, mu=0.0, sigma=1.0):
 
-        self.norm_mean = mu 
+        self.norm_mean = mu
 
         if sigma > 0:
             self.s = sigma
@@ -668,7 +663,7 @@ class LogNormal(Distribution):
 
         params = {
             "s" : self.s,
-            "scale" : np.exp(mu) 
+            "scale" : np.exp(mu)
             }
         super().__init__(params, stats.lognorm, False)
         self.xlim = (0, self.xlim[1]) # Log-Normal distributions are not defined for x < 0
@@ -680,34 +675,34 @@ class Pareto(Distribution):
     """Defines a probability space for a Pareto distribution.
 
     Attributes:
-      b (float): shape parameter of Pareto distribution 
+      b (float): shape parameter of Pareto distribution
     """
 
     def __init__(self, b=1.0):
-        
+
         if b > 0:
-            self.b = b 
+            self.b = b
         else:
             raise Exception("b must be greater than 0")
-        
+
         params = {
-            "b" : self.b 
+            "b" : self.b
             }
         super().__init__(params, stats.pareto, False)
         self.xlim = (0, self.xlim[1]) # Pareto distributions are not defined for x < 0
-        
+
     def draw(self):
         return np.random.pareto(self.b)
 
 # class Weibull(Distribution):
-#     
+#
 #     def __init__(self, eta, beta= ):
 
 class Rayleigh(Distribution):
     """Defines a probability space for a Rayleigh distribution
 
     Attributes:
-      The Rayleigh distribution has no parameters  
+      The Rayleigh distribution has no parameters
     """
 
     def __init__(self):
@@ -720,7 +715,7 @@ class Rayleigh(Distribution):
 ## Multivariate Distributions
 
 class MultivariateNormal(Distribution):
-    """Defines a probability space for a multivariate normal 
+    """Defines a probability space for a multivariate normal
        distribution.
 
     Attributes:
@@ -735,10 +730,10 @@ class MultivariateNormal(Distribution):
                             " of the covariance matrix.")
 
         if len(mean) >= 1:
-            self.mean = mean 
+            self.mean = mean
         else:
-            raise Exception("Mean vector and Cov matrix cannot be empty")      
- 
+            raise Exception("Mean vector and Cov matrix cannot be empty")
+
         if len(cov) >= 1:
             if all(len(row) == len(mean) for row in cov):
                     if np.all(np.linalg.eigvals(cov) >= 0) and np.allclose(cov,np.transpose(cov)):
@@ -749,21 +744,21 @@ class MultivariateNormal(Distribution):
                 raise Exception("Cov matrix is not square")
         else:
             raise Exception("Dimension of cov matrix cannot be less than 1")
-         
+
         self.discrete = False
         self.pdf = lambda x: stats.multivariate_normal(x, mean, cov)
- 
+
     def plot():
         raise Exception("This is not defined for Multivariate Normal distributions.")
-    
+
     def draw(self):
-        """A function that takes no arguments and 
+        """A function that takes no arguments and
             returns a single draw from the Multivariate Normal distribution."""
 
         return tuple(np.random.multivariate_normal(self.mean, self.cov))
 
 class BivariateNormal(MultivariateNormal):
-    """Defines a probability space for a bivariate normal 
+    """Defines a probability space for a bivariate normal
        distribution.
 
     Attributes:
@@ -796,7 +791,7 @@ class BivariateNormal(MultivariateNormal):
         if sd2 < 0:
             raise Exception("sd2 cannot be less than 0")
 
-        
+
         if var1 is None:
             var1 = sd1 ** 2
         if var2 is None:
