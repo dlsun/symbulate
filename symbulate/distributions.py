@@ -382,10 +382,20 @@ class Normal(Distribution):
     """
     #TODO edit docstring for Normal Distribution
 
-    def __init__(self, mean=0.0, sd=1.0, var=None):
+    def __init__(self, mean=0.0, sd=None, var=None):
         #Note: cleaner way to implement this
-        if var is not None:
-            raise Exception("At most one of sd and var can be specified.")
+        if (var is not None) and (sd is not None):
+            raise Exception("At most one of sd and var can be specified")
+        elif (var is None) and (sd is None):
+            raise Exception("Either sd or var should be specified")
+        elif sd is None:
+            if var > 0:
+                self.scale = np.sqrt(var)
+            elif var == 0: 
+                raise NotImplementedError
+                #TODO
+            else:
+                raise Exception("var cannot be less than 0")       
         else:
             if sd > 0:
                 self.scale = sd
@@ -531,7 +541,7 @@ class Beta(Distribution):
         """A function that takes no arguments and
             returns a single draw from the Beta distribution."""
 
-        return (self.xmin + (self.xmax - self.xmin)*np.random.beta(self.a, self.b))
+        return self.xmin + (self.xmax - self.xmin) * np.random.beta(self.a, self.b)
 
 class StudentT(Distribution):
     """Defines a probability space for Student's t distribution.

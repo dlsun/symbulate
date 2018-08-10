@@ -225,13 +225,6 @@ class Results(list):
                         " a RV on your probability space and simulate it "
                         "Then call .sd() on those simulations.")
 
-    def summary(self):
-        raise Exception("You can only call .summary() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        " a RV on your probability space and simulate it "
-                        "Then call .summary() on those simulations.")
-
     def min(self):
         raise Exception("You can only call .min() on simulations of "
                         "random variables (RV), but you simulated from "
@@ -514,17 +507,6 @@ class RVResults(Results):
             return tuple(np.array(self).max(0))
         else:
             raise Exception("I don't know how to take the max of these values.")
-
-    def summary(self):
-        self.plot()
-        d = {"Mean": self.mean(),
-             "Standard Deviation" : self.sd()}
-
-        if get_dimension(self) == 1:
-            return d
-        else:
-            d["Correlation"] = self.corr()
-            return d
 
     def standardize(self):
         mean_ = self.mean()
