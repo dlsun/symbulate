@@ -382,14 +382,12 @@ class Normal(Distribution):
     """
     #TODO edit docstring for Normal Distribution
 
-    def __init__(self, mean=0.0, sd=None, var=None):
+    def __init__(self, mean=0.0, sd=1.0, var=None):
         #Note: cleaner way to implement this
-        if (var is not None) and (sd is not None):
-            raise Exception("At most one of sd and var can be specified")
-        elif (var is None) and (sd is None):
-            raise Exception("Either sd or var should be specified")
-        elif sd is None:
-            if var > 0:
+        if var is not None:
+            if sd != 1.0:
+                raise Exception("At most one of sd and var can be specified")
+            elif var > 0:
                 self.scale = np.sqrt(var)
             elif var == 0: 
                 raise NotImplementedError
