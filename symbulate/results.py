@@ -6,8 +6,6 @@ probability space or realizations of a random variable /
 random process.
 """
 import numpy as np
-import pandas as pd
-import statsmodels.robust.scale as stsmodel
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -522,14 +520,6 @@ class RVResults(Results):
             return tuple(np.subtract(np.array(self).max(0), np.array(self).min(0)))
         else:                                                                        
             raise Exception("I don't know how to take the range of these values.")
-        
-    def med_abs_dev(self):
-        if all(is_scalar(x) for x in self):                                          
-            return stsmodel.mad(a=np.array(self), c=1)
-        elif get_dimension(self) > 0:                                                
-            return tuple(stsmodel.mad(a=np.array(self), c=1, axis=0))   
-        else:                                                                        
-            raise Exception("I don't know how to take the median absolute deviation of these values.")
 
     def iqr(self):
         if all(is_scalar(x) for x in self):                                          
