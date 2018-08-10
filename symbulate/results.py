@@ -492,22 +492,6 @@ class RVResults(Results):
         else:
             raise Exception("I don't know how to take the variance of these values.")
 
-    def min(self):
-        if all(is_scalar(x) for x in self):
-            return np.array(self).min()
-        elif get_dimension(self) > 0:
-            return tuple(np.array(self).min(0))
-        else:
-            raise Exception("I don't know how to take the min of these values.")
-
-    def max(self):
-        if all(is_scalar(x) for x in self):
-            return np.array(self).max()
-        elif get_dimension(self) > 0:
-            return tuple(np.array(self).max(0))
-        else:
-            raise Exception("I don't know how to take the max of these values.")
-
     def standardize(self):
         mean_ = self.mean()
         sd_ = self.sd()
