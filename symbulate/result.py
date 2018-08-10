@@ -55,6 +55,8 @@ class Vector:
 
     def __len__(self):
         return self.array.size
+
+    # TODO: Add __iter__ method.
     
     def sum(self):
         return self.array.sum()
