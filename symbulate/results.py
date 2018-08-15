@@ -253,6 +253,75 @@ class Results(list):
                         " a RV on your probability space and simulate it "
                         "Then call .cov() on those simulations.")
 
+    def standardize(self):
+        raise Exception("You can only call .standardize() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .standardize() on those simulations.")
+
+    def median(self):
+        raise Exception("You can only call .median() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .median() on those simulations.")
+
+    def quantile(self, q):
+        raise Exception("You can only call .quantile() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .quantile() on those simulations.")
+
+    def min_max_diff(self):
+        raise Exception("You can only call .min_max_diff() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .min_max_diff() on those simulations.")
+
+    def iqr(self):
+        raise Exception("You can only call .iqr() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .iqr() on those simulations.")
+
+    def orderstatistics(self, n):
+        raise Exception("You can only call .orderstatistics() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .orderstatistics() on those simulations.")
+
+    def kurtosis(self):
+        raise Exception("You can only call .kurtosis() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .kurtosis() on those simulations.")
+
+    def skewness(self):
+        raise Exception("You can only call .skewness() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .skewness() on those simulations.")
+
+    def moment(self, k):
+        raise Exception("You can only call .moment() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .moment() on those simulations.")
+
+    def trimmed_mean(self, alpha):
+        raise Exception("You can only call .trimmed_mean() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .trimmed_mean() on those simulations.")
 
     def _repr_html_(self):
 
@@ -518,76 +587,76 @@ class RVResults(Results):
 
     def min(self):
         if all(is_scalar(x) for x in self):
-            return np.array(self).min() 
+            return np.array(self).min()
         elif get_dimension(self) > 0:
             return tuple(np.array(self).min(0))
         else:
             raise Exception("I don't know how to take the minimum of these values.")
-            
+
     def max(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return np.array(self).max()
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(np.array(self).max(0))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the maximum of these values.")
 
     def min_max_diff(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return np.array(self).max() - np.array(self).min()
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(np.subtract(np.array(self).max(0), np.array(self).min(0)))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the range of these values.")
 
     def iqr(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             q75, q25 = np.percentile(np.array(self), [75, 25])
             return q75 - q25
-        elif get_dimension(self) > 0:                                                
-            return tuple(np.subtract(np.percentile(np.array(self), 75, axis=0), 
+        elif get_dimension(self) > 0:
+            return tuple(np.subtract(np.percentile(np.array(self), 75, axis=0),
                                      np.percentile(np.array(self), 25, axis=0)))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the interquartile range of these values.")
 
     def orderstatistics(self, n):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return np.partition(np.array(self), n - 1)[n - 1]
-        elif get_dimension(self) > 0:                                                
-            return tuple(np.partition(np.array(self), n - 1, axis=0)[n - 1]) 
-        else:                                                                        
+        elif get_dimension(self) > 0:
+            return tuple(np.partition(np.array(self), n - 1, axis=0)[n - 1])
+        else:
             raise Exception("I don't know how to take the order statistics of these values.")
 
     def skewness(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return stats.skew(np.array(self))
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(stats.skew(np.array(self), 0))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the skewness of these values.")
 
     def kurtosis(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return stats.kurtosis(np.array(self))
-        elif get_dimension(self) > 0:                                                
-            return tuple(stats.kurtosis(np.array(self), 0)) 
-        else:                                                                        
+        elif get_dimension(self) > 0:
+            return tuple(stats.kurtosis(np.array(self), 0))
+        else:
             raise Exception("I don't know how to take the kurtosis of these values.")
- 
+
     def moment(self, k):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return stats.moment(np.array(self), k)
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(stats.moment(np.array(self), k, 0))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to find the moment of these values.")
-    
-    def trimmed_mean(self, alpha): 
-        if all(is_scalar(x) for x in self):                                          
+
+    def trimmed_mean(self, alpha):
+        if all(is_scalar(x) for x in self):
             return stats.trim_mean(self, alpha)
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(stats.trim_mean(self, alpha, axis=0))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the trimmed_mean of these values.")
 
 

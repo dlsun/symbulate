@@ -384,17 +384,7 @@ class Normal(Distribution):
 
     def __init__(self, mean=0.0, sd=1.0, var=None):
         #Note: cleaner way to implement this
-        if var is not None:
-            if sd != 1.0:
-                raise Exception("At most one of sd and var can be specified")
-            elif var > 0:
-                self.scale = np.sqrt(var)
-            elif var == 0: 
-                raise NotImplementedError
-                #TODO
-            else:
-                raise Exception("var cannot be less than 0")       
-        else:
+        if var is None:
             if sd > 0:
                 self.scale = sd
             elif sd == 0:
@@ -402,6 +392,14 @@ class Normal(Distribution):
                 #TODO
             else:
                 raise Exception("sd cannot be less than 0")
+        else:
+            if var > 0:
+                self.scale = np.sqrt(var)
+            elif var == 0:
+                raise NotImplementedError
+                #TODO
+            else:
+                raise Exception("var cannot be less than 0")
 
         params = {
             "loc" : mean,
