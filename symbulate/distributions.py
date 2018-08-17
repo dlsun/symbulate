@@ -376,9 +376,9 @@ class Normal(Distribution):
     Attributes:
       mean (float): mean parameter of the normal distribution
       sd (float): standard deviation parameter of the normal
-        distribution (if specified, var parameter will be ignored)
+        distribution 
       var (float): variance parameter of the normal distribution
-
+          (if specified, sd parameter will be ignored)
     """
     #TODO edit docstring for Normal Distribution
 
@@ -511,7 +511,7 @@ class Beta(Distribution):
       b (float): beta parameter for beta distribution
     """
 
-    def __init__(self, a, b, xmin=0, xmax=1, scale=None):
+    def __init__(self, a=1, b=1, xmin=0, xmax=1, scale=None):
 
         if 0 < a:
             self.a = a
