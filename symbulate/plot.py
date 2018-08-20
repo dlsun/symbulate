@@ -29,7 +29,7 @@ def configure_axes(axes, xdata, ydata, xlabel = None, ylabel = None):
     _, ymax = axes.get_ylim()
     ymax = max(ymax, 1.05 * max(ydata))
     plt.ylim(0, ymax)
-    
+
     if xlabel is not None:
         plt.xlabel(xlabel)
     if ylabel is not None:
@@ -40,7 +40,7 @@ def plot(*args, **kwargs):
         args[0].plot(**kwargs)
     except:
         plt.plot(*args, **kwargs)
-        
+
 def is_discrete(heights):
     return sum([(i > 1) for i in heights]) > .8 * len(heights)
 
@@ -52,7 +52,7 @@ def count_var(x):
         else:
             counts[val] = 1
     return counts
-    
+
 def compute_density(values):
     density = gaussian_kde(values)
     density.covariance_factor = lambda: 0.25
@@ -62,10 +62,10 @@ def compute_density(values):
 def setup_ticks(pos, lab, ax):
     ax.set_ticks(pos)
     ax.set_ticklabels(lab)
-    
+
 def add_colorbar(fig, type, mappable, label):
     #create axis for cbar to place on left
-    if 'marginal' not in type: 
+    if 'marginal' not in type:
         caxes = fig.add_axes([0, 0.1, 0.05, 0.8])
     else: #adjust height if marginals
         caxes = fig.add_axes([0, 0.1, 0.05, 0.57])
@@ -95,12 +95,12 @@ def make_tile(x, y, bins, discrete_x, discrete_y, ax):
     y_shape = len(y_lab) if discrete_y else len(y_lab) - 1
     x_shape = len(x_lab) if discrete_x else len(x_lab) - 1
     intensity = np.zeros(shape=(y_shape, x_shape))
-        
+
     for key, val in counts.items():
         intensity[key] = val / nums
     if not discrete_x: x_lab = np.around(x_lab, decimals=1)
     if not discrete_y: y_lab = np.around(y_lab, decimals=1)
-    hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto')
+    hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto', vmin = 0)
     ax.xaxis.set_ticks_position('bottom')
     setup_ticks(x_pos, x_lab, ax.xaxis)
     setup_ticks(y_pos, y_lab, ax.yaxis)
@@ -112,7 +112,7 @@ def make_violin(data, positions, ax, axis, alpha):
     values = [data[data[:, i] == pos, j].tolist() for pos in positions]
     violins = ax.violinplot(dataset=values, showmedians=True,
                             vert=False if axis == 'y' else True)
-    setup_ticks(np.array(positions) + 1, positions, 
+    setup_ticks(np.array(positions) + 1, positions,
                 ax.xaxis if axis == 'x' else ax.yaxis)
     for part in violins['bodies']:
         part.set_edgecolor('black')

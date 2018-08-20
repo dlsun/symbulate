@@ -199,11 +199,11 @@ class Results(list):
 
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "
-                        "can be plotted, but you simulated from a " 
+                        "can be plotted, but you simulated from a "
                         "probability space. You must first define a RV "
                         "on your probability space and simulate it. "
                         "Then call .plot() on those simulations.")
- 
+
     def mean(self):
         raise Exception("You can only call .mean() on simulations of "
                         "random variables (RV), but you simulated from "
@@ -225,13 +225,27 @@ class Results(list):
                         " a RV on your probability space and simulate it "
                         "Then call .sd() on those simulations.")
 
+    def min(self):
+        raise Exception("You can only call .min() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .min() on those simulations.")
+
+    def max(self):
+        raise Exception("You can only call .max() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .max() on those simulations.")
+
     def corr(self):
         raise Exception("You can only call .corr() on simulations of "
                         "random variables (RV), but you simulated from "
                         "a probability space. You must first define "
                         " a RV on your probability space and simulate it "
                         "Then call .corr() on those simulations.")
-   
+
     def cov(self):
         raise Exception("You can only call .cov() on simulations of "
                         "random variables (RV), but you simulated from "
@@ -239,6 +253,75 @@ class Results(list):
                         " a RV on your probability space and simulate it "
                         "Then call .cov() on those simulations.")
 
+    def standardize(self):
+        raise Exception("You can only call .standardize() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .standardize() on those simulations.")
+
+    def median(self):
+        raise Exception("You can only call .median() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .median() on those simulations.")
+
+    def quantile(self, q):
+        raise Exception("You can only call .quantile() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .quantile() on those simulations.")
+
+    def min_max_diff(self):
+        raise Exception("You can only call .min_max_diff() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .min_max_diff() on those simulations.")
+
+    def iqr(self):
+        raise Exception("You can only call .iqr() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .iqr() on those simulations.")
+
+    def orderstatistics(self, n):
+        raise Exception("You can only call .orderstatistics() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .orderstatistics() on those simulations.")
+
+    def kurtosis(self):
+        raise Exception("You can only call .kurtosis() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .kurtosis() on those simulations.")
+
+    def skewness(self):
+        raise Exception("You can only call .skewness() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .skewness() on those simulations.")
+
+    def moment(self, k):
+        raise Exception("You can only call .moment() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .moment() on those simulations.")
+
+    def trimmed_mean(self, alpha):
+        raise Exception("You can only call .trimmed_mean() on simulations of "
+                        "random variables (RV), but you simulated from "
+                        "a probability space. You must first define "
+                        " a RV on your probability space and simulate it "
+                        "Then call .trimmed_mean() on those simulations.")
 
     def _repr_html_(self):
 
@@ -279,14 +362,14 @@ class Results(list):
 
 class RVResults(Results):
 
-    def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
+    def plot(self, type=None, alpha=None, normalize=True, jitter=False,
         bins=None, **kwargs):
         if type is not None:
             if isinstance(type, str):
                 type = (type,)
             elif not isinstance(type, (tuple, list)):
                 raise Exception("I don't know how to plot a " + str(type))
-        
+
         dim = get_dimension(self)
         if dim == 1:
             counts = self._get_counts()
@@ -305,7 +388,7 @@ class RVResults(Results):
             fig = plt.gcf()
             ax = plt.gca()
             color = get_next_color(ax)
-            
+
             if 'density' in type:
                 if discrete:
                     xs = sorted(list(counts.keys()))
@@ -323,7 +406,7 @@ class RVResults(Results):
                         plt.ylabel('Density')
 
             if 'hist' in type or 'bar' in type:
-                ax.hist(self, color=color, bins=bins, alpha=alpha, normed=True, **kwargs)
+                ax.hist(self, color=color, bins=bins, alpha=alpha, density=normalize, **kwargs)
                 plt.ylabel("Density" if normalize else "Count")
             elif 'impulse' in type:
                 x = list(counts.keys())
@@ -376,18 +459,18 @@ class RVResults(Results):
                     x_lines = np.linspace(min(x), max(x), 1000)
                     y_lines = np.linspace(min(y), max(y), 1000)
                     ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2, color=get_next_color(ax))
-                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2, color=get_next_color(ax), 
+                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2, color=get_next_color(ax),
                                   transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
                 else:
                     if discrete_x:
                         make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
                     else:
-                        ax_marg_x.hist(x, color=get_next_color(ax), normed=True, 
+                        ax_marg_x.hist(x, color=get_next_color(ax), density=normalize,
                                        alpha=alpha, bins=bins)
                     if discrete_y:
                         make_marginal_impulse(y_count, get_next_color(ax), ax_marg_y, alpha, 'y')
                     else:
-                        ax_marg_y.hist(y, color=get_next_color(ax), normed=True,
+                        ax_marg_y.hist(y, color=get_next_color(ax), density=normalize,
                                        alpha=alpha, bins=bins, orientation='horizontal')
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
@@ -405,12 +488,17 @@ class RVResults(Results):
                 ax.scatter(x, y, alpha=alpha, c=color, **kwargs)
             elif 'hist' in type:
                 histo = ax.hist2d(x, y, bins=bins, cmap='Blues')
-                caxes = add_colorbar(fig, type, histo[3], 'Density')
-                #change scale to density instead of counts
-                new_labels = []
-                for label in caxes.get_yticklabels():
-                    new_labels.append(int(label.get_text()) / len(x))
-                caxes.set_yticklabels(new_labels)
+
+                # When normalize = True, use density instead of counts
+                if normalize:
+                    caxes = add_colorbar(fig, type, histo[3], 'Density')
+                    #change scale to density instead of counts
+                    new_labels = []
+                    for label in caxes.get_yticklabels():
+                        new_labels.append(int(label.get_text()) / len(x))
+                    caxes.set_yticklabels(new_labels)
+                else:
+                    caxes = add_colorbar(fig, type, histo[3], 'Count')
             elif 'density' in type:
                 den = make_density2D(x, y, ax)
                 add_colorbar(fig, type, den, 'Density')
@@ -422,7 +510,7 @@ class RVResults(Results):
                 if discrete_x and not discrete_y:
                     positions = sorted(list(x_count.keys()))
                     make_violin(res, positions, ax, 'x', alpha)
-                elif not discrete_x and discrete_y: 
+                elif not discrete_x and discrete_y:
                     positions = sorted(list(y_count.keys()))
                     make_violin(res, positions, ax, 'y', alpha)
         else:
@@ -475,7 +563,7 @@ class RVResults(Results):
 
     def standardize(self):
         mean_ = self.mean()
-        sd_ = self.sd() 
+        sd_ = self.sd()
         if all(is_scalar(x) for x in self):
             return RVResults((x - mean_) / sd_ for x in self)
         elif get_dimension(self) > 0:
@@ -499,76 +587,76 @@ class RVResults(Results):
 
     def min(self):
         if all(is_scalar(x) for x in self):
-            return np.array(self).min() 
+            return np.array(self).min()
         elif get_dimension(self) > 0:
             return tuple(np.array(self).min(0))
         else:
             raise Exception("I don't know how to take the minimum of these values.")
-            
+
     def max(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return np.array(self).max()
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(np.array(self).max(0))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the maximum of these values.")
 
     def min_max_diff(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return np.array(self).max() - np.array(self).min()
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(np.subtract(np.array(self).max(0), np.array(self).min(0)))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the range of these values.")
 
     def iqr(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             q75, q25 = np.percentile(np.array(self), [75, 25])
             return q75 - q25
-        elif get_dimension(self) > 0:                                                
-            return tuple(np.subtract(np.percentile(np.array(self), 75, axis=0), 
+        elif get_dimension(self) > 0:
+            return tuple(np.subtract(np.percentile(np.array(self), 75, axis=0),
                                      np.percentile(np.array(self), 25, axis=0)))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the interquartile range of these values.")
 
     def orderstatistics(self, n):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return np.partition(np.array(self), n - 1)[n - 1]
-        elif get_dimension(self) > 0:                                                
-            return tuple(np.partition(np.array(self), n - 1, axis=0)[n - 1]) 
-        else:                                                                        
+        elif get_dimension(self) > 0:
+            return tuple(np.partition(np.array(self), n - 1, axis=0)[n - 1])
+        else:
             raise Exception("I don't know how to take the order statistics of these values.")
 
     def skewness(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return stats.skew(np.array(self))
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(stats.skew(np.array(self), 0))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the skewness of these values.")
 
     def kurtosis(self):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return stats.kurtosis(np.array(self))
-        elif get_dimension(self) > 0:                                                
-            return tuple(stats.kurtosis(np.array(self), 0)) 
-        else:                                                                        
+        elif get_dimension(self) > 0:
+            return tuple(stats.kurtosis(np.array(self), 0))
+        else:
             raise Exception("I don't know how to take the kurtosis of these values.")
- 
+
     def moment(self, k):
-        if all(is_scalar(x) for x in self):                                          
+        if all(is_scalar(x) for x in self):
             return stats.moment(np.array(self), k)
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(stats.moment(np.array(self), k, 0))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to find the moment of these values.")
-    
-    def trimmed_mean(self, alpha): 
-        if all(is_scalar(x) for x in self):                                          
+
+    def trimmed_mean(self, alpha):
+        if all(is_scalar(x) for x in self):
             return stats.trim_mean(self, alpha)
-        elif get_dimension(self) > 0:                                                
+        elif get_dimension(self) > 0:
             return tuple(stats.trim_mean(self, alpha, axis=0))
-        else:                                                                        
+        else:
             raise Exception("I don't know how to take the trimmed_mean of these values.")
 
 
