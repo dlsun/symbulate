@@ -530,6 +530,10 @@ class Beta(Distribution):
             "a" : a,
             "b" : b
             }
+        
+        if xmin > xmax:
+            raise Exception("xmax cannot be less than xmin")
+        
         super().__init__(params, stats.beta, False)
         self.xlim = (0, 1) # Beta distributions are not defined for x < 0 and x > 1
 
