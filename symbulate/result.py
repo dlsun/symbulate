@@ -40,7 +40,10 @@ class Float(float, Scalar):
 class Vector:
 
     def __init__(self, values):
-        self.array = np.asarray(values)
+        if hasattr(values, "__iter__"):
+            self.array = np.asarray(values)
+        else:
+            self.array = np.asarray([values])
         
     def join(self, other):
         if isinstance(other, Scalar):
@@ -56,7 +59,9 @@ class Vector:
     def __len__(self):
         return self.array.size
 
-    # TODO: Add __iter__ method.
+    def __iter__(self):
+        for x in self.array:
+            yield x
     
     def sum(self):
         return self.array.sum()
@@ -97,11 +102,15 @@ class Vector:
         if len(self) <= 6:
             return "(" + ", ".join(str(x) for x in self.array) + ")"
         else:
-            first_few = [str(x) for x in self.array[:5]]
-            return "(" + ", ".join(first_few) + ", ..., " + str(self.array[-1]) + ")"
+            first_few = ", ".join(str(x) for x in self.array[:5])
+            last = str(self.array[-1])
+            return "(" + first_few + ", ..., " + last + ")"
 
     def __repr__(self):
         return self.__str__()
+
+    def plot(self, **kwargs):
+        plt.plot(range(len(self)), self.array, '.--', **kwargs)
 
 
 class TimeFunction:
@@ -144,7 +153,7 @@ class InfiniteVector(TimeFunction):
                 self.values.append(self.fn(i))
         # Return the corresponding value(s)
         return self.values[n]
-
+    
     def __str__(self):
         first_few = [str(self[i]) for i in range(6)]
         return "(" + ", ".join(first_few) + ", ...)"
@@ -159,6 +168,12 @@ class InfiniteVector(TimeFunction):
         result.fn = fn
         
         return result
+
+    def plot(self, nmin=0, nmax=10, **kwargs):
+        xs = range(nmin, nmax)
+        ys = [self[n] for n in range(nmin, nmax)]
+        plt.plot(xs, ys, '.--', **kwargs)
+
 
 
 class DiscreteTimeFunction(TimeFunction):
@@ -218,6 +233,13 @@ class DiscreteTimeFunction(TimeFunction):
         n = int(t * fs)
         return self[n]
 
+    def __str__(self):
+        first_few = ", ".join(str(self[n]) for n in range(-2, 3))
+        return "(..., " + first_few + ", ...)"
+
+    def __repr__(self):
+        return self.__str__()
+
     def plot(self, tmin=0, tmax=10, **kwargs):
         nmin = int(np.floor(tmin * self.index_set.fs))
         nmax = int(np.ceil(tmax * self.index_set.fs))
@@ -245,6 +267,12 @@ class ContinuousTimeFunction(TimeFunction):
 
     def __getitem__(self, t):
         return self(t)
+
+    def __str__(self):
+        return "(continuous-time function)"
+
+    def __repr__(self):
+        return self.__str__()
 
     def plot(self, tmin=0, tmax=10, **kwargs):
         ts = np.linspace(tmin, tmax, 200)

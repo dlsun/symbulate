@@ -30,7 +30,10 @@ class Reals(IndexSet):
         return
 
     def __contains__(self, value):
-        return isinstance(value, (int, float))
+        try:
+            return -float("inf") < value < float("inf")
+        except:
+            return False
 
     def check_same(self, index):
         if not isinstance(index, Reals):
@@ -43,10 +46,16 @@ class Naturals(IndexSet):
         return
 
     def __contains__(self, value):
-        return value.is_integer() and value >= 0
+        try:
+            return (
+                value >= 0 and
+                (isinstance(value, int) or value.is_integer())
+            )
+        except:
+            return False
 
     def check_same(self, index):
-        if not isinstance(index, Integers):
+        if not isinstance(index, Naturals):
             raise Exception("Index sets do not match.")
     
 
@@ -59,7 +68,7 @@ class DiscreteTimeSequence(IndexSet):
         return n / self.fs
         
     def __contains__(self, value):
-        return (value * self.fs).is_integer()
+        return float(value * self.fs).is_integer()
 
     def check_same(self, index):
         if not (

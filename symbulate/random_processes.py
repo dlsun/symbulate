@@ -15,11 +15,19 @@ class RandomProcess:
         self.probSpace = probSpace
         self.fun = fun
         self.index_set = index_set
-        # This dict stores random variables at times
-        # that were manually set by the user.
+        # This dict stores a mapping between
+        # times and random variables. It is only
+        # set if manually defined by the user.
         self.rvs = {}
 
     def draw(self):
+        """Draws one realization from the random process.
+
+        Returns:
+          A TimeFunction representing one realization of the
+          random process. This TimeFunction can be evaluated 
+          at any time in the index set of the process.
+        """
         outcome = self.probSpace.draw()
         def fn(t):
             if t in self.rvs:
@@ -29,20 +37,31 @@ class RandomProcess:
         return TimeFunction.from_index_set(self.index_set, fn)
 
     def sim(self, n):
+        """Simulates n realizations of the random process.
+
+        Args:
+          n: A positive integer specifying the number of draws.
+        
+        Returns:
+          A RandomProcessResults object of length n consisting
+          of the n realizations. Each realization is a
+          TimeFunction that can be evaluated at any time in
+          the index set.
+        """
         return RandomProcessResults(
             [self.draw() for _ in range(n)],
             self.index_set                        
         )
 
     def __getitem__(self, t):
-        # TODO: Check that t is in index set
+        if t not in self.index_set:
+            raise KeyError(
+                "Time %s is not in the index set for this "
+                "random process." % str(t)
+            )
         fun_copy = deepcopy(self.fun)
         if t in self.rvs:
             return self.rvs[t]
-        elif is_scalar(t):
-            def fn(outcome):
-                return fun_copy(outcome, t)
-            return RV(self.probSpace, fn)
         elif isinstance(t, RV):
             def fn(outcome):
                 time = t.fun(outcome)
@@ -52,11 +71,16 @@ class RandomProcess:
                     return fun_copy(outcome, time)
             return RV(self.probSpace, fn)
         else:
-            raise KeyError("I don't know how to evaluate the RandomProcess "
-                           "at that time.")
+            def fn(outcome):
+                return fun_copy(outcome, t)
+            return RV(self.probSpace, fn)
     
     def __setitem__(self, t, value):
-        # TODO: Check that t is in index_set
+        if t not in self.index_set:
+            raise KeyError(
+                "Time %s is not in the index set for this "
+                "random process." % str(t)
+            )
         # If value is a RV, store it in self.rvs
         if isinstance(value, RV):
             self.rvs[t] = value
@@ -65,6 +89,16 @@ class RandomProcess:
             self.rvs[t] = RV(self.probSpace, lambda outcome: value)
 
     def apply(self, function):
+        """Defines a new RandomProcess Y(t), which is f(X(t)).
+
+        Args:
+          function: A function that maps values of the RandomProcess
+            to new values.
+
+        Returns:
+          A new RandomProcess defined on the same probability space
+          and with the same index set.
+        """
         def fn(outcome, t):
             return function(self[t].fun(outcome))
         return RandomProcess(self.probSpace, fn, self.index_set)

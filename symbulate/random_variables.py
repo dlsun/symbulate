@@ -1,6 +1,7 @@
 from .probability_space import Event
+from .result import Vector
 from .results import RVResults
-from .utils import is_scalar, is_vector, get_dimension
+from .utils import is_scalar, is_vector
 
 class RV:
     """Defines a random variable.
@@ -132,14 +133,17 @@ class RV:
     # This allows us to unpack a random vector,
     # e.g., X, Y = RV(BoxModel([0, 1], size=2))
     def __iter__(self):
-        test = self.sim(10)
-        for i in range(get_dimension(test)):
-            yield self[i]
+        test = self.draw()
+        if is_scalar(test):
+            raise Exception("Cannot unpack RV because it is scalar-valued.")
+        elif is_vector(test):
+            for i in range(len(test)):
+                yield self[i]
 
     def __getitem__(self, i):
         # if the indices are a list, return a random vector
         if hasattr(i, "__iter__"):
-            return self.apply(lambda x: tuple(x[j] for j in i))
+            return self.apply(lambda x: Vector(x[j] for j in i))
         # otherwise, return the ith value
         else:
             return self.apply(lambda x: x[i])
@@ -163,7 +167,7 @@ class RV:
                     a = self.fun(outcome)
                     b = other.fun(outcome)
                     if is_vector(a) and is_vector(b) and len(a) == len(b):
-                        return tuple(op(i, j) for i, j in zip(a, b))
+                        return Vector(op(i, j) for i, j in zip(a, b))
                     elif is_scalar(a) and is_scalar(b):
                         return op(a, b)
                     else:
@@ -238,11 +242,9 @@ class RV:
         self.check_same_probSpace(other)
         if isinstance(other, RV):
             def fun(outcome):
-                a = self.fun(outcome)
-                b = other.fun(outcome)
-                a = tuple(a) if is_vector(a) else (a, )
-                b = tuple(b) if is_vector(b) else (b, )
-                return a + b
+                a = Vector(self.fun(outcome))
+                b = Vector(other.fun(outcome))
+                return a.join(b)
             return RV(self.probSpace, fun)
         else:
             raise Exception("Joint distributions are only defined for RVs.")

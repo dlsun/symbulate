@@ -16,9 +16,9 @@ from matplotlib.transforms import Affine2D
 from .plot import (configure_axes, get_next_color, is_discrete,
     count_var, compute_density, add_colorbar, make_tile,
     setup_ticks, make_violin, make_marginal_impulse, make_density2D)
-from .result import TimeFunction
+from .result import Scalar, Vector, InfiniteVector, TimeFunction
 from .table import Table
-from .utils import is_scalar, get_dimension
+from .utils import is_scalar, is_vector
 
 plt.style.use('seaborn-colorblind')
 
@@ -275,6 +275,23 @@ class Results(list):
 
 class RVResults(Results):
 
+    def __init__(self, results):
+        super().__init__(results)
+        if all(is_scalar(x) for x in self):
+            self.dim = 1
+        elif all(is_vector(x) for x in self):
+            results_iterator = iter(self)
+            self.dim = len(next(results_iterator))
+            for result in results_iterator:
+                if len(result) != self.dim:
+                    self.dim = None
+                    return
+        elif all(isinstance(x, InfiniteVector) for x in self):
+            self.dim = float("inf")
+        else:
+            self.dim = -1
+        
+    
     def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
         bins=None, **kwargs):
         if type is not None:
@@ -283,8 +300,7 @@ class RVResults(Results):
             elif not isinstance(type, (tuple, list)):
                 raise Exception("I don't know how to plot a " + str(type))
         
-        dim = get_dimension(self)
-        if dim == 1:
+        if self.dim == 1:
             counts = self._get_counts()
             heights = counts.values()
             discrete = is_discrete(heights)
@@ -342,7 +358,7 @@ class RVResults(Results):
                 ax.plot(list(self), [0.001]*len(self), '|', linewidth = 5, color='k')
                 if len(type) == 1:
                     setup_ticks([], [], ax.yaxis)
-        elif dim == 2:
+        elif self.dim == 2:
             x, y = zip(*self)
 
             x_count = count_var(x)
@@ -423,24 +439,25 @@ class RVResults(Results):
                     make_violin(res, positions, ax, 'y', alpha)
         else:
             if alpha is None:
-                alpha = .1
-            for x in self:
-                if not hasattr(x, "__iter__"):
-                    x = [x]
-                plt.plot(x, 'k.-', alpha=alpha, **kwargs)
+                alpha = np.log(2) / np.log(len(self) + 1)
+            ax = plt.gca()
+            color = get_next_color(ax)
+            for result in self:
+                result.plot(alpha=alpha, color=color)
+            plt.xlabel("Index")
 
     def cov(self, **kwargs):
-        if get_dimension(self) == 2:
+        if self.dim == 2:
             return np.cov(self, rowvar=False)[0, 1]
-        elif get_dimension(self) > 0:
+        elif self.dim > 0:
             return np.cov(self, rowvar=False)
         else:
             raise Exception("Covariance requires that the simulation results have consistent dimension.")
 
     def corr(self, **kwargs):
-        if get_dimension(self) == 2:
+        if self.dim == 2:
             return np.corrcoef(self, rowvar=False)[0, 1]
-        elif get_dimension(self) > 0:
+        elif self.dim > 0:
             return np.corrcoef(self, rowvar=False)
         else:
             raise Exception("Correlation requires that the simulation results have consistent dimension.")
@@ -448,7 +465,7 @@ class RVResults(Results):
     def mean(self):
         if all(is_scalar(x) for x in self):
             return np.array(self).mean()
-        elif get_dimension(self) > 0:
+        elif self.dim > 0:
             return tuple(np.array(self).mean(0))
         else:
             raise Exception("I don't know how to take the mean of these values.")
@@ -456,7 +473,7 @@ class RVResults(Results):
     def var(self):
         if all(is_scalar(x) for x in self):
             return np.array(self).var()
-        elif get_dimension(self) > 0:
+        elif self.dim > 0:
             return tuple(np.array(self).var(0))
         else:
             raise Exception("I don't know how to take the variance of these values.")
@@ -464,7 +481,7 @@ class RVResults(Results):
     def sd(self):
         if all(is_scalar(x) for x in self):
             return np.array(self).std()
-        elif get_dimension(self) > 0:
+        elif self.dim > 0:
             return tuple(np.array(self).std(0))
         else:
             raise Exception("I don't know how to take the SD of these values.")
@@ -474,13 +491,13 @@ class RVResults(Results):
         sd_ = self.sd()
         if all(is_scalar(x) for x in self):
             return RVResults((x - mean_) / sd_ for x in self)
-        elif get_dimension(self) > 0:
+        elif self.dim > 0:
             return RVResults((np.asarray(self) - mean_) / sd_)
 
     def median(self):
         if all(is_scalar(x) for x in self):
             return np.median(np.array(self))
-        elif get_dimension(self) > 0:
+        elif self.dim > 0:
             return tuple(np.median(np.array(self), 0))
         else:
             raise Exception("I don't know how to take the median of these values.")
@@ -488,7 +505,7 @@ class RVResults(Results):
     def quantile(self, q):
         if all(is_scalar(x) for x in self):
             return np.percentile(np.array(self), q * 100)
-        elif get_dimension(self) > 0:
+        elif self.dim > 0:
             return tuple(np.percentile(np.array(self), q * 100, 0))
         else:
             raise Exception("I don't know how to take the quanile of these values.")
@@ -496,7 +513,7 @@ class RVResults(Results):
     def min(self):
         if all(is_scalar(x) for x in self):
             return np.array(self).min() 
-        elif get_dimension(self) > 0:
+        elif self.dim > 0:
             return tuple(np.array(self).min(0))
         else:
             raise Exception("I don't know how to take the minimum of these values.")
@@ -504,7 +521,7 @@ class RVResults(Results):
     def max(self):
         if all(is_scalar(x) for x in self):                                          
             return np.array(self).max()
-        elif get_dimension(self) > 0:                                                
+        elif self.dim > 0:                                                
             return tuple(np.array(self).max(0))
         else:                                                                        
             raise Exception("I don't know how to take the maximum of these values.")
@@ -512,7 +529,7 @@ class RVResults(Results):
     def min_max_diff(self):
         if all(is_scalar(x) for x in self):                                          
             return np.array(self).max() - np.array(self).min()
-        elif get_dimension(self) > 0:                                                
+        elif self.dim > 0:                                                
             return tuple(np.subtract(np.array(self).max(0), np.array(self).min(0)))
         else:                                                                        
             raise Exception("I don't know how to take the range of these values.")
@@ -521,7 +538,7 @@ class RVResults(Results):
         if all(is_scalar(x) for x in self):                                          
             q75, q25 = np.percentile(np.array(self), [75, 25])
             return q75 - q25
-        elif get_dimension(self) > 0:                                                
+        elif self.dim > 0:                                                
             return tuple(np.subtract(np.percentile(np.array(self), 75, axis=0), 
                                      np.percentile(np.array(self), 25, axis=0)))
         else:                                                                        
@@ -530,7 +547,7 @@ class RVResults(Results):
     def orderstatistics(self, n):
         if all(is_scalar(x) for x in self):                                          
             return np.partition(np.array(self), n - 1)[n - 1]
-        elif get_dimension(self) > 0:                                                
+        elif self.dim > 0:                                                
             return tuple(np.partition(np.array(self), n - 1, axis=0)[n - 1]) 
         else:                                                                        
             raise Exception("I don't know how to take the order statistics of these values.")
@@ -538,7 +555,7 @@ class RVResults(Results):
     def skewness(self):
         if all(is_scalar(x) for x in self):                                          
             return stats.skew(np.array(self))
-        elif get_dimension(self) > 0:                                                
+        elif self.dim > 0:                                                
             return tuple(stats.skew(np.array(self), 0))
         else:                                                                        
             raise Exception("I don't know how to take the skewness of these values.")
@@ -546,7 +563,7 @@ class RVResults(Results):
     def kurtosis(self):
         if all(is_scalar(x) for x in self):                                          
             return stats.kurtosis(np.array(self))
-        elif get_dimension(self) > 0:                                                
+        elif self.dim > 0:                                                
             return tuple(stats.kurtosis(np.array(self), 0)) 
         else:                                                                        
             raise Exception("I don't know how to take the kurtosis of these values.")
@@ -554,7 +571,7 @@ class RVResults(Results):
     def moment(self, k):
         if all(is_scalar(x) for x in self):                                          
             return stats.moment(np.array(self), k)
-        elif get_dimension(self) > 0:                                                
+        elif self.dim > 0:                                                
             return tuple(stats.moment(np.array(self), k, 0))
         else:                                                                        
             raise Exception("I don't know how to find the moment of these values.")
@@ -562,7 +579,7 @@ class RVResults(Results):
     def trimmed_mean(self, alpha): 
         if all(is_scalar(x) for x in self):                                          
             return stats.trim_mean(self, alpha)
-        elif get_dimension(self) > 0:                                                
+        elif self.dim > 0:                                                
             return tuple(stats.trim_mean(self, alpha, axis=0))
         else:                                                                        
             raise Exception("I don't know how to take the trimmed_mean of these values.")
