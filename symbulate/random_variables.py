@@ -1,7 +1,9 @@
 from .probability_space import Event
-from .result import Vector
+from .result import (
+    Vector, join,
+    is_scalar, is_vector
+)
 from .results import RVResults
-from .utils import is_scalar, is_vector
 
 class RV:
     """Defines a random variable.
@@ -134,11 +136,14 @@ class RV:
     # e.g., X, Y = RV(BoxModel([0, 1], size=2))
     def __iter__(self):
         test = self.draw()
-        if is_scalar(test):
-            raise Exception("Cannot unpack RV because it is scalar-valued.")
-        elif is_vector(test):
+        if hasattr(test, "__iter__"):
             for i in range(len(test)):
                 yield self[i]
+        else:
+            raise Exception(
+                "To unpack a random vector, the RV needs to "
+                "have multiple components."
+            )
 
     def __getitem__(self, i):
         # if the indices are a list, return a random vector
@@ -150,7 +155,7 @@ class RV:
 
     # e.g., abs(X)
     def __abs__(self):
-        return self.apply(lambda x: abs(x))
+        return self.apply(abs)
 
     # The code for most operations (+, -, *, /, ...) is the
     # same, except for the operation itself. The following 
@@ -244,7 +249,7 @@ class RV:
             def fun(outcome):
                 a = Vector(self.fun(outcome))
                 b = Vector(other.fun(outcome))
-                return a.join(b)
+                return join(a, b)
             return RV(self.probSpace, fun)
         else:
             raise Exception("Joint distributions are only defined for RVs.")

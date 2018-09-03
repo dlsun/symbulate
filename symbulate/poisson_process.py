@@ -1,7 +1,11 @@
 from .distributions import Exponential
 from .math import inf
 from .probability_space import ProbabilitySpace
-from .result import ContinuousTimeFunction, DiscreteValued
+from .result import (
+    InfiniteVector,
+    ContinuousTimeFunction,
+    DiscreteValued
+)
 from .random_processes import RandomProcess
 
 

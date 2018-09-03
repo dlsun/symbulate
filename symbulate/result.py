@@ -1,3 +1,4 @@
+import numbers
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -8,22 +9,14 @@ from .index_sets import (
 )
 
 
-class Scalar:
+class Scalar(numbers.Number):
 
     def __new__(cls, value, *args, **kwargs):
         if isinstance(value, int):
             return Int(value)
         elif isinstance(value, float):
             return Float(value)
-    
-    def join(self, other):
-        if isinstance(other, Scalar):
-            return Vector([self, other])
-        elif isinstance(other, Vector):
-            return Vector(np.insert(other.array, 0, [self]))
-        else:
-            raise NotImplementedError()
-
+        
 
 class Int(int, Scalar):
     
@@ -37,7 +30,7 @@ class Float(float, Scalar):
         return super(Float, cls).__new__(cls, value)
         
 
-class Vector:
+class Vector(object):
 
     def __init__(self, values):
         if hasattr(values, "__iter__"):
@@ -45,14 +38,6 @@ class Vector:
         else:
             self.array = np.asarray([values])
         
-    def join(self, other):
-        if isinstance(other, Scalar):
-            return Vector(np.append(self.array, [other]))
-        elif isinstance(other, Vector):
-            return Vector(np.append(self.array, other.array))
-        else:
-            raise NotImplementedError
-
     def __getitem__(self, key):
         return self.array[key]
 
@@ -113,7 +98,7 @@ class Vector:
         plt.plot(range(len(self)), self.array, '.--', **kwargs)
 
 
-class TimeFunction:
+class TimeFunction(object):
 
     @classmethod
     def from_index_set(cls, index_set, fn=None):
@@ -123,6 +108,77 @@ class TimeFunction:
             return ContinuousTimeFunction(fn)
         elif isinstance(index_set, Naturals):
             return InfiniteVector(fn)
+
+    def check_same_index_set(self, other):
+        if isinstance(other, numbers.Number):
+            return
+        if isinstance(other, TimeFunction):
+            self.index_set.check_same(other.index_set)
+        else:
+            raise Exception("Cannot add object to random process.")
+    
+    # e.g., abs(X)
+    def __abs__(self):
+        return self.apply(abs)
+
+    # e.g., f + g or f + 3
+    def __add__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x + y)
+        return op_fun(self, other)
+
+    # e.g., 3 + f
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    # e.g., f - g or f - 3
+    def __sub__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x - y)
+        return op_fun(self, other)
+
+    # e.g., 3 - f
+    def __rsub__(self, other):
+        return -1 * self.__sub__(other)
+
+    # e.g., -f
+    def __neg__(self):
+        return -1 * self
+
+    # e.g., f * g or f * 2
+    def __mul__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x * y)
+        return op_fun(self, other)
+            
+    # e.g., 2 * f
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    # e.g., f / g or f / 2
+    def __truediv__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x / y)
+        return op_fun(self, other)
+
+    # e.g., 2 / f
+    def __rtruediv__(self, other):
+        op_fun = self._operation_factory(lambda x, y: y / x)
+        return op_fun(self, other)
+
+    # e.g., f ** 2
+    def __pow__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x ** y)
+        return op_fun(self, other)
+
+    # e.g., 2 ** f
+    def __rpow__(self, other):
+        op_fun = self._operation_factory(lambda x, y: y ** x)
+        return op_fun(self, other)
+
+    # Alternative notation for powers: e.g., f ^ 2
+    def __xor__(self, other):
+        return self.__pow__(other)
+    
+    # Alternative notation for powers: e.g., 2 ^ f
+    def __rxor__(self, other):
+        return self.__rpow__(other)
 
     
 class InfiniteVector(TimeFunction):
@@ -138,6 +194,7 @@ class InfiniteVector(TimeFunction):
         """
         if fn is not None:
             self.fn = fn
+        self.index_set = Naturals()
         self.values = []
 
     def __getitem__(self, n):
@@ -153,6 +210,9 @@ class InfiniteVector(TimeFunction):
                 self.values.append(self.fn(i))
         # Return the corresponding value(s)
         return self.values[n]
+
+    def __call__(self, n):
+        return self[n]
     
     def __str__(self):
         first_few = [str(self[i]) for i in range(6)]
@@ -160,6 +220,46 @@ class InfiniteVector(TimeFunction):
 
     def __repr__(self):
         return self.__str__()
+
+    def apply(self, function):
+        """Apply function to every element of an InfiniteVector.
+
+        Args:
+          function: function to apply to the InfiniteVector
+        
+        Example:
+          x = InfiniteVector(lambda n: n)
+          y = x.apply(log)
+
+        Note: For most standard functions, you can apply the function to
+          the InfiniteVector directly. For example, in the example above,
+          y = log(x) would have been equivalent and more readable.
+
+        User defined functions can also be applied.
+
+        Example:
+          def log_squared(n):
+            return log(n) ** 2
+          y = x.apply(log_squared)
+        """
+        return InfiniteVector(lambda n: function(self[n]))
+
+    # The code for most operations (+, -, *, /, ...) is the
+    # same, except for the operation itself. The following 
+    # factory function takes in the the operation and 
+    # generates the code to perform that operation.
+    def _operation_factory(self, op):
+
+        def op_fun(self, other):
+            self.check_same_index_set(other)
+            if isinstance(other, numbers.Number):
+                return InfiniteVector(lambda n: op(self[n], other))
+            elif isinstance(other, InfiniteVector):
+                return InfiniteVector(lambda n: op(self[n], other[n]))
+            else:
+                return NotImplemented
+
+        return op_fun
 
     def cumsum(self):
         result = InfiniteVector()
@@ -233,6 +333,53 @@ class DiscreteTimeFunction(TimeFunction):
         n = int(t * fs)
         return self[n]
 
+    def apply(self, function):
+        """Compose function with the TimeFunction.
+
+        Args:
+          function: function to compose with the TimeFunction
+        
+        Example:
+          f = DiscreteTimeFunction(lambda t: t, fs=1)
+          g = f.apply(log)
+
+        Note: For most standard functions, you can apply the function to
+          the TimeFunction directly. For example, in the example above,
+          g = log(f) would have been equivalent and more readable.
+
+        User-defined functions can also be applied.
+
+        Example:
+          def log_squared(f):
+            return log(f) ** 2
+          g = f.apply(log_squared)
+        """
+        return DiscreteTimeFunction(lambda n: function(self[n]),
+                                    index_set=self.index_set)
+
+    # The code for most operations (+, -, *, /, ...) is the
+    # same, except for the operation itself. The following 
+    # factory function takes in the the operation and 
+    # generates the code to perform that operation.
+    def _operation_factory(self, op):
+
+        def op_fun(self, other):
+            self.check_same_index_set(other)
+            if isinstance(other, numbers.Number):
+                return DiscreteTimeFunction(
+                    lambda n: op(self[n], other),
+                    index_set=self.index_set
+                )
+            elif isinstance(other, InfiniteVector):
+                return DiscreteTimeFunction(
+                    lambda n: op(self[n], other[n]),
+                    index_set=self.index_set
+                )
+            else:
+                return NotImplemented
+
+        return op_fun
+
     def __str__(self):
         first_few = ", ".join(str(self[n]) for n in range(-2, 3))
         return "(..., " + first_few + ", ...)"
@@ -259,6 +406,7 @@ class ContinuousTimeFunction(TimeFunction):
               This function can be defined at initialization time,
               or later. By default, it is not set at initialization.
         """
+        self.index_set = Reals()
         if fn is not None:
             self.fn = fn
 
@@ -267,6 +415,50 @@ class ContinuousTimeFunction(TimeFunction):
 
     def __getitem__(self, t):
         return self(t)
+
+    def apply(self, function):
+        """Compose function with the TimeFunction.
+
+        Args:
+          function: function to compose with the TimeFunction
+        
+        Example:
+          f = ContinuousTimeFunction(lambda t: t)
+          g = f.apply(log)
+
+        Note: For most standard functions, you can apply the function to
+          the TimeFunction directly. For example, in the example above,
+          g = log(f) would have been equivalent and more readable.
+
+        User-defined functions can also be applied.
+
+        Example:
+          def log_squared(f):
+            return log(f) ** 2
+          g = f.apply(log_squared)
+        """
+        return ContinuousTimeFunction(lambda t: function(self(t)))
+
+    # The code for most operations (+, -, *, /, ...) is the
+    # same, except for the operation itself. The following 
+    # factory function takes in the the operation and 
+    # generates the code to perform that operation.
+    def _operation_factory(self, op):
+
+        def op_fun(self, other):
+            self.check_same_index_set(other)
+            if isinstance(other, numbers.Number):
+                return ContinuousTimeFunction(
+                    lambda t: op(self(t), other)
+                )
+            elif isinstance(other, InfiniteVector):
+                return ContinuousTimeFunction(
+                    lambda t: op(self(t), other(t))
+                )
+            else:
+                return NotImplemented
+
+        return op_fun
 
     def __str__(self):
         return "(continuous-time function)"
@@ -299,3 +491,31 @@ class DiscreteValued:
             raise NameError("Interarrival times not "
                             "defined for function.")
         return self.interarrival_times.cumsum()
+
+
+def join(*args):
+    """Joins Result objects into a single Result object.
+    """
+    # convert scalars to Vectors
+    results = [Vector([result]) if isinstance(result, numbers.Number)
+               else result
+               for result in args]
+
+    # if all results are Vectors, concatenate into one giant Vector
+    if all(isinstance(result, Vector) for result in results):
+        return Vector(np.concatenate(results))
+    
+    # Otherwise, return a tuple of the results
+    return tuple(results)
+    
+
+def is_scalar(x):
+    return isinstance(x, numbers.Number)
+
+
+def is_vector(x):
+    if hasattr(x, "__len__") and all(is_scalar(i) for i in x):
+        return True
+    else:
+        return False
+

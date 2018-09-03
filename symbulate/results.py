@@ -16,11 +16,16 @@ from matplotlib.transforms import Affine2D
 from .plot import (configure_axes, get_next_color, is_discrete,
     count_var, compute_density, add_colorbar, make_tile,
     setup_ticks, make_violin, make_marginal_impulse, make_density2D)
-from .result import Scalar, Vector, InfiniteVector, TimeFunction
+from .result import (
+    Scalar, Vector,
+    InfiniteVector, TimeFunction,
+    is_scalar, is_vector
+)
 from .table import Table
-from .utils import is_scalar, is_vector
+
 
 plt.style.use('seaborn-colorblind')
+
 
 def is_hashable(x):
     return x.__hash__ is not None

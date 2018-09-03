@@ -32,6 +32,13 @@ from .index_sets import (
     Reals,
     DiscreteTimeSequence
 )
+from .result import (
+    Scalar,
+    Vector,
+    InfiniteVector,
+    DiscreteTimeFunction,
+    ContinuousTimeFunction
+)
 from .gaussian_process import (
     GaussianProcess,
     GaussianProcessProbabilitySpace,

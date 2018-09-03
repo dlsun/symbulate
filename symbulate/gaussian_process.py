@@ -135,7 +135,7 @@ class BrownianMotionProbabilitySpace(GaussianProcessProbabilitySpace):
         """
         super().__init__(
             mean_fn=lambda t: drift * t,
-            cov_fn=lambda s, t: scale * min(s, t)
+            cov_fn=lambda s, t: (scale ** 2) * min(s, t)
         )
 
 

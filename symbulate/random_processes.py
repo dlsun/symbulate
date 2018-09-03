@@ -2,22 +2,38 @@ from copy import deepcopy
 
 from .index_sets import Reals
 from .random_variables import RV
-from .result import TimeFunction
+from .result import (
+    TimeFunction,
+    is_scalar,
+    is_vector
+)
 from .results import RandomProcessResults
-from .utils import is_scalar, is_vector
+
+
+class CanonicalFunction:
+    """Defines the canonical function for a RandomProcess.
+
+    The canonical function f(x, t) is defined as x[t].
+    """
+    
+    def __call__(self, outcome, t):
+        return outcome(t)
 
     
 class RandomProcess:
 
     def __init__(self, probSpace,
-                 fun=lambda outcome, t: outcome[t],
+                 fun=CanonicalFunction(),
                  index_set=Reals()):
         self.probSpace = probSpace
         self.fun = fun
         self.index_set = index_set
         # This dict stores a mapping between
-        # times and random variables. It is only
-        # set if manually defined by the user.
+        # times and random variables. When the user
+        # asks for the random process at a time t,
+        # it looks for the random variable in self.rvs
+        # first, and only if it is not there does it
+        # define a random variable using self.fun.
         self.rvs = {}
 
     def draw(self):
@@ -29,12 +45,12 @@ class RandomProcess:
           at any time in the index set of the process.
         """
         outcome = self.probSpace.draw()
-        def fn(t):
-            if t in self.rvs:
-                return self.rvs[t].fun(outcome)
-            else:
-                return self.fun(outcome, t)
-        return TimeFunction.from_index_set(self.index_set, fn)
+        if isinstance(self.fun, CanonicalFunction):
+            return outcome
+        else:
+            def fn(t):
+                return self[t].fun(outcome)
+            return TimeFunction.from_index_set(self.index_set, fn)
 
     def sim(self, n):
         """Simulates n realizations of the random process.
@@ -104,7 +120,7 @@ class RandomProcess:
         return RandomProcess(self.probSpace, fn, self.index_set)
 
     def check_same_probSpace(self, other):
-        if is_scalar(other):
+        if is_scalar(other) or isinstance(other, TimeFunction):
             return
         else:
             self.probSpace.check_same(other.probSpace)
@@ -112,7 +128,8 @@ class RandomProcess:
     def check_same_index_set(self, other):
         if is_scalar(other) or isinstance(other, RV):
             return
-        elif isinstance(other, RandomProcess):
+        elif (isinstance(other, RandomProcess) or
+              isinstance(other, TimeFunction)):
             self.index_set.check_same(other.index_set)
         else:
             raise Exception("Cannot add object to random process.")
@@ -133,6 +150,9 @@ class RandomProcess:
             if is_scalar(other):
                 def fn(x, t):
                     return op(self[t].fun(x), other)
+            elif isinstance(other, TimeFunction):
+                def fn(x, t):
+                    return op(self[t].fun(x), other(t))
             elif isinstance(other, RV):
                 def fn(x, t):
                     return op(self[t].fun(x), other.fun(x))

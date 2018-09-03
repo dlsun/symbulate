@@ -1,6 +1,6 @@
 import numpy as np
 
-from .result import Vector, InfiniteVector
+from .result import Vector, InfiniteVector, join
 from .results import Results
 
 
@@ -32,7 +32,7 @@ class ProbabilitySpace:
 
     def __mul__(self, other):
         def draw():
-            return self.draw().join(other.draw())
+            return join(self.draw(), other.draw())
         return ProbabilitySpace(draw)
 
     def __pow__(self, exponent):
@@ -45,7 +45,7 @@ class ProbabilitySpace:
                 return result
         else:
             def draw():
-                return Vector(self.draw() for _ in range(exponent))
+                return join(*[self.draw() for _ in range(exponent)])
         return ProbabilitySpace(draw)
             
 
