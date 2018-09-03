@@ -75,30 +75,11 @@ class RV:
         return RVResults(self.draw() for _ in range(n))
 
     def __call__(self, input):
-        print("Warning: Calling an RV as a function simply applies the function that defines "
-            "the RV to the input, regardless of whether the input is a valid outcome in "
-            "the underlying probability space.")
-        dummy_draw= self.probSpace.draw()
-        if isinstance(input, tuple):
-            if not isinstance(dummy_draw, (tuple, list)):
-                raise Exception("The underlying probability space returns a single value. "
-                "A(n) " + type(input).__name__ + " was given.")
-            elif len(input) != len(dummy_draw):
-                raise Exception("Input has wrong length")
-            if all(isinstance(input[i], type(dummy_draw[i])) for i in range(len(input))):
-                return self.fun(input)
-            else:
-                raise Exception("Expect a(n) " + type(dummy_draw).__name__ + ". "
-                "Was given a(n) " + type(input).__name__ + ".")
-        elif isinstance(input, (float, int, str)):
-            if isinstance(dummy_draw, (tuple, list)):
-                raise Exception("The underlying probability space of the random variable "
-                "returns a tuple. A single " + type(input).__name__ + " was given.")
-            if type(dummy_draw) is type(input):
-                return self.fun(input)
-            else:
-                raise Exception("Expect a(n) " + type(dummy_draw).__name__ + ". "
-                "Was given a(n) " + type(input).__name__ + ".")
+        print("Warning: Calling an RV as a function simply applies the "
+              "function that defines the RV to the input, regardless of "
+              "whether that input is a possible outcome in the underlying "
+              "probability space.")
+        return self.fun(input)
 
     def check_same_probSpace(self, other):
         if is_scalar(other):
@@ -247,9 +228,7 @@ class RV:
         self.check_same_probSpace(other)
         if isinstance(other, RV):
             def fun(outcome):
-                a = Vector(self.fun(outcome))
-                b = Vector(other.fun(outcome))
-                return join(a, b)
+                return join(self.fun(outcome), other.fun(outcome))
             return RV(self.probSpace, fun)
         else:
             raise Exception("Joint distributions are only defined for RVs.")

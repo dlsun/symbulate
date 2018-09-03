@@ -33,20 +33,44 @@ class Float(float, Scalar):
 class Vector(object):
 
     def __init__(self, values):
-        if hasattr(values, "__iter__"):
-            self.array = np.asarray(values)
+        if is_scalar(values):
+            self.values = (values, )
+        elif hasattr(values, "__iter__"):
+            self.values = tuple(values)
         else:
-            self.array = np.asarray([values])
-        
+            raise Exception(
+                "Vectors can only be created for "
+                "iterable data types."
+            )
+
+        # Convert numeric Vectors to Numpy arrays
+        if all(is_scalar(value) for value in self.values):
+            self.array = np.asarray(self.values)
+        else:
+            self.array = None
+            
     def __getitem__(self, key):
-        return self.array[key]
+        return self.values[key]
 
     def __len__(self):
-        return self.array.size
+        return len(self.values)
 
     def __iter__(self):
-        for x in self.array:
+        for x in self.values:
             yield x
+
+    def __hash__(self):
+        return hash(self.values)
+
+    def __eq__(self, other):
+        if (self.array is not None and
+            isinstance(other, Vector) and
+            other.array is not None):
+            return (self.array == other.array).all()
+        else:
+            return all(
+                a == b for a, b in zip(self, other)
+            )
     
     def sum(self):
         return self.array.sum()
@@ -55,12 +79,7 @@ class Vector(object):
         return self.array.mean()
 
     def cumsum(self):
-        total = 0
-        sums = [total]
-        for i in self:
-            total += i
-            sums.append(total)
-        return Vector(sums)
+        return Vector(self.array.cumsum())
 
     def median(self):
         return self.array.median()
@@ -81,14 +100,17 @@ class Vector(object):
         return self.array.min()
 
     def count_eq(self, x):
-        return np.count_nonzero(self.array == x)
+        if self.array is not None:
+            return np.count_nonzero(self.array == x)
+        else:
+            return sum(1 for value in self.values if value == x)
     
     def __str__(self):
         if len(self) <= 6:
-            return "(" + ", ".join(str(x) for x in self.array) + ")"
+            return "(" + ", ".join(str(x) for x in self.values) + ")"
         else:
-            first_few = ", ".join(str(x) for x in self.array[:5])
-            last = str(self.array[-1])
+            first_few = ", ".join(str(x) for x in self.values[:5])
+            last = str(self.values[-1])
             return "(" + first_few + ", ..., " + last + ")"
 
     def __repr__(self):
@@ -497,20 +519,19 @@ def join(*args):
     """Joins Result objects into a single Result object.
     """
     # convert scalars to Vectors
-    results = [Vector([result]) if isinstance(result, numbers.Number)
-               else result
+    results = [Vector([result]) if is_scalar(result) else result
                for result in args]
 
-    # if all results are Vectors, concatenate into one giant Vector
+    # If all results are Vectors, concatenate into one giant Vector.
     if all(isinstance(result, Vector) for result in results):
         return Vector(np.concatenate(results))
     
-    # Otherwise, return a tuple of the results
-    return tuple(results)
+    # Otherwise, return a tuple of the original results.
+    return tuple(args)
     
 
 def is_scalar(x):
-    return isinstance(x, numbers.Number)
+    return isinstance(x, numbers.Number) or isinstance(x, str)
 
 
 def is_vector(x):
