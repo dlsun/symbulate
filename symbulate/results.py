@@ -371,11 +371,11 @@ class RVResults(Results):
                 configure_axes(ax, xs, freqs,
                                ylabel="Relative Frequency" if normalize else "Count")
             if 'rug' in type:
+                xs = self.array
                 if discrete:
                     noise_level = .002 * (self.array.max() - self.array.min())
-                    xs = self.results + np.random.normal(scale=noise_level, size=n)
-                ax.plot(xs, [0.001] * n, '|',
-                        linewidth = 5, color='k')
+                    xs = xs + np.random.normal(scale=noise_level, size=n)
+                ax.plot(xs, [0.001] * n, '|', linewidth = 5, color='k')
                 if len(type) == 1:
                     setup_ticks([], [], ax.yaxis)
         elif self.dim == 2:
@@ -432,8 +432,8 @@ class RVResults(Results):
 
             if 'scatter' in type:
                 if jitter:
-                    x += np.random.normal(loc=0, scale=.01 * (max(x) - min(x)), size=len(x))
-                    y += np.random.normal(loc=0, scale=.01 * (max(y) - min(y)), size=len(y))
+                    x = x + np.random.normal(loc=0, scale=.01 * (x.max() - x.min()), size=len(x))
+                    y = y + np.random.normal(loc=0, scale=.01 * (y.max() - y.min()), size=len(y))
                 ax.scatter(x, y, alpha=alpha, c=color, **kwargs)
             elif 'hist' in type:
                 histo = ax.hist2d(x, y, bins=bins, cmap='Blues')
