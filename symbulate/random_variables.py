@@ -1,7 +1,7 @@
 from .probability_space import Event
 from .result import (
     Vector, join,
-    is_scalar, is_vector
+    is_scalar, is_vector, is_time_function
 )
 from .results import RVResults
 
@@ -149,16 +149,9 @@ class RV:
             if is_scalar(other):
                 return self.apply(lambda x: op(x, other))
             elif isinstance(other, RV):
-                def fun(outcome):
-                    a = self.fun(outcome)
-                    b = other.fun(outcome)
-                    if is_vector(a) and is_vector(b) and len(a) == len(b):
-                        return Vector(op(i, j) for i, j in zip(a, b))
-                    elif is_scalar(a) and is_scalar(b):
-                        return op(a, b)
-                    else:
-                        raise Exception("Could not perform operation on the outcomes %s and %s." % (str(a), str(b)))
-                return RV(self.probSpace, fun)
+                def fn(outcome):
+                    return op(self.fun(outcome), other.fun(outcome))
+                return RV(self.probSpace, fn)
             else:
                 return NotImplemented
 

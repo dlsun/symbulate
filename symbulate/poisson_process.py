@@ -6,7 +6,7 @@ from .result import (
     ContinuousTimeFunction,
     DiscreteValued
 )
-from .random_processes import RandomProcess
+from .random_variables import RV
 
 
 class PoissonProcessResult(ContinuousTimeFunction,
@@ -45,7 +45,7 @@ class PoissonProcessProbabilitySpace(ProbabilitySpace):
         super().__init__(draw)
     
     
-class PoissonProcess(RandomProcess):
+class PoissonProcess(RV):
 
     def __init__(self, rate):
         """Initialize a Poisson process.

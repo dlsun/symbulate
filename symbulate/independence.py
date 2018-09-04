@@ -1,34 +1,31 @@
 from .probability_space import ProbabilitySpace
 from .random_variables import RV
-from .random_processes import RandomProcess
 
 def AssumeIndependent(*args):
-    """Make RVs or RandomProcesses independent.
+    """Make RVs independent.
 
     Args:
-      *args: Any number of RVs and RandomProcesses
+      *args: Any number of RVs
 
     Returns:
-      RVs and RandomProcesses with the same
-      marginal distributions as the RVs and
-      RandomProcesses, but defined on a common
+      RVs with the same marginal distributions 
+      as the inputs, but defined on a common
       probability space so as to be independent.
     """
 
-    # check that none of the RVs (or RandomProcesses)
-    # are defined on the same probability space
+    # Check that none of the RVs are defined on
+    # the same probability space.
     for i in range(len(args)):
-        if not isinstance(args[i], (RV, RandomProcess)):
+        if not isinstance(args[i], RV):
             raise Exception(
                 "AssumeIndependent(...) can only be "
-                "used with RVs and RandomProcesses, "
-                "but you passed in a %s." % 
-                type(args[i]).__name__)
+                "used with RVs, but you passed in a "
+                "%s." % type(args[i]).__name__)
         for j in range(i + 1, len(args)):
             if args[i].probSpace == args[j].probSpace:
                 raise Exception(
                     "AssumeIndependent(...) can only be "
-                    "called on RVs and RandomProcesses "
+                    "called on RVs that are initially "
                     "defined on different probability "
                     "spaces."
                     )
@@ -42,17 +39,9 @@ def AssumeIndependent(*args):
 
     outputs = []
     for i, arg in enumerate(args):
-        if isinstance(arg, RV):
-            # i=i forces Python to bind i now
-            def f(x, fun=arg.fun, i=i):
-                return fun(x[i])
-            outputs.append(RV(P, f))
-        elif isinstance(arg, RandomProcess):
-            # i=i forces Python to bind i now
-            def f(x, t, fun=arg.fun, i=i):
-                return fun(x[i], t)
-            outputs.append(
-                RandomProcess(P, f, arg.index_set)
-            )
+        # i=i forces Python to bind i now
+        def f(x, fun=arg.fun, i=i):
+            return fun(x[i])
+        outputs.append(RV(P, f))
     
     return tuple(outputs)

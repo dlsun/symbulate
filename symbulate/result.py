@@ -37,18 +37,17 @@ class Vector(object):
         if is_scalar(values):
             self.values = (values, )
         elif hasattr(values, "__iter__"):
-            self.values = tuple(values)
+            # convert vectors of scalars to Numpy arrays
+            if all(isinstance(value, numbers.Number)
+                   for value in values):
+                self.values = np.asarray(values)
+            else:
+                self.values = tuple(values)
         else:
             raise Exception(
                 "Vectors can only be created for "
                 "iterable data types."
             )
-
-        # Convert numeric Vectors to Numpy arrays
-        if all(is_scalar(value) for value in self.values):
-            self.array = np.asarray(self.values)
-        else:
-            self.array = None
             
     def __getitem__(self, key):
         return self.values[key]
@@ -64,48 +63,156 @@ class Vector(object):
         return hash(self.values)
 
     def __eq__(self, other):
-        if (self.array is not None and
-            isinstance(other, Vector) and
-            other.array is not None):
-            return (self.array == other.array).all()
+        if len(self) != len(other):
+            return False
+        elif (isinstance(self.values, np.ndarray) or
+              isinstance(other.values, np.ndarray)):
+            return (self.values == other.values).all()
         else:
             return all(
                 a == b for a, b in zip(self, other)
             )
-    
+
+    def apply(self, function):
+        """Apply function to every element of an Vector.
+
+        Args:
+          function: function to apply to the Vector
+        
+        Example:
+          x = Vector([1, 2, 3])
+          y = x.apply(log)
+
+        Note: For most standard functions, you can apply the function to
+          the Vector directly. For example, in the example above,
+          y = log(x) would have been equivalent and more readable.
+
+        User defined functions can also be applied.
+
+        Example:
+          def log_squared(n):
+            return log(n) ** 2
+          y = x.apply(log_squared)
+        """
+        return Vector(function(x) for x in self.values)
+        
     def sum(self):
-        return self.array.sum()
+        return self.values.sum()
 
     def mean(self):
-        return self.array.mean()
+        return self.values.mean()
 
     def cumsum(self):
-        return Vector(self.array.cumsum())
+        return Vector(self.values.cumsum())
 
     def median(self):
-        return self.array.median()
+        return self.values.median()
     
     def sd(self):
         return self.std()
 
     def std(self):
-        return self.array.std()
+        return self.values.std()
 
     def var(self):
-        return self.array.var()
+        return self.values.var()
 
     def max(self):
-        return self.array.max()
+        return self.values.max()
 
     def min(self):
-        return self.array.min()
+        return self.values.min()
 
     def count_eq(self, x):
-        if self.array is not None:
-            return np.count_nonzero(self.array == x)
+        if isinstance(self.values, np.ndarray):
+            return np.count_nonzero(self.values == x)
         else:
             return sum(1 for value in self.values if value == x)
+
+    # e.g., abs(X)
+    def __abs__(self):
+        return self.apply(abs)
+
+    # The code for most operations (+, -, *, /, ...) is the
+    # same, except for the operation itself. The following 
+    # factory function takes in the the operation and 
+    # generates the code to perform that operation.
+    def _operation_factory(self, op):
+
+        def op_fun(self, other):
+            if len(self) != len(other):
+                raise Exception(
+                    "Operations can only be performed between "
+                    "two Vectors of the same length."
+                )
+            if isinstance(other, numbers.Number):
+                return Vector(op(value, other) for value in self.values)
+            elif isinstance(other, Vector):
+                return Vector(
+                    op(a, b) for a, b in zip(self.values, other.values)
+                )
+            else:
+                return NotImplemented
     
+    # e.g., f + g or f + 3
+    def __add__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x + y)
+        return op_fun(self, other)
+
+    # e.g., 3 + f
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    # e.g., f - g or f - 3
+    def __sub__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x - y)
+        return op_fun(self, other)
+
+    # e.g., 3 - f
+    def __rsub__(self, other):
+        return -1 * self.__sub__(other)
+
+    # e.g., -f
+    def __neg__(self):
+        return -1 * self
+
+    # e.g., f * g or f * 2
+    def __mul__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x * y)
+        return op_fun(self, other)
+            
+    # e.g., 2 * f
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    # e.g., f / g or f / 2
+    def __truediv__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x / y)
+        return op_fun(self, other)
+
+    # e.g., 2 / f
+    def __rtruediv__(self, other):
+        op_fun = self._operation_factory(lambda x, y: y / x)
+        return op_fun(self, other)
+
+    # e.g., f ** 2
+    def __pow__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x ** y)
+        return op_fun(self, other)
+
+    # e.g., 2 ** f
+    def __rpow__(self, other):
+        op_fun = self._operation_factory(lambda x, y: y ** x)
+        return op_fun(self, other)
+
+    # Alternative notation for powers: e.g., f ^ 2
+    def __xor__(self, other):
+        return self.__pow__(other)
+    
+    # Alternative notation for powers: e.g., 2 ^ f
+    def __rxor__(self, other):
+        return self.__rpow__(other)
+        
     def __str__(self):
         if len(self) <= 6:
             return "(" + ", ".join(str(x) for x in self.values) + ")"
@@ -118,7 +225,7 @@ class Vector(object):
         return self.__str__()
 
     def plot(self, **kwargs):
-        plt.plot(range(len(self)), self.array, '.--', **kwargs)
+        plt.plot(range(len(self)), self.values, '.--', **kwargs)
 
 
 class TimeFunction(object):
@@ -210,7 +317,7 @@ class TimeFunction(object):
     
 class InfiniteVector(TimeFunction):
 
-    def __init__(self, fn=None):
+    def __init__(self, fn=lambda n: n):
         """Initializes a (lazy) data structure for an infinite vector.
 
         Args:
@@ -305,7 +412,7 @@ class InfiniteVector(TimeFunction):
 
 class DiscreteTimeFunction(TimeFunction):
 
-    def __init__(self, fn=None, fs=1, index_set=None):
+    def __init__(self, fn=lambda n: n, fs=1, index_set=None):
         """Initializes a data structure for a discrete-time function.
 
         Args:
@@ -424,7 +531,7 @@ class DiscreteTimeFunction(TimeFunction):
 
 class ContinuousTimeFunction(TimeFunction):
 
-    def __init__(self, fn):
+    def __init__(self, fn=lambda t: t):
         """Initializes a data structure for a discrete-time function.
 
         Args:

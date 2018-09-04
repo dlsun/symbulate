@@ -312,7 +312,7 @@ class RVResults(Results):
                 break
         # if appropriate, convert results to Numpy arrays
         if self.dim is not None:
-            self.array = np.array(self.results)
+            self.array = np.asarray(self.results)
     
     def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
         bins=None, **kwargs):

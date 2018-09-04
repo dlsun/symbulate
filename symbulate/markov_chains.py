@@ -4,7 +4,7 @@ from .distributions import Exponential
 from .index_sets import Naturals, Reals
 from .math import inf
 from .probability_space import ProbabilitySpace
-from .random_processes import RandomProcess
+from .random_variables import RV
 from .result import (
     InfiniteVector, ContinuousTimeFunction, DiscreteValued
 )
@@ -12,8 +12,7 @@ from .result import (
 EPS = 1e-15
 
 
-class MarkovChainResult(InfiniteVector,
-                        DiscreteValued):
+class MarkovChainResult(InfiniteVector, DiscreteValued):
 
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         # Check transition matrix
@@ -24,7 +23,7 @@ class MarkovChainResult(InfiniteVector,
                 if q < 0:
                     raise Exception("Probabilities cannot be negative.")
         # Check that dimensions agree
-        self.transition_matrix = np.array(transition_matrix)
+        self.transition_matrix = np.asarray(transition_matrix)
         m, n = self.transition_matrix.shape
         if m != n:
             raise Exception("Transition matrix must be square.")
@@ -49,23 +48,23 @@ class MarkovChainResult(InfiniteVector,
         state = np.random.choice(range(n), p=self.initial_dist)
         self.states = [state]
 
-        super().__init__()
-                
-    def fn(self, n):
-        m = len(self.states)
-        # If nth state not generated yet, generate it.
-        if n >= m:
-            state = self.states[m - 1]
-            for i in range(m, n + 1):
-                state = np.random.choice(
-                    range(self.n_states),
-                    p=self.transition_matrix[state, :]
-                )
-                self.states.append(state)
-        else:
-            state = self.states[n]
-        return self.state_labels[state]
-
+        def fn(n):
+            m = len(self.states)
+            # If nth state not generated yet, generate it.
+            if n >= m:
+                state = self.states[m - 1]
+                for i in range(m, n + 1):
+                    state = np.random.choice(
+                        range(self.n_states),
+                        p=self.transition_matrix[state, :]
+                    )
+                    self.states.append(state)
+            else:
+                state = self.states[n]
+            return self.state_labels[state]
+        
+        super().__init__(fn)
+        
     def get_states(self):
         return self
 
@@ -90,7 +89,7 @@ class MarkovChainProbabilitySpace(ProbabilitySpace):
         super().__init__(draw)
 
 
-class MarkovChain(RandomProcess):
+class MarkovChain(RV):
     
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         """Initialize a (discrete-time) Markov chain.
@@ -106,7 +105,7 @@ class MarkovChain(RandomProcess):
             transition_matrix,
             initial_dist,
             state_labels)
-        super().__init__(probSpace, index_set=Naturals())
+        super().__init__(probSpace)
     
         
 class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
@@ -128,16 +127,17 @@ class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
             return interarrival_time
         self.interarrival_times = InfiniteVector(fn)
                 
-
-    def fn(self, t):
-        total_time = 0
-        n = 0
-        while True:
-            state = self.states[n]
-            total_time += self.times[n] / self.rates[state]
-            if total_time > t:
-                return self.state_labels[state]
-            n += 1
+        def fn(t):
+            total_time = 0
+            n = 0
+            while True:
+                state = self.states[n]
+                total_time += self.times[n] / self.rates[state]
+                if total_time > t:
+                    return self.state_labels[state]
+                n += 1
+                
+        super().__init__(fn)
     
 
 class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
@@ -210,7 +210,7 @@ class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
         super().__init__(draw)
 
 
-class ContinuousTimeMarkovChain(RandomProcess):
+class ContinuousTimeMarkovChain(RV):
 
     def __init__(self, generator_matrix, initial_dist, state_labels=None):
         """Initialize a continuous-time Markov chain.
