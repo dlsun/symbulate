@@ -49,3 +49,9 @@ class RandomProcess(RV):
         elif is_scalar(value):
             self.rvs[t] = RV(self.probSpace, lambda outcome: value)
 
+    def __getitem__(self, t):
+        if t in self.rvs:
+            return self.rvs[t]
+        else:
+            return super().__getitem__(t)
+            
