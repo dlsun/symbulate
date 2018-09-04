@@ -60,14 +60,16 @@ class Vector(object):
             yield x
 
     def __hash__(self):
-        return hash(self.values)
+        return hash(tuple(self.values))
 
     def __eq__(self, other):
         if len(self) != len(other):
             return False
-        elif (isinstance(self.values, np.ndarray) or
-              isinstance(other.values, np.ndarray)):
-            return (self.values == other.values).all()
+        if isinstance(other, Vector) and (
+                isinstance(self.values, np.ndarray) or
+                isinstance(other.values, np.ndarray)
+        ):
+                return (self.values == other.values).all()
         else:
             return all(
                 a == b for a, b in zip(self, other)
