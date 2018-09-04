@@ -126,13 +126,19 @@ class RV:
                 "have multiple components."
             )
 
-    def __getitem__(self, i):
+    def __getitem__(self, n):
+        # if n is an RV, return a new random variable
+        if isinstance(n, RV):
+            return RV(self.probSpace,
+                      lambda x: self.fun(x)[n.fun(x)])
         # if the indices are a list, return a random vector
-        if hasattr(i, "__iter__"):
-            return self.apply(lambda x: Vector(x[j] for j in i))
-        # otherwise, return the ith value
+        elif isinstance(n, (list, tuple)):
+            return self.apply(
+                lambda x: Vector(x[i] for i in n)
+            )
+        # otherwise, return the nth value
         else:
-            return self.apply(lambda x: x[i])
+            return self.apply(lambda x: x[n])
 
     # e.g., abs(X)
     def __abs__(self):

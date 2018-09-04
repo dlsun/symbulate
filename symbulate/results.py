@@ -462,7 +462,7 @@ class RVResults(Results):
             ax = plt.gca()
             color = get_next_color(ax)
             for result in self.results:
-                result.plot(alpha=alpha, color=color)
+                result.plot(alpha=alpha, color=color, **kwargs)
             plt.xlabel("Index")
 
     def mean(self):
