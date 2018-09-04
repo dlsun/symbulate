@@ -69,7 +69,7 @@ class RV:
           n (int): How many draws to make.
 
         Returns:
-          Results: A list-like object containing the simulation results.
+          RVResults: A list-like object containing the simulation results.
         """
 
         return RVResults(self.draw() for _ in range(n))

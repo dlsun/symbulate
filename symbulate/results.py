@@ -1,4 +1,4 @@
-"""Data structures for storing the results of a simulation.
+"""Data structures for storing the resuAlts of a simulation.
 
 This module provides data structures for storing the
 results of a simulation, either outcomes from a
@@ -19,7 +19,7 @@ from .plot import (configure_axes, get_next_color, is_discrete,
 from .result import (
     Scalar, Vector,
     InfiniteVector, TimeFunction,
-    is_scalar, is_vector
+    is_scalar, is_vector, is_time_function
 )
 from .table import Table
 
@@ -30,11 +30,10 @@ plt.style.use('seaborn-colorblind')
 def is_hashable(x):
     return x.__hash__ is not None
 
-class Results(list):
+class Results(object):
 
     def __init__(self, results):
-        for result in results:
-            self.append(result)
+        self.results = list(results)
 
     def apply(self, fun):
         """Apply a function to each outcome of a simulation.
@@ -48,19 +47,26 @@ class Results(list):
             the function to each outcome from the original
             Results object.
         """
-        return type(self)(fun(x) for x in self)
+        return type(self)(fun(x) for x in self.results)
 
     def __getitem__(self, i):
         return self.apply(lambda x: x[i])
 
+    def __iter__(self):
+        for x in self.results:
+            yield x
+
+    def __len__(self):
+        return len(self.results)
+
     def get(self, i):
-        for j, x in enumerate(self):
+        for j, x in enumerate(self.results):
             if j == i:
                 return x
 
     def _get_counts(self):
         counts = {}
-        for x in self:
+        for x in self.results:
             if is_hashable(x):
                 y = x
             elif isinstance(x, list) and all(is_hashable(i) for i in x):
@@ -117,7 +123,7 @@ class Results(list):
             only those outcomes for which the function
             returned True.
         """
-        return type(self)(x for x in self if fun(x))
+        return type(self)(x for x in self.results if fun(x))
 
     def filter_eq(self, value):
         return self.filter(lambda x: x == value)
@@ -267,7 +273,7 @@ class Results(list):
                 return result
 
         table_body = ""
-        for i, x in enumerate(self):
+        for i, x in enumerate(self.results):
             table_body += row_template % (i, truncate(str(x)))
             # if we've already printed 9 rows, skip to end
             if i >= 8:
@@ -282,20 +288,31 @@ class RVResults(Results):
 
     def __init__(self, results):
         super().__init__(results)
-        if all(is_scalar(x) for x in self):
+        # determine the dimension and the index set (if applicable) of the Results
+        self.dim = None
+        self.index_set = None
+        iterresults = iter(self)
+        # get type and dimension of the first result
+        first_result = next(iterresults)
+        if is_time_function(first_result):
+            self.index_set = first_result.index_set
+        if is_scalar(first_result):
             self.dim = 1
-        elif all(is_vector(x) for x in self):
-            results_iterator = iter(self)
-            self.dim = len(next(results_iterator))
-            for result in results_iterator:
-                if len(result) != self.dim:
-                    self.dim = None
-                    return
-        elif all(isinstance(x, InfiniteVector) for x in self):
-            self.dim = float("inf")
-        else:
-            self.dim = -1
-        
+        elif is_vector(first_result):
+            self.dim = len(first_result)
+        # iterate over remaining results, ensure they are consistent with the first
+        for result in iterresults:
+            if (is_time_function(result) and
+                result.index_set != self.index_set):
+                self.index_set = None
+                break
+            if ((is_scalar(result) and self.dim != 1) or
+                (is_vector(result) and self.dim != len(result))):
+                self.dim = None
+                break
+        # if appropriate, convert results to Numpy arrays
+        if self.dim is not None:
+            self.array = np.array(self.results)
     
     def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
         bins=None, **kwargs):
@@ -304,21 +321,21 @@ class RVResults(Results):
                 type = (type,)
             elif not isinstance(type, (tuple, list)):
                 raise Exception("I don't know how to plot a " + str(type))
-        
+
+        # N.B. If self.dim is defined, then self.array is a Numpy array.
         if self.dim == 1:
+            # determine plotting parameters
             counts = self._get_counts()
-            heights = counts.values()
-            discrete = is_discrete(heights)
+            discrete = is_discrete(counts.values())
             if type is None:
-                if discrete:
-                    type = ("impulse",)
-                else:
-                    type = ("hist",)
+                type = ("impulse", ) if discrete else ("hist", )
             if alpha is None:
                 alpha = .5
             if bins is None:
                 bins = 30
+            n = len(self)
 
+            # initialize figure
             fig = plt.gcf()
             ax = plt.gca()
             color = get_next_color(ax)
@@ -326,45 +343,43 @@ class RVResults(Results):
             if 'density' in type:
                 if discrete:
                     xs = sorted(list(counts.keys()))
-                    ys = []
-                    for val in xs:
-                        ys.append(counts[val] / len(self))
-                    ax.plot(xs, ys, marker='o', color=color, linestyle='-')
+                    probs = [counts[x] / n for x in xs]
+                    ax.plot(xs, probs, marker='o', color=color, linestyle='-')
                     if len(type) == 1:
                         plt.ylabel('Relative Frequency')
                 else:
-                    density = compute_density(self)
-                    xs = np.linspace(min(self), max(self), 1000)
+                    density = compute_density(self.array)
+                    xs = np.linspace(self.array.min(), self.array.max(), 1000)
                     ax.plot(xs, density(xs), linewidth=2, color=color)
                     if len(type) == 1 or (len(type) == 2 and 'rug' in type):
                         plt.ylabel('Density')
 
             if 'hist' in type or 'bar' in type:
-                ax.hist(self, color=color, bins=bins, alpha=alpha, normed=True, **kwargs)
+                ax.hist(self.array, bins=bins, normed=True,
+                        color=color, alpha=alpha, **kwargs)
                 plt.ylabel("Density" if normalize else "Count")
             elif 'impulse' in type:
-                x = list(counts.keys())
-                y = list(counts.values())
-                if alpha is None:
-                    alpha = .7
+                xs = list(counts.keys())
+                freqs = list(counts.values())
                 if normalize:
-                    y_tot = sum(y)
-                    y = [i / y_tot for i in y]
+                    freqs = [freq / n for freq in freqs]
                 if jitter:
-                    a = .02 * (max(x) - min(x))
-                    noise = np.random.uniform(low=-a, high=a)
-                    x = [i + noise for i in x]
+                    a = .02 * (max(xs) - min(xs))
+                    xs = [x + np.random.uniform(low=-a, high=a) for x in xs]
                 # plot the impulses
-                ax.vlines(x, 0, y, color=color, alpha=alpha, **kwargs)
-                configure_axes(ax, x, y, ylabel="Relative Frequency" if normalize else "Count")
+                ax.vlines(xs, 0, freqs, color=color, alpha=alpha, **kwargs)
+                configure_axes(ax, xs, freqs,
+                               ylabel="Relative Frequency" if normalize else "Count")
             if 'rug' in type:
                 if discrete:
-                    self = self + np.random.normal(loc=0, scale=.002 * (max(self) - min(self)), size=len(self))
-                ax.plot(list(self), [0.001]*len(self), '|', linewidth = 5, color='k')
+                    noise_level = .002 * (self.array.max() - self.array.min())
+                    xs = self.results + np.random.normal(scale=noise_level, size=n)
+                ax.plot(xs, [0.001] * n, '|',
+                        linewidth = 5, color='k')
                 if len(type) == 1:
                     setup_ticks([], [], ax.yaxis)
         elif self.dim == 2:
-            x, y = zip(*self)
+            x, y = self.array[:, 0], self.array[:, 1]
 
             x_count = count_var(x)
             y_count = count_var(y)
@@ -435,196 +450,214 @@ class RVResults(Results):
                 hm = make_tile(x, y, bins, discrete_x, discrete_y, ax)
                 add_colorbar(fig, type, hm, 'Relative Frequency')
             elif 'violin' in type:
-                res = np.array(self)
                 if discrete_x and not discrete_y:
                     positions = sorted(list(x_count.keys()))
-                    make_violin(res, positions, ax, 'x', alpha)
+                    make_violin(self.array, positions, ax, 'x', alpha)
                 elif not discrete_x and discrete_y: 
                     positions = sorted(list(y_count.keys()))
-                    make_violin(res, positions, ax, 'y', alpha)
+                    make_violin(self.array, positions, ax, 'y', alpha)
         else:
             if alpha is None:
                 alpha = np.log(2) / np.log(len(self) + 1)
             ax = plt.gca()
             color = get_next_color(ax)
-            for result in self:
+            for result in self.results:
                 result.plot(alpha=alpha, color=color)
             plt.xlabel("Index")
 
+    def mean(self):
+        if self.dim == 1:
+            return Scalar(self.array.mean())
+        elif self.dim is not None:
+            return Vector(self.array.mean(axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].mean()
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:
+            raise Exception("I don't know how to take the mean of these values.")
+
+    def var(self):
+        if self.dim == 1:
+            return Scalar(self.array.var())
+        elif self.dim is not None:
+            return Vector(self.array.var(axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].var()
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:
+            raise Exception("I don't know how to take the variance of these values.")
+
+    def std(self):
+        if self.dim == 1:
+            return Scalar(self.array.std())
+        elif self.dim is not None:
+            return Vector(self.array.std(axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].std()
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:
+            raise Exception("I don't know how to take the SD of these values.")
+
+    def sd(self):
+        return self.std()
+
+    def quantile(self, q):
+        if self.dim == 1:
+            return Scalar(np.percentile(self.array, q * 100))
+        elif self.dim is not None:
+            return Vector(np.percentile(self.array, q * 100, axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].quantile(q)
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:
+            raise Exception("I don't know how to take the quanile of these values.")
+
+    def median(self):
+        return self.quantile(.5)
+        
+    def orderstatistics(self, n):
+        if self.dim == 1:
+            return Scalar(np.partition(self.array, n - 1)[n - 1])
+        elif self.dim is not None:
+            return Vector(np.partition(self.array, n - 1, axis=0)[n - 1])
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].orderstatistics(n)
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:                                                                        
+            raise Exception("I don't know how to take the order statistics of these values.")
+        
+    def min(self):
+        if self.dim == 1:
+            return Scalar(self.array.min())
+        elif self.dim is not None:
+            return Vector(self.array.min(axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].min()
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:
+            raise Exception("I don't know how to take the minimum of these values.")
+            
+    def max(self):
+        if self.dim == 1:
+            return Scalar(self.array.max())
+        elif self.dim is not None:
+            return Vector(self.array.max(axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].max()
+            return TimeFunction.from_index_set(self.index_set, fn)
+
+    def min_max_diff(self):
+        if self.dim == 1:
+            return Scalar(self.array.max() - self.array.min())
+        elif self.dim is not None:
+            return Vector(self.array.max(axis=0) -
+                          self.array.min(axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].min_max_diff()
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:
+            raise Exception("I don't know how to take the range of these values.")
+
+    def iqr(self):
+        if self.dim == 1:
+            return Scalar(np.percentile(self.array, 75) -
+                          np.percentile(self.array, 25))
+        elif self.dim is not None:
+            return Vector(np.percentile(self.array, 75, axis=0) -
+                          np.percentile(self.array, 25, axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].iqr()
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:                                                                        
+            raise Exception("I don't know how to take the interquartile range of these values.")
+
+    def skewness(self):
+        if self.dim == 1:
+            return Scalar(stats.skew(self.array))
+        elif self.dim is not None:
+            return Vector(stats.skew(self.array, axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].skewness()
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:
+            raise Exception("I don't know how to take the skewness of these values.")
+
+    def kurtosis(self):
+        if self.dim == 1:
+            return Scalar(stats.kurtosis(self.array))
+        elif self.dim is not None:
+            return Vector(stats.kurtosis(self.array, axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].kurtosis()
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:
+            raise Exception("I don't know how to take the kurtosis of these values.")
+ 
+    def moment(self, k):
+        if self.dim == 1:
+            return Scalar(stats.moment(self.array, k))
+        elif self.dim is not None:
+            return Vector(stats.moment(self.array, k, axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].moment(k)
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:                                                                        
+            raise Exception("I don't know how to find the moment of these values.")
+    
+    def trimmed_mean(self, alpha):
+        if self.dim == 1:
+            return Scalar(stats.trim_mean(self.array, alpha))
+        elif self.dim is not None:
+            return Vector(stats.trim_mean(self.array,
+                                          alpha, axis=0))
+        elif self.index_set is not None:
+            def fn(t):
+                return self[t].trimmed_mean(alpha)
+            return TimeFunction.from_index_set(self.index_set, fn)
+        else:                                                                        
+            raise Exception("I don't know how to take the trimmed_mean of these values.")
+            
     def cov(self, **kwargs):
         if self.dim == 2:
-            return np.cov(self, rowvar=False)[0, 1]
-        elif self.dim > 0:
-            return np.cov(self, rowvar=False)
+            return np.cov(self.array, rowvar=False)[0, 1]
+        elif self.dim > 2:
+            return np.cov(self.array, rowvar=False)
+        elif self.dim == 1:
+            raise Exception("Covariance can only be calculated when there are at least 2 dimensions.")
         else:
             raise Exception("Covariance requires that the simulation results have consistent dimension.")
 
     def corr(self, **kwargs):
         if self.dim == 2:
-            return np.corrcoef(self, rowvar=False)[0, 1]
-        elif self.dim > 0:
-            return np.corrcoef(self, rowvar=False)
+            return np.corrcoef(self.array, rowvar=False)[0, 1]
+        elif self.dim > 2:
+            return np.corrcoef(self.array, rowvar=False)
+        elif self.dim == 1:
+            raise Exception("Covariance can only be calculated when there are at least 2 dimensions.")
         else:
             raise Exception("Correlation requires that the simulation results have consistent dimension.")
 
-    def mean(self):
-        if all(is_scalar(x) for x in self):
-            return np.array(self).mean()
-        elif self.dim > 0:
-            return tuple(np.array(self).mean(0))
-        else:
-            raise Exception("I don't know how to take the mean of these values.")
-
-    def var(self):
-        if all(is_scalar(x) for x in self):
-            return np.array(self).var()
-        elif self.dim > 0:
-            return tuple(np.array(self).var(0))
-        else:
-            raise Exception("I don't know how to take the variance of these values.")
-
-    def sd(self):
-        if all(is_scalar(x) for x in self):
-            return np.array(self).std()
-        elif self.dim > 0:
-            return tuple(np.array(self).std(0))
-        else:
-            raise Exception("I don't know how to take the SD of these values.")
-
     def standardize(self):
-        mean_ = self.mean()
-        sd_ = self.sd()
-        if all(is_scalar(x) for x in self):
-            return RVResults((x - mean_) / sd_ for x in self)
-        elif self.dim > 0:
-            return RVResults((np.asarray(self) - mean_) / sd_)
-
-    def median(self):
-        if all(is_scalar(x) for x in self):
-            return np.median(np.array(self))
-        elif self.dim > 0:
-            return tuple(np.median(np.array(self), 0))
+        if self.dim == 1:
+            mean_ = self.array.mean()
+            sd_ = self.array.std()
+            return RVResults((x - mean_) / sd_ for x in self.results)
+        elif self.dim > 1:
+            mean_ = self.array.mean(axis=0)
+            sd_ = self.array.std(axis=0)
+            return RVResults((self.results - mean_) / sd_)
         else:
-            raise Exception("I don't know how to take the median of these values.")
-
-    def quantile(self, q):
-        if all(is_scalar(x) for x in self):
-            return np.percentile(np.array(self), q * 100)
-        elif self.dim > 0:
-            return tuple(np.percentile(np.array(self), q * 100, 0))
-        else:
-            raise Exception("I don't know how to take the quanile of these values.")
-
-    def min(self):
-        if all(is_scalar(x) for x in self):
-            return np.array(self).min() 
-        elif self.dim > 0:
-            return tuple(np.array(self).min(0))
-        else:
-            raise Exception("I don't know how to take the minimum of these values.")
-            
-    def max(self):
-        if all(is_scalar(x) for x in self):                                          
-            return np.array(self).max()
-        elif self.dim > 0:                                                
-            return tuple(np.array(self).max(0))
-        else:                                                                        
-            raise Exception("I don't know how to take the maximum of these values.")
-
-    def min_max_diff(self):
-        if all(is_scalar(x) for x in self):                                          
-            return np.array(self).max() - np.array(self).min()
-        elif self.dim > 0:                                                
-            return tuple(np.subtract(np.array(self).max(0), np.array(self).min(0)))
-        else:                                                                        
-            raise Exception("I don't know how to take the range of these values.")
-
-    def iqr(self):
-        if all(is_scalar(x) for x in self):                                          
-            q75, q25 = np.percentile(np.array(self), [75, 25])
-            return q75 - q25
-        elif self.dim > 0:                                                
-            return tuple(np.subtract(np.percentile(np.array(self), 75, axis=0), 
-                                     np.percentile(np.array(self), 25, axis=0)))
-        else:                                                                        
-            raise Exception("I don't know how to take the interquartile range of these values.")
-
-    def orderstatistics(self, n):
-        if all(is_scalar(x) for x in self):                                          
-            return np.partition(np.array(self), n - 1)[n - 1]
-        elif self.dim > 0:                                                
-            return tuple(np.partition(np.array(self), n - 1, axis=0)[n - 1]) 
-        else:                                                                        
-            raise Exception("I don't know how to take the order statistics of these values.")
-
-    def skewness(self):
-        if all(is_scalar(x) for x in self):                                          
-            return stats.skew(np.array(self))
-        elif self.dim > 0:                                                
-            return tuple(stats.skew(np.array(self), 0))
-        else:                                                                        
-            raise Exception("I don't know how to take the skewness of these values.")
-
-    def kurtosis(self):
-        if all(is_scalar(x) for x in self):                                          
-            return stats.kurtosis(np.array(self))
-        elif self.dim > 0:                                                
-            return tuple(stats.kurtosis(np.array(self), 0)) 
-        else:                                                                        
-            raise Exception("I don't know how to take the kurtosis of these values.")
- 
-    def moment(self, k):
-        if all(is_scalar(x) for x in self):                                          
-            return stats.moment(np.array(self), k)
-        elif self.dim > 0:                                                
-            return tuple(stats.moment(np.array(self), k, 0))
-        else:                                                                        
-            raise Exception("I don't know how to find the moment of these values.")
-    
-    def trimmed_mean(self, alpha): 
-        if all(is_scalar(x) for x in self):                                          
-            return stats.trim_mean(self, alpha)
-        elif self.dim > 0:                                                
-            return tuple(stats.trim_mean(self, alpha, axis=0))
-        else:                                                                        
-            raise Exception("I don't know how to take the trimmed_mean of these values.")
-
-
-class RandomProcessResults(Results):
-
-    def __init__(self, results, index_set):
-        self.index_set = index_set
-        super().__init__(results)
-
-    def __getitem__(self, t):
-        return RVResults(x[t] for x in self)
-
-    def plot(self, tmin=0, tmax=10, **kwargs):
-        ax = plt.gca()
-        alpha = np.log(2) / np.log(len(self) + 1)
-        color = get_next_color(ax)
-        for result in self:
-            result.plot(tmin, tmax, alpha=alpha, color=color)
-        plt.xlabel("Time (t)")
-
-        # expand the y-axis slightly
-        axes = plt.gca()
-        ymin, ymax = axes.get_ylim()
-        buff = .05 * (ymax - ymin)
-        plt.ylim(ymin - buff, ymax + buff)
-
-    def mean(self):
-        def fn(t):
-            return self[t].mean()
-        return TimeFunction.from_index_set(self.index_set, fn)
-
-    def var(self):
-        def fn(t):
-            return self[t].var()
-        return TimeFunction.from_index_set(self.index_set, fn)
-
-    def sd(self):
-        def fn(t):
-            return self[t].sd()
-        return TimeFunction.from_index_set(self.index_set, fn)
+            raise Exception("Could not standardize the given results.")
 

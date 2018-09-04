@@ -1,4 +1,4 @@
-class IndexSet:
+class IndexSet(object):
 
     def __init__(self):
         return
@@ -12,16 +12,8 @@ class IndexSet:
     def __contains__(self, value):
         return False
 
-    def check_same(self, index):
-        """Checks whether the current IndexSet matches another.
-
-        Args:
-          index: Another IndexSet
-
-        Raises:
-          Exception: Two index sets do not match.
-        """
-        return
+    def __eq__(self, other):
+        return type(other) == type(self)
 
 
 class Reals(IndexSet):
@@ -34,10 +26,6 @@ class Reals(IndexSet):
             return -float("inf") < value < float("inf")
         except:
             return False
-
-    def check_same(self, index):
-        if not isinstance(index, Reals):
-            raise Exception("Index sets do not match.")
 
 
 class Naturals(IndexSet):
@@ -53,10 +41,6 @@ class Naturals(IndexSet):
             )
         except:
             return False
-
-    def check_same(self, index):
-        if not isinstance(index, Naturals):
-            raise Exception("Index sets do not match.")
     
 
 class DiscreteTimeSequence(IndexSet):
@@ -70,13 +54,11 @@ class DiscreteTimeSequence(IndexSet):
     def __contains__(self, value):
         return float(value * self.fs).is_integer()
 
-    def check_same(self, index):
-        if not (
+    def __eq__(self, index):
+        return (
             isinstance(index, DiscreteTimeSequence) and
             (self.fs == index.fs)
-        ):
-            raise Exception("Index sets do not match.")
-
+        )
 
 class Integers(DiscreteTimeSequence):
 

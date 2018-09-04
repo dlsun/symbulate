@@ -4,8 +4,11 @@ import operator as op
 import scipy.stats as stats
 
 from .random_variables import RV
-from .random_processes import RandomProcess
-from .result import ContinuousTimeFunction, DiscreteValued
+from .result import (
+    TimeFunction,
+    ContinuousTimeFunction,
+    DiscreteValued
+)
 from .results import RVResults
 
 pi = math.pi
@@ -15,9 +18,7 @@ inf = float("inf")
 def operation_factory(op):
 
     def op_fun(x):
-        if isinstance(x, RandomProcess):
-            return x.apply(op_fun)
-        elif isinstance(x, RV):
+        if isinstance(x, (RV, TimeFunction)):
             return x.apply(op)
         else:
             return op(x)

@@ -7,7 +7,7 @@ from .result import (
     is_scalar,
     is_vector
 )
-from .results import RandomProcessResults
+from .results import RVResults
 
 
 class CanonicalFunction:
@@ -20,7 +20,7 @@ class CanonicalFunction:
         return outcome(t)
 
     
-class RandomProcess:
+class RandomProcess(RV):
 
     def __init__(self, probSpace,
                  fun=CanonicalFunction(),
@@ -51,23 +51,6 @@ class RandomProcess:
             def fn(t):
                 return self[t].fun(outcome)
             return TimeFunction.from_index_set(self.index_set, fn)
-
-    def sim(self, n):
-        """Simulates n realizations of the random process.
-
-        Args:
-          n: A positive integer specifying the number of draws.
-        
-        Returns:
-          A RandomProcessResults object of length n consisting
-          of the n realizations. Each realization is a
-          TimeFunction that can be evaluated at any time in
-          the index set.
-        """
-        return RandomProcessResults(
-            [self.draw() for _ in range(n)],
-            self.index_set                        
-        )
 
     def __getitem__(self, t):
         if t not in self.index_set:

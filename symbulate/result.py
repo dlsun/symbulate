@@ -12,11 +12,12 @@ from .index_sets import (
 class Scalar(numbers.Number):
 
     def __new__(cls, value, *args, **kwargs):
-        if isinstance(value, int):
+        if isinstance(value, (int, np.int64)):
             return Int(value)
         elif isinstance(value, float):
             return Float(value)
-        
+        else:
+            raise Exception("Scalar type not understood.")
 
 class Int(int, Scalar):
     
@@ -135,7 +136,11 @@ class TimeFunction(object):
         if isinstance(other, numbers.Number):
             return
         if isinstance(other, TimeFunction):
-            self.index_set.check_same(other.index_set)
+            if self.index_set != other.index_set:
+                raise Exception(
+                    "Operations can only be performed on "
+                    "TimeFunctions with the same index set."
+                )
         else:
             raise Exception("Cannot add object to random process.")
     
@@ -392,7 +397,7 @@ class DiscreteTimeFunction(TimeFunction):
                     lambda n: op(self[n], other),
                     index_set=self.index_set
                 )
-            elif isinstance(other, InfiniteVector):
+            elif isinstance(other, DiscreteTimeFunction):
                 return DiscreteTimeFunction(
                     lambda n: op(self[n], other[n]),
                     index_set=self.index_set
@@ -473,7 +478,7 @@ class ContinuousTimeFunction(TimeFunction):
                 return ContinuousTimeFunction(
                     lambda t: op(self(t), other)
                 )
-            elif isinstance(other, InfiniteVector):
+            elif isinstance(other, ContinuousTimeFunction):
                 return ContinuousTimeFunction(
                     lambda t: op(self(t), other(t))
                 )
@@ -540,3 +545,6 @@ def is_vector(x):
     else:
         return False
 
+
+def is_time_function(x):
+    return isinstance(x, TimeFunction)
