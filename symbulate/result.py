@@ -12,7 +12,7 @@ from .index_sets import (
 class Scalar(numbers.Number):
 
     def __new__(cls, value, *args, **kwargs):
-        if isinstance(value, (int, np.int64)):
+        if isinstance(value, numbers.Integral):
             return Int(value)
         elif isinstance(value, float):
             return Float(value)
