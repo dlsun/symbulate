@@ -1,16 +1,15 @@
 from copy import deepcopy
 
-from .index_sets import Reals
+from .index_sets import Naturals
 from .random_variables import RV
-from .result import (TimeFunction,
-                     is_scalar)
+from .result import TimeFunction, is_scalar
 from .results import RVResults
 
 
 class RandomProcess(RV):
 
     def __init__(self, probSpace,
-                 index_set=Reals(),
+                 index_set=Naturals(),
                  function=lambda x, t: x[t]):
         self.probSpace = probSpace
         self.index_set = index_set
