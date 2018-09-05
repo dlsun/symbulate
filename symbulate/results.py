@@ -25,7 +25,7 @@ plt.style.use('seaborn-colorblind')
 
 
 def is_hashable(x):
-    return x.__hash__ is not None
+    return hasattr(x, "__hash__")
 
 
 class Results(object):
