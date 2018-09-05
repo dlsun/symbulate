@@ -1,4 +1,4 @@
-"""Data structures for storing the resuAlts of a simulation.
+"""Data structures for storing the results of a simulation.
 
 This module provides data structures for storing the
 results of a simulation, either outcomes from a

@@ -2,12 +2,9 @@ import numbers
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .index_sets import (
-    DiscreteTimeSequence,
-    Reals,
-    Naturals
-)
-
+from .index_sets import (DiscreteTimeSequence,
+                         Reals, Naturals)
+import symbulate
 
 class Scalar(numbers.Number):
 
@@ -37,10 +34,14 @@ class Vector(object):
         if is_scalar(values):
             self.values = (values, )
         elif hasattr(values, "__iter__"):
+            # cast generators to tuples
+            if hasattr(values, "__next__"):
+                values = tuple(values)
             # convert vectors of scalars to Numpy arrays
             if all(isinstance(value, numbers.Number)
                    for value in values):
                 self.values = np.asarray(values)
+            # otherwise, store them as a tuple
             else:
                 self.values = tuple(values)
         else:
@@ -67,9 +68,8 @@ class Vector(object):
             return False
         if isinstance(other, Vector) and (
                 isinstance(self.values, np.ndarray) or
-                isinstance(other.values, np.ndarray)
-        ):
-                return (self.values == other.values).all()
+                isinstance(other.values, np.ndarray)):
+            return (self.values == other.values).all()
         else:
             return all(
                 a == b for a, b in zip(self, other)
@@ -142,19 +142,21 @@ class Vector(object):
     def _operation_factory(self, op):
 
         def op_fun(self, other):
-            if len(self) != len(other):
-                raise Exception(
-                    "Operations can only be performed between "
-                    "two Vectors of the same length."
-                )
             if isinstance(other, numbers.Number):
                 return Vector(op(value, other) for value in self.values)
-            elif isinstance(other, Vector):
+            elif is_vector(other):
+                if len(self) != len(other):
+                    raise Exception(
+                        "Operations can only be performed between "
+                        "two Vectors of the same length."
+                    )
                 return Vector(
                     op(a, b) for a, b in zip(self.values, other.values)
                 )
             else:
                 return NotImplemented
+
+        return op_fun
     
     # e.g., f + g or f + 3
     def __add__(self, other):
@@ -242,9 +244,10 @@ class TimeFunction(object):
             return InfiniteVector(fn)
 
     def check_same_index_set(self, other):
-        if isinstance(other, numbers.Number):
+        if (isinstance(other, numbers.Number) or
+            isinstance(other, symbulate.RV)):
             return
-        if isinstance(other, TimeFunction):
+        elif isinstance(other, TimeFunction):
             if self.index_set != other.index_set:
                 raise Exception(
                     "Operations can only be performed on "
@@ -629,6 +632,15 @@ class DiscreteValued:
         return self.interarrival_times.cumsum()
 
 
+class Tuple(tuple):
+
+    def __add__(self, other):
+        if isinstance(other, Tuple):
+            return Tuple(super().__add__(other))
+        else:
+            return Tuple(super().__add__((other, )))
+
+        
 def join(*args):
     """Joins Result objects into a single Result object.
     """
@@ -639,9 +651,12 @@ def join(*args):
     # If all results are Vectors, concatenate into one giant Vector.
     if all(isinstance(result, Vector) for result in results):
         return Vector(np.concatenate(results))
-    
-    # Otherwise, return a tuple of the original results.
-    return tuple(args)
+
+    # Otherwise, return a Tuple of the original results.
+    result = Tuple()
+    for arg in args:
+        result += arg
+    return result
     
 
 def is_scalar(x):

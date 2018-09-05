@@ -82,7 +82,7 @@ class RV:
         return self.fun(input)
 
     def check_same_probSpace(self, other):
-        if is_scalar(other):
+        if is_scalar(other) or is_time_function(other):
             return
         else:
             self.probSpace.check_same(other.probSpace)
@@ -152,7 +152,7 @@ class RV:
 
         def op_fun(self, other):
             self.check_same_probSpace(other)
-            if is_scalar(other):
+            if is_scalar(other) or is_time_function(other):
                 return self.apply(lambda x: op(x, other))
             elif isinstance(other, RV):
                 def fn(outcome):
