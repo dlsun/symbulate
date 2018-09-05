@@ -2,11 +2,8 @@ from copy import deepcopy
 
 from .index_sets import Reals
 from .random_variables import RV
-from .result import (
-    TimeFunction,
-    is_scalar,
-    is_vector
-)
+from .result import (TimeFunction,
+                     is_scalar)
 from .results import RVResults
 
 

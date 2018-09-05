@@ -1,8 +1,6 @@
 from .probability_space import Event
-from .result import (
-    Vector, join,
-    is_scalar, is_vector, is_time_function
-)
+from .result import (Vector, join,
+                     is_scalar, is_nonrandom)
 from .results import RVResults
 
 class RV:
@@ -82,7 +80,7 @@ class RV:
         return self.fun(input)
 
     def check_same_probSpace(self, other):
-        if is_scalar(other) or is_time_function(other):
+        if is_nonrandom(other):
             return
         else:
             self.probSpace.check_same(other.probSpace)
@@ -151,10 +149,10 @@ class RV:
     def _operation_factory(self, op):
 
         def op_fun(self, other):
-            self.check_same_probSpace(other)
-            if is_scalar(other) or is_time_function(other):
+            if is_nonrandom(other):
                 return self.apply(lambda x: op(x, other))
             elif isinstance(other, RV):
+                self.check_same_probSpace(other)
                 def fn(outcome):
                     return op(self.fun(outcome), other.fun(outcome))
                 return RV(self.probSpace, fn)

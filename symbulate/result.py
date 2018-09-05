@@ -254,7 +254,10 @@ class TimeFunction(object):
                     "TimeFunctions with the same index set."
                 )
         else:
-            raise Exception("Cannot add object to random process.")
+            raise Exception(
+                "Cannot combine %s with %s." % (
+                    str(type(self)), str(type(other)))
+            )
     
     # e.g., abs(X)
     def __abs__(self):
@@ -670,5 +673,7 @@ def is_vector(x):
         return False
 
 
-def is_time_function(x):
-    return isinstance(x, TimeFunction)
+def is_nonrandom(x):
+    return (is_scalar(x) or
+            is_vector(x) or
+            isinstance(x, TimeFunction))
