@@ -143,14 +143,14 @@ class BrownianMotionProbabilitySpace(GaussianProcessProbabilitySpace):
 
 class BrownianMotion(RV):
 
-    def __init__(self, scale=1, drift=0):
+    def __init__(self, drift=0, scale=1):
         """Initialize Brownian motion.
 
         Args:
-          scale: scale parameter of Brownian motion
           drift: drift parameter of Brownian motion
+          scale: scale parameter of Brownian motion
         """
         probSpace = BrownianMotionProbabilitySpace(
-            scale=scale, drift=drift
+            drift=drift, scale=scale
         )
         super().__init__(probSpace)
