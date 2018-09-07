@@ -19,7 +19,8 @@ def operation_factory(op):
 
     def op_fun(x):
         if isinstance(x, (RV, TimeFunction)):
-            return x.apply(op)
+            # recursively call op_fun until x is a scalar
+            return x.apply(op_fun)
         else:
             return op(x)
 
