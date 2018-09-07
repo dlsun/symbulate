@@ -56,7 +56,6 @@ class RV:
           X = RV(Normal(0, 1))
           X.draw() might return -0.9, for example.  
         """
-
         return self.fun(self.probSpace.draw())
 
     def sim(self, n):
@@ -106,7 +105,6 @@ class RV:
             return log(x ** 2)
           Y = X.apply(g)
         """
-        
         def f_new(outcome):
             return function(self.fun(outcome))
         return RV(self.probSpace, f_new)

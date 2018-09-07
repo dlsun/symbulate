@@ -37,9 +37,13 @@ class Vector(object):
             # cast generators to tuples
             if hasattr(values, "__next__"):
                 values = tuple(values)
-            # convert vectors of scalars to Numpy arrays
-            if all(isinstance(value, numbers.Number)
+            # convert vectors of all ints or all
+            # floats to Numpy arrays
+            if all(isinstance(value, numbers.Integral)
                    for value in values):
+                self.values = np.asarray(values)
+            elif all(isinstance(value, (float, np.floating))
+                     for value in values):
                 self.values = np.asarray(values)
             # otherwise, store them as a tuple
             else:
@@ -647,15 +651,6 @@ class Tuple(tuple):
 def join(*args):
     """Joins Result objects into a single Result object.
     """
-    # convert scalars to Vectors
-    results = [Vector([result]) if is_scalar(result) else result
-               for result in args]
-
-    # If all results are Vectors, concatenate into one giant Vector.
-    if all(isinstance(result, Vector) for result in results):
-        return Vector(np.concatenate(results))
-
-    # Otherwise, return a Tuple of the original results.
     result = Tuple()
     for arg in args:
         result += arg
