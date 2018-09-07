@@ -45,7 +45,7 @@ class ProbabilitySpace:
                 return result
         else:
             def draw():
-                return join(*[self.draw() for _ in range(exponent)])
+                return tuple([self.draw() for _ in range(exponent)])
         return ProbabilitySpace(draw)
             
 
