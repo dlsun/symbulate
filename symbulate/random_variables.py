@@ -224,10 +224,23 @@ class RV:
         if isinstance(other, RV):
             def fun(outcome):
                 return join(self.fun(outcome), other.fun(outcome))
-            return RV(self.probSpace, fun)
+        elif is_scalar(other):
+            def fun(outcome):
+                return join(self.fun(outcome), other)
         else:
             raise Exception("Joint distributions are only defined for RVs.")
+        return RV(self.probSpace, fun)
 
+    def __rand__(self, other):
+        self.check_same_probSpace(other)
+        if isinstance(other, RV):
+            def fun(outcome):
+                return join(other.fun(outcome), self.fun(outcome))
+        elif is_scalar(other):
+            def fun(outcome):
+                return join(other, self.fun(outcome))
+        return RV(self.probSpace, fun)
+                    
     ## The following operations all return Events
     ## (Events are used to define conditional distributions)
 
@@ -307,6 +320,7 @@ class RV:
             return RVConditional(self, condition_event)
         else:
             raise NotImplementedError
+
 
 class RVConditional(RV):
     """Defines a random variable conditional on an event.
