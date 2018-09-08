@@ -655,8 +655,46 @@ def join(*args):
     for arg in args:
         result += arg
     return result
-    
 
+
+def concat(*args):
+    """Concatenates scalars and vectors into one data structure.
+
+    Args:
+      *args: Any number of scalar or vector objects. The last
+          argument can be an InfiniteVector.
+
+    Returns:
+      A Vector or an InfiniteVector, depending on whether there
+      is an InfiniteVector in *args.
+    """
+    values = []
+    for i, arg in enumerate(args):
+        if is_scalar(arg):
+            values.append(arg)
+        elif is_vector(arg):
+            values.extend(arg)
+        elif isinstance(arg, InfiniteVector):
+            # check that InfiniteVector is the last arg
+            if i == len(args) - 1:
+                # define concatenated InfiniteVector
+                def fn(n):
+                    if n < len(values):
+                        return values[n]
+                    else:
+                        return arg[n - len(values)]
+                return InfiniteVector(fn)
+            else:
+                raise Exception(
+                    "InfiniteVector must be the last "
+                    "argument to concat().")
+        else:
+            raise TypeError(
+                "Every argument to concat() must be either "
+                "a scalar, a vector, or an InfiniteVector.")
+    return Vector(values)
+
+    
 def is_scalar(x):
     return isinstance(x, numbers.Number) or isinstance(x, str)
 

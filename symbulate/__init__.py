@@ -37,7 +37,8 @@ from .result import (
     Vector,
     InfiniteVector,
     DiscreteTimeFunction,
-    ContinuousTimeFunction
+    ContinuousTimeFunction,
+    concat
 )
 from .gaussian_process import (
     GaussianProcess,
