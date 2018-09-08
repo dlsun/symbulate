@@ -349,7 +349,7 @@ class InfiniteVector(TimeFunction):
         n0 = None
         if isinstance(n, slice) and n.stop >= m:
             n0 = n.stop
-        elif isinstance(n, int) and n >= m:
+        elif isinstance(n, numbers.Integral) and n >= m:
             n0 = n
         if n0 is not None:
             for i in range(m, n0 + 1):
@@ -447,7 +447,7 @@ class DiscreteTimeFunction(TimeFunction):
         self.array_neg = [] # stores values for t < 0
 
     def __getitem__(self, n):
-        if not isinstance(n, int):
+        if not isinstance(n, numbers.Integral):
             raise Exception(
                 "With a DiscreteTimeFunction f, "
                 "f[n] returns the nth time sample, "

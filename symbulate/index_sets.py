@@ -1,3 +1,6 @@
+import numbers
+
+
 class IndexSet(object):
 
     def __init__(self):
@@ -37,7 +40,8 @@ class Naturals(IndexSet):
         try:
             return (
                 value >= 0 and
-                (isinstance(value, int) or value.is_integer())
+                (isinstance(value, numbers.Integral) or
+                 value.is_integer())
             )
         except:
             return False

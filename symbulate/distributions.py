@@ -1,3 +1,4 @@
+import numbers
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
@@ -122,7 +123,7 @@ class Binomial(Distribution):
 
     def __init__(self, n, p):
         
-        if n >= 0 and isinstance(n, int):
+        if n >= 0 and isinstance(n, numbers.Integral):
             self.n = n
         #elif n == 0:
             #raise NotImplementedError
@@ -158,17 +159,17 @@ class Hypergeometric(Distribution):
 
     def __init__(self, n, N0, N1):
         
-        if n > 0 and isinstance(n, int):
+        if n > 0 and isinstance(n, numbers.Integral):
             self.n = n
         else:
             raise Exception("n must be a positive integer")
         
-        if N0 >= 0 and isinstance(N0, int):
+        if N0 >= 0 and isinstance(N0, numbers.Integral):
             self.N0 = N0
         else:
             raise Exception("N0 must be a non-negative integer")
         
-        if N1 >= 0 and isinstance(N1, int):
+        if N1 >= 0 and isinstance(N1, numbers.Integral):
             self.N1 = N1
         else:
             raise Exception("N1 must be a non-negative integer")
@@ -225,7 +226,7 @@ class NegativeBinomial(Distribution):
 
     def __init__(self, r, p):
 
-        if 0 < r and isinstance(r, int):
+        if 0 < r and isinstance(r, numbers.Integral):
             self.r = r
         else:
             raise Exception("r must be a positive integer")
@@ -266,7 +267,7 @@ class Pascal(Distribution):
     
     def __init__(self, r, p):
         
-        if 0 < r and isinstance(r, int):
+        if 0 < r and isinstance(r, numbers.Integral):
             self.r = r
         else:
             raise Exception("r must be a positive integer")
@@ -528,7 +529,7 @@ class ChiSquare(Distribution):
     """
 
     def __init__(self, df):
-        if df > 0 and isinstance(df, int):
+        if df > 0 and isinstance(df, numbers.Integral):
             self.df = df
         else:
             raise Exception("df must be a positive integer")

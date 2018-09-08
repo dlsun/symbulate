@@ -1,4 +1,5 @@
 import math
+import numbers
 import numpy as np
 import operator as op
 import scipy.stats as stats
@@ -46,7 +47,7 @@ def log(x, base=e):
             raise type(e)("I can't take the log of these values.")
 
 def mean(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Taking the mean with one value is unnecessary.")
     else:
         return sum(x) / len(x)
@@ -61,13 +62,13 @@ def sd(x):
     return math.sqrt(var(x))
 
 def median(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Taking the median of one value is unnecessary.")
     else:
         return np.median(x)
 
 def min_max_diff(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Taking the range of one value is unnecessary.")
     else:
         return max(x) - min(x)
@@ -79,7 +80,7 @@ def quantile(q):
     return lambda x: np.percentile(x, q * 100)    
 
 def iqr(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Taking the iqr of one value is unnecessary.")
     else:
         q75, q25 = np.percentile(x, [75, 25])
@@ -92,13 +93,13 @@ def orderstatistics(n):
         return lambda x: np.partition(x, n - 1)[n - 1]
 
 def skewness(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Finding the skenewss of one value is unnecessary,")
     else:
         return stats.skew(x)
 
 def kurtosis(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Finding the kurtosis of one value is unnecessary.")
     else:
         return stats.kurtosis(x)
