@@ -11,7 +11,7 @@ class Scalar(numbers.Number):
     def __new__(cls, value, *args, **kwargs):
         if isinstance(value, numbers.Integral):
             return Int(value)
-        elif isinstance(value, float):
+        elif isinstance(value, (float, np.floating)):
             return Float(value)
         else:
             raise Exception("Scalar type not understood.")
