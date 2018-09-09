@@ -75,9 +75,7 @@ class Vector(object):
                 isinstance(other.values, np.ndarray)):
             return (self.values == other.values).all()
         else:
-            return all(
-                a == b for a, b in zip(self, other)
-            )
+            return all(a == b for a, b in zip(self, other))
 
     def apply(self, function):
         """Apply function to every element of an Vector.
@@ -100,7 +98,7 @@ class Vector(object):
             return log(n) ** 2
           y = x.apply(log_squared)
         """
-        return Vector(function(x) for x in self.values)
+        return Vector(function(x) for x in self)
         
     def sum(self):
         return self.values.sum()
@@ -133,7 +131,7 @@ class Vector(object):
         if isinstance(self.values, np.ndarray):
             return np.count_nonzero(self.values == x)
         else:
-            return sum(1 for value in self.values if value == x)
+            return sum(1 for value in self if value == x)
 
     # e.g., abs(X)
     def __abs__(self):
@@ -147,16 +145,14 @@ class Vector(object):
 
         def op_fun(self, other):
             if isinstance(other, numbers.Number):
-                return Vector(op(value, other) for value in self.values)
+                return Vector(op(value, other) for value in self)
             elif is_vector(other):
                 if len(self) != len(other):
                     raise Exception(
                         "Operations can only be performed between "
                         "two Vectors of the same length."
                     )
-                return Vector(
-                    op(a, b) for a, b in zip(self.values, other.values)
-                )
+                return Vector(op(a, b) for a, b in zip(self, other))
             else:
                 return NotImplemented
 
@@ -223,10 +219,10 @@ class Vector(object):
         
     def __str__(self):
         if len(self) <= 6:
-            return "(" + ", ".join(str(x) for x in self.values) + ")"
+            return "(" + ", ".join(str(x) for x in self) + ")"
         else:
-            first_few = ", ".join(str(x) for x in self.values[:5])
-            last = str(self.values[-1])
+            first_few = ", ".join(str(x) for x in self[:5])
+            last = str(self[-1])
             return "(" + first_few + ", ..., " + last + ")"
 
     def __repr__(self):
