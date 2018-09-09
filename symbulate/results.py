@@ -308,10 +308,18 @@ class RVResults(Results):
                 (is_vector(result) and self.dim != len(result))):
                 self.dim = None
                 break
-        # if appropriate, convert results to Numpy arrays
-        if self.dim is not None:
+
+    def _set_array(self):
+        if hasattr(self, "array"):
+            return
+        # if possible, convert results to Numpy arrays
+        elif self.dim is not None:
             self.array = np.asarray(self.results)
-    
+        else:
+            raise Exception(
+                "This operation is only possible with results "
+                "of consistent dimension.")
+            
     def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
         bins=None, **kwargs):
         if type is not None:
@@ -320,7 +328,9 @@ class RVResults(Results):
             elif not isinstance(type, (tuple, list)):
                 raise Exception("I don't know how to plot a " + str(type))
 
-        # N.B. If self.dim is defined, then self.array is a Numpy array.
+        # Make sure self.array, a Numpy array, has been set.
+        self._set_array()
+        
         if self.dim == 1:
             # determine plotting parameters
             counts = self._get_counts()
@@ -462,8 +472,9 @@ class RVResults(Results):
             for result in self.results:
                 result.plot(alpha=alpha, color=color, **kwargs)
             plt.xlabel("Index")
-
+            
     def mean(self):
+        self._set_array()
         if self.dim == 1:
             return Scalar(self.array.mean())
         elif self.dim is not None:
@@ -476,6 +487,7 @@ class RVResults(Results):
             raise Exception("I don't know how to take the mean of these values.")
 
     def var(self):
+        self._set_array()
         if self.dim == 1:
             return Scalar(self.array.var())
         elif self.dim is not None:
@@ -488,6 +500,7 @@ class RVResults(Results):
             raise Exception("I don't know how to take the variance of these values.")
 
     def std(self):
+        self._set_array()
         if self.dim == 1:
             return Scalar(self.array.std())
         elif self.dim is not None:
@@ -503,6 +516,7 @@ class RVResults(Results):
         return self.std()
 
     def quantile(self, q):
+        self._set_array()
         if self.dim == 1:
             return Scalar(np.percentile(self.array, q * 100))
         elif self.dim is not None:
@@ -515,9 +529,11 @@ class RVResults(Results):
             raise Exception("I don't know how to take the quanile of these values.")
 
     def median(self):
+        self._set_array()
         return self.quantile(.5)
         
     def orderstatistics(self, n):
+        self._set_array()
         if self.dim == 1:
             return Scalar(np.partition(self.array, n - 1)[n - 1])
         elif self.dim is not None:
@@ -530,6 +546,7 @@ class RVResults(Results):
             raise Exception("I don't know how to take the order statistics of these values.")
         
     def min(self):
+        self._set_array()
         if self.dim == 1:
             return Scalar(self.array.min())
         elif self.dim is not None:
@@ -542,6 +559,7 @@ class RVResults(Results):
             raise Exception("I don't know how to take the minimum of these values.")
             
     def max(self):
+        self._set_array()
         if self.dim == 1:
             return Scalar(self.array.max())
         elif self.dim is not None:
@@ -552,6 +570,7 @@ class RVResults(Results):
             return TimeFunction.from_index_set(self.index_set, fn)
 
     def min_max_diff(self):
+        self._set_array()
         if self.dim == 1:
             return Scalar(self.array.max() - self.array.min())
         elif self.dim is not None:
@@ -565,6 +584,7 @@ class RVResults(Results):
             raise Exception("I don't know how to take the range of these values.")
 
     def iqr(self):
+        self._set_array()
         if self.dim == 1:
             return Scalar(np.percentile(self.array, 75) -
                           np.percentile(self.array, 25))
@@ -579,6 +599,7 @@ class RVResults(Results):
             raise Exception("I don't know how to take the interquartile range of these values.")
 
     def skewness(self):
+        self._set_array()
         if self.dim == 1:
             return Scalar(stats.skew(self.array))
         elif self.dim is not None:
@@ -591,6 +612,7 @@ class RVResults(Results):
             raise Exception("I don't know how to take the skewness of these values.")
 
     def kurtosis(self):
+        self._set_array()
         if self.dim == 1:
             return Scalar(stats.kurtosis(self.array))
         elif self.dim is not None:
@@ -603,6 +625,7 @@ class RVResults(Results):
             raise Exception("I don't know how to take the kurtosis of these values.")
  
     def moment(self, k):
+        self._set_array()
         if self.dim == 1:
             return Scalar(stats.moment(self.array, k))
         elif self.dim is not None:
@@ -615,6 +638,7 @@ class RVResults(Results):
             raise Exception("I don't know how to find the moment of these values.")
     
     def trimmed_mean(self, alpha):
+        self._set_array()
         if self.dim == 1:
             return Scalar(stats.trim_mean(self.array, alpha))
         elif self.dim is not None:
@@ -628,6 +652,7 @@ class RVResults(Results):
             raise Exception("I don't know how to take the trimmed_mean of these values.")
             
     def cov(self, **kwargs):
+        self._set_array()
         if self.dim == 2:
             return np.cov(self.array, rowvar=False)[0, 1]
         elif self.dim > 2:
@@ -648,14 +673,11 @@ class RVResults(Results):
             raise Exception("Correlation requires that the simulation results have consistent dimension.")
 
     def standardize(self):
-        if self.dim == 1:
-            mean_ = self.array.mean()
-            sd_ = self.array.std()
-            return RVResults((x - mean_) / sd_ for x in self.results)
-        elif self.dim > 1:
-            mean_ = self.array.mean(axis=0)
-            sd_ = self.array.std(axis=0)
-            return RVResults((self.results - mean_) / sd_)
+        self._set_array()
+        if self.dim is not None:
+            mean_ = self.mean()
+            sd_ = self.std()
+            return RVResults(Vector((row - mean_) / sd_) for row in self.array)
         else:
             raise Exception("Could not standardize the given results.")
 
