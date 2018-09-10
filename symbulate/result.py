@@ -152,7 +152,12 @@ class Vector(object):
                         "Operations can only be performed between "
                         "two Vectors of the same length."
                     )
-                return Vector(op(a, b) for a, b in zip(self, other))
+                if isinstance(other, Vector) and (
+                        isinstance(self.values, np.ndarray) or
+                        isinstance(other.values, np.ndarray)):
+                    return Vector(op(self.values, other.values))
+                else:
+                    return Vector(op(a, b) for a, b in zip(self, other))
             else:
                 return NotImplemented
 
