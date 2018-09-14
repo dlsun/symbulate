@@ -701,7 +701,21 @@ class MultivariateNormal(Distribution):
 
         return Vector(np.random.multivariate_normal(self.mean, self.cov))
 
-    
+    def __pow__(self, exponent):
+        if exponent == float("inf"):
+            def draw():
+                result = InfiniteVector()
+                def fn(n):
+                    return self.draw()
+                result.fn = fn
+                return result
+        else:
+            def draw():
+                return Vector(self.draw() for _ in range(exponent))
+        return ProbabilitySpace(draw)
+
+
+
 class BivariateNormal(MultivariateNormal):
     """Defines a probability space for a bivariate normal 
        distribution.
@@ -735,7 +749,6 @@ class BivariateNormal(MultivariateNormal):
             raise Exception("sd1 cannot be less than 0")
         if sd2 < 0:
             raise Exception("sd2 cannot be less than 0")
-
         
         if var1 is None:
             var1 = sd1 ** 2
