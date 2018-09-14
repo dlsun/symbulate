@@ -158,10 +158,10 @@ class Vector(object):
                      if (isinstance(self.values, np.ndarray) or
                         isinstance(other.values, np.ndarray)):
                         return Vector(op(self.values, other.values))
-                elif isinstance(other, np.array):
+                elif isinstance(other, np.ndarray):
                     return Vector(op(self.values, other))
 
-                # otherwise, use list comprehension
+                # otherwise, use a list comprehension
                 return Vector(op(a, b) for a, b in zip(self, other))
             else:
                 return NotImplemented
@@ -697,7 +697,8 @@ def concat(*args):
         else:
             raise TypeError(
                 "Every argument to concat() must be either "
-                "a scalar, a vector, or an InfiniteVector.")
+                "an RV, a scalar, a vector, or an "
+                "InfiniteVector.")
     return Vector(values)
 
     
