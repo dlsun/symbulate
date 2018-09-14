@@ -146,18 +146,23 @@ class Vector(object):
         def op_fun(self, other):
             if isinstance(other, numbers.Number):
                 return Vector(op(value, other) for value in self)
-            elif is_vector(other):
+            elif hasattr(other, "__len__"):
                 if len(self) != len(other):
                     raise Exception(
                         "Operations can only be performed between "
                         "two Vectors of the same length."
                     )
-                if isinstance(other, Vector) and (
-                        isinstance(self.values, np.ndarray) or
+
+                # use Numpy vectorized operations wherever possible
+                if isinstance(other, Vector):    
+                     if (isinstance(self.values, np.ndarray) or
                         isinstance(other.values, np.ndarray)):
-                    return Vector(op(self.values, other.values))
-                else:
-                    return Vector(op(a, b) for a, b in zip(self, other))
+                        return Vector(op(self.values, other.values))
+                elif isinstance(other, np.array):
+                    return Vector(op(self.values, other))
+
+                # otherwise, use list comprehension
+                return Vector(op(a, b) for a, b in zip(self, other))
             else:
                 return NotImplemented
 
