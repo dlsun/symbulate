@@ -327,11 +327,11 @@ class RVResults(Results):
                 type = (type,)
             elif not isinstance(type, (tuple, list)):
                 raise Exception("I don't know how to plot a " + str(type))
-
-        # Make sure self.array, a Numpy array, has been set.
-        self._set_array()
         
         if self.dim == 1:
+            # make sure self.array, a Numpy array, has been set
+            self._set_array()
+            
             # determine plotting parameters
             counts = self._get_counts()
             discrete = is_discrete(counts.values())
@@ -387,6 +387,8 @@ class RVResults(Results):
                 if len(type) == 1:
                     setup_ticks([], [], ax.yaxis)
         elif self.dim == 2:
+            # make sure self.array, a Numpy array, has been set
+            self._set_array()
             x, y = self.array[:, 0], self.array[:, 1]
 
             x_count = count_var(x)
