@@ -23,7 +23,8 @@ from .distributions import (
     Pareto,
     Rayleigh,
     MultivariateNormal,
-    BivariateNormal
+    BivariateNormal,
+    Multinomial
 )
 from .independence import AssumeIndependent
 from .index_sets import (

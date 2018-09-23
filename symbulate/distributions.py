@@ -625,20 +625,37 @@ class Pareto(Distribution):
 
     Attributes:
       b (float): shape parameter of Pareto distribution 
+      scale (float): scale parameter of Pareto distribution
+          lower bound for possible values
     """
 
-    def __init__(self, b=1.0):
+    def __init__(self, b=1.0, scale=1.0):
         
         if b > 0:
             self.b = b 
         else:
             raise Exception("b must be greater than 0")
         
+        if scale > 0:
+            self.scale = scale
+        else:
+            raise Exception("scale must be greater than 0")
+            
         params = {
-            "b" : self.b 
+            "b" : self.b,
+            "scale" : self.scale
             }
         super().__init__(params, stats.pareto, False)
-        self.xlim = (0, self.xlim[1]) # Pareto distributions are not defined for x < 0
+        self.xlim = (scale, self.xlim[1]) # Pareto distributions are not defined for x < scale
+        
+        def draw(self):
+            """A function that takes no arguments and 
+            returns a single draw from the Pareto distribution."""
+
+            # Numpy's Pareto is Lomax distribution, or Type II Pareto
+            # but we want the more standard parametrization
+            return self.scale * (1 + np.random.pareto(self.b))
+        
         
 # class Weibull(Distribution):
 #     
@@ -761,3 +778,55 @@ class BivariateNormal(MultivariateNormal):
         self.cov = [[var1, cov], [cov, var2]]
         self.discrete = False
         self.pdf = lambda x: stats.multivariate_normal(x, self.mean, self.cov)
+
+
+        
+class Multinomial(Distribution):
+    """Defines a probability space for a multinomial 
+       distribution.
+
+    Attributes:
+      n (int): number of trials
+      p (1-D array_like): probability vector
+    """
+
+    def __init__(self, n, p):
+        if n >= 0 and isinstance(n, numbers.Integral):
+            self.n = n
+        #elif n == 0:
+            #raise NotImplementedError
+            #TODO
+        else:
+            raise Exception("n must be a non-negative integer")
+
+        if sum(p) == 1 and min(p) >= 0:
+            self.p = p
+        else:
+            raise Exception("Elements of p must be non-negative" +
+                            " and sum to 1.")
+         
+        self.discrete = False
+        self.pdf = lambda x: stats.multinomial(x, n, p)
+ 
+    def plot():
+        raise Exception("This is not defined for Multinomial distributions.")
+    
+    def draw(self):
+        """A function that takes no arguments and 
+            returns a single draw from the multinomial distribution."""
+
+        return Vector(np.random.multinomial(self.n, self.p))
+
+    def __pow__(self, exponent):
+        if exponent == float("inf"):
+            def draw():
+                result = InfiniteVector()
+                def fn(n):
+                    return self.draw()
+                result.fn = fn
+                return result
+        else:
+            def draw():
+                return Vector(self.draw() for _ in range(exponent))
+
+        return ProbabilitySpace(draw)
