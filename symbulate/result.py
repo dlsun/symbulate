@@ -667,7 +667,7 @@ class DiscreteValued:
 def join(*args):
     """Joins Result objects into a single Result object.
     """
-    result = Tuple()
+    result = Tuple([])
     for arg in args:
         result = result.append(arg)
     return result
