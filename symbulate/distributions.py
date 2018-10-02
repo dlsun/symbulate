@@ -5,11 +5,7 @@ import matplotlib.pyplot as plt
 
 from .probability_space import ProbabilitySpace
 from .plot import get_next_color
-from .result import (
-    Scalar,
-    Vector,
-    InfiniteVector
-)
+from .result import Scalar, Vector, InfiniteVector
 
 class Distribution(ProbabilitySpace):
     def __init__(self, params, scipy, discrete=True):

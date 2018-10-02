@@ -6,6 +6,7 @@ from .index_sets import (DiscreteTimeSequence,
                          Reals, Naturals)
 import symbulate
 
+
 class Scalar(numbers.Number):
 
     def __new__(cls, value, *args, **kwargs):
@@ -15,6 +16,7 @@ class Scalar(numbers.Number):
             return Float(value)
         else:
             raise Exception("Scalar type not understood.")
+
 
 class Int(int, Scalar):
     
@@ -28,32 +30,19 @@ class Float(float, Scalar):
         return super(Float, cls).__new__(cls, value)
         
 
-class Vector(object):
+class Tuple(object):
 
     def __init__(self, values):
         if is_scalar(values):
             self.values = (values, )
-        elif hasattr(values, "__iter__"):
-            # cast generators to tuples
-            if hasattr(values, "__next__"):
-                values = tuple(values)
-            # convert vectors of all ints or all
-            # floats to Numpy arrays
-            if all(isinstance(value, numbers.Integral)
-                   for value in values):
-                self.values = np.asarray(values)
-            elif all(isinstance(value, (float, np.floating))
-                     for value in values):
-                self.values = np.asarray(values)
-            # otherwise, store them as a tuple
-            else:
-                self.values = tuple(values)
+        elif hasattr(values, "__len__"):
+            self.values = tuple(values)
         else:
             raise Exception(
-                "Vectors can only be created for "
-                "iterable data types."
+                "Tuples can only be created from "
+                "finite iterable data."
             )
-            
+    
     def __getitem__(self, key):
         return self.values[key]
 
@@ -68,27 +57,31 @@ class Vector(object):
         return hash(tuple(self.values))
 
     def __eq__(self, other):
+        if not hasattr(other, "__len__"):
+            return False
         if len(self) != len(other):
             return False
-        if isinstance(other, Vector) and (
-                isinstance(self.values, np.ndarray) or
-                isinstance(other.values, np.ndarray)):
-            return (self.values == other.values).all()
-        else:
-            return all(a == b for a, b in zip(self, other))
+        return all(a == b for a, b in zip(self, other))
 
+    def append(self, other):
+        if isinstance(other, Tuple):
+            values = tuple(self.values) + tuple(other.values)
+        else:
+            values = tuple(self.values) + tuple((other, ))
+        return Tuple(values)
+        
     def apply(self, function):
-        """Apply function to every element of an Vector.
+        """Apply function to every element of a Tuple.
 
         Args:
-          function: function to apply to the Vector
+          function: function to apply to the Tuple
         
         Example:
-          x = Vector([1, 2, 3])
+          x = Tuple([1, 2, 3])
           y = x.apply(log)
 
         Note: For most standard functions, you can apply the function to
-          the Vector directly. For example, in the example above,
+          the Tuple directly. For example, in the example above,
           y = log(x) would have been equivalent and more readable.
 
         User defined functions can also be applied.
@@ -98,40 +91,7 @@ class Vector(object):
             return log(n) ** 2
           y = x.apply(log_squared)
         """
-        return Vector(function(x) for x in self)
-        
-    def sum(self):
-        return self.values.sum()
-
-    def mean(self):
-        return self.values.mean()
-
-    def cumsum(self):
-        return Vector(self.values.cumsum())
-
-    def median(self):
-        return self.values.median()
-    
-    def sd(self):
-        return self.std()
-
-    def std(self):
-        return self.values.std()
-
-    def var(self):
-        return self.values.var()
-
-    def max(self):
-        return self.values.max()
-
-    def min(self):
-        return self.values.min()
-
-    def count_eq(self, x):
-        if isinstance(self.values, np.ndarray):
-            return np.count_nonzero(self.values == x)
-        else:
-            return sum(1 for value in self if value == x)
+        return type(self)(function(x) for x in self)
 
     # e.g., abs(X)
     def __abs__(self):
@@ -145,19 +105,17 @@ class Vector(object):
 
         def op_fun(self, other):
             if isinstance(other, numbers.Number):
-                return Vector(op(value, other) for value in self)
+                return type(self)(op(value, other) for value in self)
             elif hasattr(other, "__len__"):
                 if len(self) != len(other):
                     raise Exception(
                         "Operations can only be performed between "
-                        "two Vectors of the same length."
+                        "two Tuples of the same length."
                     )
 
                 # use Numpy vectorized operations wherever possible
-                if isinstance(other, Vector):    
-                     if (isinstance(self.values, np.ndarray) or
-                        isinstance(other.values, np.ndarray)):
-                        return Vector(op(self.values, other.values))
+                if isinstance(self, Vector) and isinstance(other, Vector):
+                    return Vector(op(self.values, other.values))
                 elif isinstance(other, np.ndarray):
                     return Vector(op(self.values, other))
 
@@ -238,6 +196,64 @@ class Vector(object):
     def __repr__(self):
         return self.__str__()
 
+    
+class Vector(Tuple):
+    """A data structure for storing a finite list of numbers.    
+    """
+
+    def __init__(self, values):
+        if is_scalar(values):
+            self.values = (values, )
+        elif hasattr(values, "__iter__"):
+            # cast generators to tuples
+            if hasattr(values, "__next__"):
+                values = tuple(values)
+            # convert vectors to Numpy arrays
+            self.values = np.asarray(values)
+        else:
+            raise Exception(
+                "Vectors can only be created for "
+                "iterable data types."
+            )
+            
+    def __eq__(self, other):
+        if len(self) != len(other):
+            return False
+        if isinstance(other, Vector):
+            return (self.values == other.values).all()
+        else:
+            return all(a == b for a, b in zip(self, other))
+        
+    def sum(self):
+        return self.values.sum()
+
+    def mean(self):
+        return self.values.mean()
+
+    def cumsum(self):
+        return Vector(self.values.cumsum())
+
+    def median(self):
+        return self.values.median()
+    
+    def sd(self):
+        return self.std()
+
+    def std(self):
+        return self.values.std()
+
+    def var(self):
+        return self.values.var()
+
+    def max(self):
+        return self.values.max()
+
+    def min(self):
+        return self.values.min()
+
+    def count_eq(self, x):
+        return np.count_nonzero(self.values == x)
+
     def plot(self, **kwargs):
         plt.plot(range(len(self)), self.values, '.--', **kwargs)
 
@@ -251,7 +267,7 @@ class TimeFunction(object):
         elif isinstance(index_set, Reals):
             return ContinuousTimeFunction(fn)
         elif isinstance(index_set, Naturals):
-            return InfiniteVector(fn)
+            return InfiniteTuple(fn)
 
     def check_same_index_set(self, other):
         if (isinstance(other, numbers.Number) or
@@ -333,7 +349,7 @@ class TimeFunction(object):
         return self.__rpow__(other)
 
     
-class InfiniteVector(TimeFunction):
+class InfiniteTuple(TimeFunction):
 
     def __init__(self, fn=lambda n: n):
         """Initializes a (lazy) data structure for an infinite vector.
@@ -374,17 +390,17 @@ class InfiniteVector(TimeFunction):
         return self.__str__()
 
     def apply(self, function):
-        """Apply function to every element of an InfiniteVector.
+        """Apply function to every element of an InfiniteTuple.
 
         Args:
-          function: function to apply to the InfiniteVector
+          function: function to apply to the InfiniteTuple
         
         Example:
-          x = InfiniteVector(lambda n: n)
+          x = InfiniteTuple(lambda n: n)
           y = x.apply(log)
 
         Note: For most standard functions, you can apply the function to
-          the InfiniteVector directly. For example, in the example above,
+          the InfiniteTuple directly. For example, in the example above,
           y = log(x) would have been equivalent and more readable.
 
         User defined functions can also be applied.
@@ -394,7 +410,7 @@ class InfiniteVector(TimeFunction):
             return log(n) ** 2
           y = x.apply(log_squared)
         """
-        return InfiniteVector(lambda n: function(self[n]))
+        return type(self)(lambda n: function(self[n]))
 
     # The code for most operations (+, -, *, /, ...) is the
     # same, except for the operation itself. The following 
@@ -405,14 +421,17 @@ class InfiniteVector(TimeFunction):
         def op_fun(self, other):
             self.check_same_index_set(other)
             if isinstance(other, numbers.Number):
-                return InfiniteVector(lambda n: op(self[n], other))
-            elif isinstance(other, InfiniteVector):
-                return InfiniteVector(lambda n: op(self[n], other[n]))
+                return type(self)(lambda n: op(self[n], other))
+            elif isinstance(other, InfiniteTuple):
+                return type(self)(lambda n: op(self[n], other[n]))
             else:
                 return NotImplemented
 
         return op_fun
 
+
+class InfiniteVector(InfiniteTuple):
+                    
     def cumsum(self):
         result = InfiniteVector()
         def fn(n):
@@ -425,7 +444,6 @@ class InfiniteVector(TimeFunction):
         xs = range(nmin, nmax)
         ys = [self[n] for n in range(nmin, nmax)]
         plt.plot(xs, ys, '.--', **kwargs)
-
 
 
 class DiscreteTimeFunction(TimeFunction):
@@ -574,6 +592,7 @@ class ContinuousTimeFunction(TimeFunction):
         Args:
           function: function to compose with the TimeFunction
         
+
         Example:
           f = ContinuousTimeFunction(lambda t: t)
           g = f.apply(log)
@@ -645,21 +664,12 @@ class DiscreteValued:
         return self.interarrival_times.cumsum()
 
 
-class Tuple(tuple):
-
-    def __add__(self, other):
-        if isinstance(other, Tuple):
-            return Tuple(super().__add__(other))
-        else:
-            return Tuple(super().__add__((other, )))
-
-        
 def join(*args):
     """Joins Result objects into a single Result object.
     """
     result = Tuple()
     for arg in args:
-        result += arg
+        result = result.append(arg)
     return result
 
 
@@ -668,11 +678,11 @@ def concat(*args):
 
     Args:
       *args: Any number of scalar or vector objects. The last
-          argument can be an InfiniteVector.
+          argument can be an InfiniteTuple.
 
     Returns:
-      A Vector or an InfiniteVector, depending on whether there
-      is an InfiniteVector in *args.
+      A Vector or an InfiniteTuple, depending on whether there
+      is an InfiniteTuple in *args.
     """
     values = []
     for i, arg in enumerate(args):
@@ -680,25 +690,25 @@ def concat(*args):
             values.append(arg)
         elif is_vector(arg):
             values.extend(arg)
-        elif isinstance(arg, InfiniteVector):
-            # check that InfiniteVector is the last arg
+        elif isinstance(arg, InfiniteTuple):
+            # check that InfiniteTuple is the last arg
             if i == len(args) - 1:
-                # define concatenated InfiniteVector
+                # define concatenated InfiniteTuple
                 def fn(n):
                     if n < len(values):
                         return values[n]
                     else:
                         return arg[n - len(values)]
-                return InfiniteVector(fn)
+                return type(arg)(fn)
             else:
                 raise Exception(
-                    "InfiniteVector must be the last "
+                    "InfiniteTuple must be the last "
                     "argument to concat().")
         else:
             raise TypeError(
                 "Every argument to concat() must be either "
                 "an RV, a scalar, a vector, or an "
-                "InfiniteVector.")
+                "InfiniteTuple.")
     return Vector(values)
 
     
@@ -707,12 +717,9 @@ def is_scalar(x):
 
 
 def is_vector(x):
-    if hasattr(x, "__len__") and all(is_scalar(i) for i in x):
-        return True
-    else:
-        return False
+    return hasattr(x, "__len__") and all(is_scalar(i) for i in x)
 
-
+                    
 def is_nonrandom(x):
     return (is_scalar(x) or
             is_vector(x) or
