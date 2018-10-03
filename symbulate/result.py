@@ -65,10 +65,12 @@ class Tuple(object):
 
     def append(self, other):
         if isinstance(other, Tuple):
-            values = tuple(self.values) + tuple(other.values)
+            if len(self) > 0:
+                return Tuple((self, other))
+            else:
+                return other
         else:
-            values = tuple(self.values) + tuple((other, ))
-        return Tuple(values)
+            return Tuple(tuple(self.values) + (other, ))
         
     def apply(self, function):
         """Apply function to every element of a Tuple.
@@ -223,6 +225,9 @@ class Vector(Tuple):
             return (self.values == other.values).all()
         else:
             return all(a == b for a, b in zip(self, other))
+
+    def append(self, other):
+        return Tuple((self, other))
         
     def sum(self):
         return self.values.sum()
