@@ -197,4 +197,7 @@ class DeckOfCards(BoxModel):
         self.replace = replace
         self.probs = None
         self.order_matters = order_matters
+        self.output_type = Tuple
+        self.infinite_output_type = InfiniteTuple
+
 
