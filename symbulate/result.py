@@ -63,6 +63,9 @@ class Tuple(object):
             return False
         return all(a == b for a, b in zip(self, other))
 
+    def __lt__(self, other):
+        return tuple(self.values) < tuple(other.values)
+    
     def append(self, other):
         if isinstance(other, Tuple):
             if len(self) > 0:
@@ -217,6 +220,9 @@ class Vector(Tuple):
                 "Vectors can only be created for "
                 "iterable data types."
             )
+
+    def __hash__(self):
+        return super().__hash__()
             
     def __eq__(self, other):
         if len(self) != len(other):
@@ -272,7 +278,7 @@ class TimeFunction(object):
         elif isinstance(index_set, Reals):
             return ContinuousTimeFunction(fn)
         elif isinstance(index_set, Naturals):
-            return InfiniteTuple(fn)
+            return InfiniteVector(fn)
 
     def check_same_index_set(self, other):
         if (isinstance(other, numbers.Number) or
@@ -445,9 +451,9 @@ class InfiniteVector(InfiniteTuple):
         
         return result
 
-    def plot(self, nmin=0, nmax=10, **kwargs):
-        xs = range(nmin, nmax)
-        ys = [self[n] for n in range(nmin, nmax)]
+    def plot(self, tmin=0, tmax=10, **kwargs):
+        xs = range(tmin, tmax)
+        ys = [self[t] for t in range(tmin, tmax)]
         plt.plot(xs, ys, '.--', **kwargs)
 
 

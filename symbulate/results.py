@@ -310,9 +310,13 @@ class RVResults(Results):
                 break
 
     def _set_array(self):
+        # check if it has already been set
         if hasattr(self, "array"):
             return
-        # if possible, convert results to Numpy arrays
+        # don't set array for TimeFunctions
+        elif self.index_set is not None:
+            return
+        # otherwise set array
         elif self.dim is not None:
             self.array = np.asarray(self.results)
         else:
@@ -665,6 +669,7 @@ class RVResults(Results):
             raise Exception("Covariance requires that the simulation results have consistent dimension.")
 
     def corr(self, **kwargs):
+        self._set_array()
         if self.dim == 2:
             return np.corrcoef(self.array, rowvar=False)[0, 1]
         elif self.dim > 2:
