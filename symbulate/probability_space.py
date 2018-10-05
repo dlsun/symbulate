@@ -49,7 +49,7 @@ class ProbabilitySpace:
                 return result
         else:
             def draw():
-                return Vector([self.draw() for _ in range(exponent)])
+                return Vector(self.draw() for _ in range(exponent))
         return ProbabilitySpace(draw)
             
 
