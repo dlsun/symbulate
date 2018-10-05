@@ -111,12 +111,6 @@ class Tuple(object):
                         "two Tuples of the same length."
                     )
 
-                # use Numpy vectorized operations wherever possible
-                if isinstance(self, Vector) and isinstance(other, Vector):
-                    return Vector(op(self.values, other.values))
-                elif isinstance(other, np.ndarray):
-                    return Vector(op(self.values, other))
-
                 # otherwise, use a list comprehension
                 return Vector(op(a, b) for a, b in zip(self, other))
             else:
