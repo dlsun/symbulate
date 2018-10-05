@@ -31,6 +31,8 @@ class Float(float, Scalar):
         
 
 class Tuple(object):
+    """A collapsible data structure.
+    """
 
     def __init__(self, values):
         if is_scalar(values):
@@ -39,7 +41,7 @@ class Tuple(object):
             self.values = tuple(values)
         else:
             raise Exception(
-                "Tuples can only be created from "
+                "Containers can only be created from "
                 "finite iterable data."
             )
     
@@ -65,28 +67,19 @@ class Tuple(object):
 
     def __lt__(self, other):
         return tuple(self.values) < tuple(other.values)
-    
-    def append(self, other):
-        if isinstance(other, Tuple):
-            if len(self) > 0:
-                return Tuple((self, other))
-            else:
-                return other
-        else:
-            return Tuple(tuple(self.values) + (other, ))
-        
+            
     def apply(self, function):
-        """Apply function to every element of a Tuple.
+        """Apply function to every element of a Container.
 
         Args:
-          function: function to apply to the Tuple
+          function: function to apply to the Container
         
         Example:
-          x = Tuple([1, 2, 3])
+          x = Container([1, 2, 3])
           y = x.apply(log)
 
         Note: For most standard functions, you can apply the function to
-          the Tuple directly. For example, in the example above,
+          the Container directly. For example, in the example above,
           y = log(x) would have been equivalent and more readable.
 
         User defined functions can also be applied.
@@ -189,6 +182,39 @@ class Tuple(object):
     # Alternative notation for powers: e.g., 2 ^ f
     def __rxor__(self, other):
         return self.__rpow__(other)
+
+    def sum(self):
+        return np.sum(self.values)
+
+    def mean(self):
+        return np.mean(self.values)
+
+    def cumsum(self):
+        return Vector(np.cumsum(self.values))
+
+    def median(self):
+        return np.median(self.values)
+    
+    def sd(self):
+        return self.std()
+
+    def std(self):
+        return np.std(self.values)
+
+    def var(self):
+        return np.var(self.values)
+
+    def max(self):
+        return max(self.values)
+
+    def min(self):
+        return min(self.values)
+
+    def count_eq(self, x):
+        return np.count_nonzero(self.values == x)
+
+    def plot(self, **kwargs):
+        plt.plot(range(len(self)), self.values, '.--', **kwargs)
         
     def __str__(self):
         if len(self) <= 6:
@@ -203,70 +229,9 @@ class Tuple(object):
 
     
 class Vector(Tuple):
-    """A data structure for storing a finite list of numbers.    
+    """A non-collapsible data structure.    
     """
-
-    def __init__(self, values):
-        if is_scalar(values):
-            self.values = (values, )
-        elif hasattr(values, "__iter__"):
-            # cast generators to tuples
-            if hasattr(values, "__next__"):
-                values = tuple(values)
-            # convert vectors to Numpy arrays
-            self.values = np.asarray(values)
-        else:
-            raise Exception(
-                "Vectors can only be created for "
-                "iterable data types."
-            )
-
-    def __hash__(self):
-        return super().__hash__()
-            
-    def __eq__(self, other):
-        if len(self) != len(other):
-            return False
-        if isinstance(other, Vector):
-            return (self.values == other.values).all()
-        else:
-            return all(a == b for a, b in zip(self, other))
-
-    def append(self, other):
-        return Tuple((self, other))
-        
-    def sum(self):
-        return self.values.sum()
-
-    def mean(self):
-        return self.values.mean()
-
-    def cumsum(self):
-        return Vector(self.values.cumsum())
-
-    def median(self):
-        return self.values.median()
-    
-    def sd(self):
-        return self.std()
-
-    def std(self):
-        return self.values.std()
-
-    def var(self):
-        return self.values.var()
-
-    def max(self):
-        return self.values.max()
-
-    def min(self):
-        return self.values.min()
-
-    def count_eq(self, x):
-        return np.count_nonzero(self.values == x)
-
-    def plot(self, **kwargs):
-        plt.plot(range(len(self)), self.values, '.--', **kwargs)
+    pass
 
 
 class TimeFunction(object):
@@ -643,7 +608,7 @@ class ContinuousTimeFunction(TimeFunction):
         return op_fun
 
     def __str__(self):
-        return "(continuous-time function)"
+        return "<continuous-time function>"
 
     def __repr__(self):
         return self.__str__()
@@ -675,13 +640,18 @@ class DiscreteValued:
         return self.interarrival_times.cumsum()
 
 
-def join(*args):
-    """Joins Result objects into a single Result object.
+def join(result1, result2):
+    """Joins two result objects into a single result object.
+
+    Args:
+      result1: The first result.
+      result2: The second result.
     """
-    result = Tuple([])
-    for arg in args:
-        result = result.append(arg)
-    return result
+
+    a = tuple(result1.values) if type(result1) == Tuple else (result1, )
+    b = tuple(result2.values) if type(result2) == Tuple else (result2, )
+
+    return Tuple(a + b)
 
 
 def concat(*args):

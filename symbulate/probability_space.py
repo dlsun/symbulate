@@ -2,7 +2,6 @@ import numbers
 import numpy as np
 
 from .result import (
-    Tuple, InfiniteTuple,
     Vector, InfiniteVector,
     join
 )
@@ -43,14 +42,14 @@ class ProbabilitySpace:
     def __pow__(self, exponent):
         if exponent == float("inf"):
             def draw():
-                result = InfiniteTuple()
+                result = InfiniteVector()
                 def fn(n):
                     return self.draw()
                 result.fn = fn
                 return result
         else:
             def draw():
-                return Tuple([self.draw() for _ in range(exponent)])
+                return Vector([self.draw() for _ in range(exponent)])
         return ProbabilitySpace(draw)
             
 
@@ -134,13 +133,8 @@ class BoxModel(ProbabilitySpace):
         self.size = None if size == 1 else size
         self.replace = replace
         self.order_matters = order_matters
-
-        if all(isinstance(x, numbers.Number) for x in self.box):
-            self.output_type = Vector
-            self.infinite_output_type = InfiniteVector
-        else:
-            self.output_type = Tuple
-            self.infinite_output_type = InfiniteTuple
+        self.output_type = Vector
+        self.infinite_output_type = InfiniteVector
         
         # If drawing without replacement, check to make sure that
         # the number of draws does not exceed the number in the box.
@@ -197,7 +191,7 @@ class DeckOfCards(BoxModel):
         self.replace = replace
         self.probs = None
         self.order_matters = order_matters
-        self.output_type = Tuple
-        self.infinite_output_type = InfiniteTuple
+        self.output_type = Vector
+        self.infinite_output_type = InfiniteVector
 
 
