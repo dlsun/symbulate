@@ -37,11 +37,11 @@ class Tuple(object):
     def __init__(self, values):
         if is_scalar(values):
             self.values = (values, )
-        elif hasattr(values, "__len__"):
+        elif hasattr(values, "__len__") or hasattr(values, "__next__"):
             self.values = tuple(values)
         else:
             raise Exception(
-                "Containers can only be created from "
+                "Tuples can only be created from "
                 "finite iterable data."
             )
     
@@ -69,17 +69,17 @@ class Tuple(object):
         return tuple(self.values) < tuple(other.values)
             
     def apply(self, function):
-        """Apply function to every element of a Container.
+        """Apply function to every element of a Tuple.
 
         Args:
-          function: function to apply to the Container
+          function: function to apply to the Tuple
         
         Example:
-          x = Container([1, 2, 3])
+          x = Tuple([1, 2, 3])
           y = x.apply(log)
 
         Note: For most standard functions, you can apply the function to
-          the Container directly. For example, in the example above,
+          the Tuple directly. For example, in the example above,
           y = log(x) would have been equivalent and more readable.
 
         User defined functions can also be applied.
@@ -608,7 +608,7 @@ class ContinuousTimeFunction(TimeFunction):
         return op_fun
 
     def __str__(self):
-        return "<continuous-time function>"
+        return "[continuous-time function]"
 
     def __repr__(self):
         return self.__str__()
