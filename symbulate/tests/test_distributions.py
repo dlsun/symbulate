@@ -232,7 +232,13 @@ class TestUniform(unittest.TestCase):
         pval = stats.kstest(sims, cdf).pvalue
         self.assertTrue(pval > 0.01)
 
-
+    def test_Uniform_to_Pareto(self):
+        X = RV(Uniform(a=0, b=1))
+        sims = (2 * X ** (-1 / 0.1)).sim(10000)
+        cdf = stats.pareto(b=0.1, loc=0, scale=2).cdf
+        pval = stats.kstest(sims, cdf).pvalue
+        self.assertTrue(pval > .01)
+        
 class TestNormal(unittest.TestCase):
 
     def test_Normal_error(self):
@@ -343,9 +349,9 @@ class TestExponential(unittest.TestCase):
         self.assertTrue(pval > .01)
 
     def test_Exponential_to_Pareto(self):
-        X = RV(Exponential(rate=1))
-        sims = (exp(X)).sim(Nsim)
-        cdf = stats.pareto(b=1).cdf
+        X = RV(Exponential(rate=2))
+        sims = (3 * exp(X)).sim(Nsim)
+        cdf = stats.pareto(b=2, loc=0, scale=3).cdf
         pval = stats.kstest(sims, cdf).pvalue
         self.assertTrue(pval > .01)
 
@@ -607,9 +613,9 @@ class TestPareto(unittest.TestCase):
         math.isnan(x.mean())
 
     def test_Pareto_to_Exponential(self):
-        X = RV(Pareto(b=1))
-        sims = (log(X + 1)).sim(Nsim)
-        cdf = stats.expon(scale=1).cdf
+        X = RV(Pareto(b=1.5, scale=0.1))
+        sims = (log(X / 0.1)).sim(Nsim)
+        cdf = stats.expon(scale=1/1.5).cdf
         pval = stats.kstest(sims, cdf).pvalue
         self.assertTrue(pval > .01)
 
