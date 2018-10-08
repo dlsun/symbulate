@@ -1,11 +1,16 @@
 import math
+import numbers
 import numpy as np
 import operator as op
 import scipy.stats as stats
 
 from .random_variables import RV
-from .random_processes import RandomProcess
-from .results import *
+from .result import (
+    TimeFunction,
+    ContinuousTimeFunction,
+    DiscreteValued
+)
+from .results import RVResults
 
 pi = math.pi
 e = math.e
@@ -14,10 +19,9 @@ inf = float("inf")
 def operation_factory(op):
 
     def op_fun(x):
-        if isinstance(x, RandomProcess):
+        if isinstance(x, (RV, TimeFunction)):
+            # recursively call op_fun until x is a scalar
             return x.apply(op_fun)
-        elif isinstance(x, RV):
-            return x.apply(op)
         else:
             return op(x)
 
@@ -43,21 +47,13 @@ def log(x, base=e):
             raise type(e)("I can't take the log of these values.")
 
 def mean(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Taking the mean with one value is unnecessary.")
     else:
         return sum(x) / len(x)
 
 def cumsum(x):
-    if isinstance(x, int) or isinstance(x, float):
-        raise Exception("Taking the cumulative sum of one value is unnecessary.")
-    else:
-        total = 0
-        sums = [total]
-        for i in x:
-            total += i
-            sums.append(total)
-        return tuple(sums)
+    return x.cumsum()
 
 def var(x):
     return mean([(i - mean(x)) ** 2 for i in x])
@@ -66,13 +62,13 @@ def sd(x):
     return math.sqrt(var(x))
 
 def median(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Taking the median of one value is unnecessary.")
     else:
         return np.median(x)
 
 def min_max_diff(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Taking the range of one value is unnecessary.")
     else:
         return max(x) - min(x)
@@ -84,7 +80,7 @@ def quantile(q):
     return lambda x: np.percentile(x, q * 100)    
 
 def iqr(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Taking the iqr of one value is unnecessary.")
     else:
         q75, q25 = np.percentile(x, [75, 25])
@@ -97,13 +93,13 @@ def orderstatistics(n):
         return lambda x: np.partition(x, n - 1)[n - 1]
 
 def skewness(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Finding the skenewss of one value is unnecessary,")
     else:
         return stats.skew(x)
 
 def kurtosis(x):
-    if isinstance(x, int) or isinstance(x, float):
+    if isinstance(x, numbers.Real):
         raise Exception("Finding the kurtosis of one value is unnecessary.")
     else:
         return stats.kurtosis(x)
@@ -158,4 +154,61 @@ def count_geq(value):
 def count_leq(value):
     def fun(x):
         return comparefun(x, op.le, value)
-    return fun 
+    return fun
+
+def interarrival_times(continuous_time_function):
+    """Given a realization of a continuous-time,
+       discrete-state process, returns the interarrival 
+       times (i.e., the times between each state change).
+
+    Args:
+      continuous_time_function: A ContinuousTimeFunction
+        object, such as ContinuousTimeMarkovChainResult or
+        PoissonProcessResult.
+    """
+    if not (isinstance(continuous_time_function,
+                       ContinuousTimeFunction) and
+            isinstance(continuous_time_function,
+                       DiscreteValued)):
+        raise TypeError(
+            "Interarrival times are only defined for "
+            "continuous-time, discrete-valued functions." 
+        )
+    return continuous_time_function.get_interarrival_times()
+
+def arrival_times(continuous_time_function):
+    """Given a realization of a continuous-time,
+       discrete-state process, returns the arrival 
+       times (i.e., the times when the state changes).
+
+    Args:
+      continuous_time_function: A ContinuousTimeFunction
+        object, such as ContinuousTimeMarkovChainResult or
+        PoissonProcessResult.
+    """
+    if not (isinstance(continuous_time_function,
+                       ContinuousTimeFunction) and
+            isinstance(continuous_time_function,
+                       DiscreteValued)):
+        raise TypeError(
+            "Interarrival times are only defined for "
+            "continuous-time, discrete-valued functions." 
+        )
+    return continuous_time_function.get_arrival_times()
+
+def states(discrete_valued_function):
+    """Given a realization of a discrete-valued function,
+       returns an InfiniteVector of the sequence of 
+       values (or states).
+
+    Args:
+      discrete_valued_function: A DiscreteValued object
+                                (e.g., MarkovChainResult or
+                                       PoissonProcessResult)
+    """
+    if not isinstance(discrete_valued_function, DiscreteValued):
+        raise TypeError(
+            "States are only defined for discrete-valued "
+            "functions."
+        )
+    return discrete_valued_function.get_states()

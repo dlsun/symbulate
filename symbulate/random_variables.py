@@ -1,8 +1,7 @@
-import matplotlib.pyplot as plt
-
 from .probability_space import Event
+from .result import (Vector, join,
+                     is_scalar, is_nonrandom)
 from .results import RVResults
-from .utils import is_scalar, is_vector, get_dimension
 
 class RV:
     """Defines a random variable.
@@ -37,7 +36,7 @@ class RV:
       X = RV(P, sum)
 
       # the function is the identity, so Y has a Normal(0, 1) distribution
-      Y = RV(Normal(0, 1)
+      Y = RV(Normal(0, 1))
 
       # a single draw from BivariateNormal is a tuple of two numbers
       P = BivariateNormal()
@@ -57,7 +56,6 @@ class RV:
           X = RV(Normal(0, 1))
           X.draw() might return -0.9, for example.  
         """
-
         return self.fun(self.probSpace.draw())
 
     def sim(self, n):
@@ -68,39 +66,20 @@ class RV:
           n (int): How many draws to make.
 
         Returns:
-          Results: A list-like object containing the simulation results.
+          RVResults: A list-like object containing the simulation results.
         """
 
         return RVResults(self.draw() for _ in range(n))
 
     def __call__(self, input):
-        print("Warning: Calling an RV as a function simply applies the function that defines "
-            "the RV to the input, regardless of whether the input is a valid outcome in "
-            "the underlying probability space.")
-        dummy_draw= self.probSpace.draw()
-        if isinstance(input, tuple):
-            if not isinstance(dummy_draw, (tuple, list)):
-                raise Exception("The underlying probability space returns a single value. "
-                "A(n) " + type(input).__name__ + " was given.")
-            elif len(input) != len(dummy_draw):
-                raise Exception("Input has wrong length")
-            if all(isinstance(input[i], type(dummy_draw[i])) for i in range(len(input))):
-                return self.fun(input)
-            else:
-                raise Exception("Expect a(n) " + type(dummy_draw).__name__ + ". "
-                "Was given a(n) " + type(input).__name__ + ".")
-        elif isinstance(input, (float, int, str)):
-            if isinstance(dummy_draw, (tuple, list)):
-                raise Exception("The underlying probability space of the random variable "
-                "returns a tuple. A single " + type(input).__name__ + " was given.")
-            if type(dummy_draw) is type(input):
-                return self.fun(input)
-            else:
-                raise Exception("Expect a(n) " + type(dummy_draw).__name__ + ". "
-                "Was given a(n) " + type(input).__name__ + ".")
+        print("Warning: Calling an RV as a function simply applies the "
+              "function that defines the RV to the input, regardless of "
+              "whether that input is a possible outcome in the underlying "
+              "probability space.")
+        return self.fun(input)
 
     def check_same_probSpace(self, other):
-        if is_scalar(other):
+        if is_nonrandom(other):
             return
         else:
             self.probSpace.check_same(other.probSpace)
@@ -126,7 +105,6 @@ class RV:
             return log(x ** 2)
           Y = X.apply(g)
         """
-        
         def f_new(outcome):
             return function(self.fun(outcome))
         return RV(self.probSpace, f_new)
@@ -134,21 +112,33 @@ class RV:
     # This allows us to unpack a random vector,
     # e.g., X, Y = RV(BoxModel([0, 1], size=2))
     def __iter__(self):
-        test = self.sim(10)
-        for i in range(get_dimension(test)):
-            yield self[i]
-
-    def __getitem__(self, i):
-        # if the indices are a list, return a random vector
-        if hasattr(i, "__iter__"):
-            return self.apply(lambda x: tuple(x[j] for j in i))
-        # otherwise, return the ith value
+        test = self.draw()
+        if hasattr(test, "__iter__"):
+            for i in range(len(test)):
+                yield self[i]
         else:
-            return self.apply(lambda x: x[i])
+            raise Exception(
+                "To unpack a random vector, the RV needs to "
+                "have multiple components."
+            )
+
+    def __getitem__(self, n):
+        # if n is an RV, return a new random variable
+        if isinstance(n, RV):
+            return RV(self.probSpace,
+                      lambda x: self.fun(x)[n.fun(x)])
+        # if the indices are a list, return a random vector
+        elif isinstance(n, (list, tuple)):
+            return self.apply(
+                lambda x: Vector(x[i] for i in n)
+            )
+        # otherwise, return the nth value
+        else:
+            return self.apply(lambda x: x[n])
 
     # e.g., abs(X)
     def __abs__(self):
-        return self.apply(lambda x: abs(x))
+        return self.apply(abs)
 
     # The code for most operations (+, -, *, /, ...) is the
     # same, except for the operation itself. The following 
@@ -157,20 +147,13 @@ class RV:
     def _operation_factory(self, op):
 
         def op_fun(self, other):
-            self.check_same_probSpace(other)
-            if is_scalar(other):
+            if is_nonrandom(other):
                 return self.apply(lambda x: op(x, other))
             elif isinstance(other, RV):
-                def fun(outcome):
-                    a = self.fun(outcome)
-                    b = other.fun(outcome)
-                    if is_vector(a) and is_vector(b) and len(a) == len(b):
-                        return tuple(op(i, j) for i, j in zip(a, b))
-                    elif is_scalar(a) and is_scalar(b):
-                        return op(a, b)
-                    else:
-                        raise Exception("Could not perform operation on the outcomes %s and %s." % (str(a), str(b)))
-                return RV(self.probSpace, fun)
+                self.check_same_probSpace(other)
+                def fn(outcome):
+                    return op(self.fun(outcome), other.fun(outcome))
+                return RV(self.probSpace, fn)
             else:
                 return NotImplemented
 
@@ -240,15 +223,24 @@ class RV:
         self.check_same_probSpace(other)
         if isinstance(other, RV):
             def fun(outcome):
-                a = self.fun(outcome)
-                b = other.fun(outcome)
-                a = tuple(a) if is_vector(a) else (a, )
-                b = tuple(b) if is_vector(b) else (b, )
-                return a + b
-            return RV(self.probSpace, fun)
+                return join(self.fun(outcome), other.fun(outcome))
+        elif is_scalar(other):
+            def fun(outcome):
+                return join(self.fun(outcome), other)
         else:
             raise Exception("Joint distributions are only defined for RVs.")
+        return RV(self.probSpace, fun)
 
+    def __rand__(self, other):
+        self.check_same_probSpace(other)
+        if isinstance(other, RV):
+            def fun(outcome):
+                return join(other.fun(outcome), self.fun(outcome))
+        elif is_scalar(other):
+            def fun(outcome):
+                return join(other, self.fun(outcome))
+        return RV(self.probSpace, fun)
+                    
     ## The following operations all return Events
     ## (Events are used to define conditional distributions)
 
@@ -328,6 +320,7 @@ class RV:
             return RVConditional(self, condition_event)
         else:
             raise NotImplementedError
+
 
 class RVConditional(RV):
     """Defines a random variable conditional on an event.

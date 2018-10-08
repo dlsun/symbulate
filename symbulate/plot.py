@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .sequences import InfiniteSequence
 from scipy.stats import gaussian_kde
 
 figure = plt.figure

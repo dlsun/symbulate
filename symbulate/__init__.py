@@ -1,7 +1,6 @@
 from .probability_space import ProbabilitySpace, BoxModel, DeckOfCards
 from .random_variables import RV
 from .random_processes import RandomProcess
-from .time_index import TimeIndex
 from .distributions import (
     Bernoulli,
     Binomial,
@@ -27,8 +26,35 @@ from .distributions import (
     BivariateNormal
 )
 from .independence import AssumeIndependent
-from .gaussian_process import GaussianProcess
-from .markov_chains import MarkovChain, ContinuousTimeMarkovChain
-from .poisson_process import PoissonProcess
+from .index_sets import (
+    Naturals,
+    Integers,
+    Reals,
+    DiscreteTimeSequence
+)
+from .result import (
+    Scalar,
+    Vector,
+    InfiniteVector,
+    DiscreteTimeFunction,
+    ContinuousTimeFunction,
+    concat
+)
+from .gaussian_process import (
+    GaussianProcess,
+    GaussianProcessProbabilitySpace,
+    BrownianMotion,
+    BrownianMotionProbabilitySpace
+)
+from .poisson_process import (
+    PoissonProcess,
+    PoissonProcessProbabilitySpace
+)
+from .markov_chains import (
+    MarkovChain,
+    MarkovChainProbabilitySpace,
+    ContinuousTimeMarkovChain,
+    ContinuousTimeMarkovChainProbabilitySpace
+)
 from .plot import figure, xlabel, ylabel, xlim, ylim, plot
 from .math import *
