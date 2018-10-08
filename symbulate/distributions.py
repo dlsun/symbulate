@@ -657,6 +657,7 @@ class Pareto(Distribution):
 #     
 #     def __init__(self, eta, beta= ):
 
+
 class Rayleigh(Distribution):
     """Defines a probability space for a Rayleigh distribution
 
