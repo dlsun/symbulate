@@ -99,7 +99,7 @@ def make_tile(x, y, bins, discrete_x, discrete_y, ax):
         intensity[key] = val / nums
     if not discrete_x: x_lab = np.around(x_lab, decimals=1)
     if not discrete_y: y_lab = np.around(y_lab, decimals=1)
-    hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto')
+    hm = ax.matshow(intensity, cmap='Blues', origin='lower', aspect='auto', vmin=0)
     ax.xaxis.set_ticks_position('bottom')
     setup_ticks(x_pos, x_lab, ax.xaxis)
     setup_ticks(y_pos, y_lab, ax.yaxis)

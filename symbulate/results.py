@@ -367,7 +367,7 @@ class RVResults(Results):
                         plt.ylabel('Density')
 
             if 'hist' in type or 'bar' in type:
-                ax.hist(self.array, bins=bins, normed=True,
+                ax.hist(self.array, bins=bins, density=normalize,
                         color=color, alpha=alpha, **kwargs)
                 plt.ylabel("Density" if normalize else "Count")
             elif 'impulse' in type:
@@ -428,12 +428,12 @@ class RVResults(Results):
                     if discrete_x:
                         make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
                     else:
-                        ax_marg_x.hist(x, color=get_next_color(ax), normed=True, 
+                        ax_marg_x.hist(x, color=get_next_color(ax), density=normalize, 
                                        alpha=alpha, bins=bins)
                     if discrete_y:
                         make_marginal_impulse(y_count, get_next_color(ax), ax_marg_y, alpha, 'y')
                     else:
-                        ax_marg_y.hist(y, color=get_next_color(ax), normed=True,
+                        ax_marg_y.hist(y, color=get_next_color(ax), density=normalize,
                                        alpha=alpha, bins=bins, orientation='horizontal')
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
@@ -451,12 +451,17 @@ class RVResults(Results):
                 ax.scatter(x, y, alpha=alpha, c=color, **kwargs)
             elif 'hist' in type:
                 histo = ax.hist2d(x, y, bins=bins, cmap='Blues')
-                caxes = add_colorbar(fig, type, histo[3], 'Density')
-                #change scale to density instead of counts
-                new_labels = []
-                for label in caxes.get_yticklabels():
-                    new_labels.append(int(label.get_text()) / len(x))
-                caxes.set_yticklabels(new_labels)
+
+                # When normalize=True, use density instead of counts
+                if normalize:
+                    caxes = add_colorbar(fig, type, histo[3], 'Density')
+                    #change scale to density instead of counts
+                    new_labels = []
+                    for label in caxes.get_yticklabels():
+                        new_labels.append(int(label.get_text()) / len(x))
+                    caxes.set_yticklabels(new_labels)
+                else:
+                    caxes = add_colorbar(fig, type, histo[3], 'Count')    
             elif 'density' in type:
                 den = make_density2D(x, y, ax)
                 add_colorbar(fig, type, den, 'Density')

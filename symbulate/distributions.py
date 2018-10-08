@@ -357,33 +357,34 @@ class Normal(Distribution):
 
     Attributes:
       mean (float): mean parameter of the normal distribution
-      var (float): variance parameter of the normal distribution
       sd (float): standard deviation parameter of the normal 
-        distribution (if specified, var parameter will be ignored)
+        distribution
+      var (float): variance parameter of the normal distribution
+        (if specified, var parameter will be ignored)
     """
     #TODO edit docstring for Normal Distribution
 
-    def __init__(self, mean=0.0, var=1.0, sd=None):
+    def __init__(self, mean=0.0, sd=1.0, var=None):
 
         #Note: cleaner way to implement this
 
-        if sd is None:
-            if var > 0:
-                self.scale = np.sqrt(var)
-            elif var == 0: 
-                raise NotImplementedError
-                #TODO
-            else:
-                raise Exception("var cannot be less than 0")
-        
-        else:
+        if var is None:
             if sd > 0:
                 self.scale = sd
-            elif sd == 0:
+            elif sd == 0: 
                 raise NotImplementedError
                 #TODO
             else:
                 raise Exception("sd cannot be less than 0")
+        
+        else:
+            if var > 0:
+                self.scale = np.sqrt(var)
+            elif var == 0:
+                raise NotImplementedError
+                #TODO
+            else:
+                raise Exception("var cannot be less than 0")
 
         params = {
             "loc" : mean,
