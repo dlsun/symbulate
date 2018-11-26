@@ -418,7 +418,7 @@ class InfiniteVector(InfiniteTuple):
 
 class DiscreteTimeFunction(TimeFunction):
 
-    def __init__(self, fn=lambda n: n, fs=1, index_set=None):
+    def __init__(self, fn=None, fs=1, index_set=None):
         """Initializes a data structure for a discrete-time function.
 
         Args:
@@ -433,6 +433,8 @@ class DiscreteTimeFunction(TimeFunction):
         """
         if fn is not None:
             self.fn = fn
+        else:
+            self.fn = lambda n: n / fs
         if index_set is None:
             self.index_set = DiscreteTimeSequence(fs)
         else:
