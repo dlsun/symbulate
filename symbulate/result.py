@@ -1,3 +1,4 @@
+import collections
 import numbers
 import numpy as np
 import matplotlib.pyplot as plt
@@ -339,6 +340,7 @@ class InfiniteTuple(TimeFunction):
         m = len(self.values)
         # Add necessary elements to self.values
         n0 = None
+        # TODO: add support for infinite slices with no stop
         if isinstance(n, slice) and n.stop >= m:
             n0 = n.stop
         elif isinstance(n, numbers.Integral) and n >= m:
@@ -442,7 +444,7 @@ class DiscreteTimeFunction(TimeFunction):
         self.array_pos = [] # stores values for t >= 0
         self.array_neg = [] # stores values for t < 0
 
-    def __getitem__(self, n):
+    def _get_value_at_n(self, n):
         if not isinstance(n, numbers.Integral):
             raise Exception(
                 "With a DiscreteTimeFunction f, "
@@ -452,11 +454,10 @@ class DiscreteTimeFunction(TimeFunction):
                 "call f(t) instead."
             )
 
-        # Get the nth time sample
         if n >= 0:
             m = len(self.array_pos)
             if n >= m:
-                for i in range(m, n+1):
+                for i in range(m, n + 1):
                     self.array_pos.append(self.fn(i))
             return self.array_pos[n]
         else:
@@ -465,6 +466,23 @@ class DiscreteTimeFunction(TimeFunction):
                 for i in range(-m - 1, n - 1, -1):
                     self.array_neg.append(self.fn(i))
             return self.array_neg[-n - 1]
+        
+    def __getitem__(self, n):
+        if isinstance(n, numbers.Number):
+            return self._get_value_at_n(n)
+        elif (isinstance(n, collections.Iterable) and
+              all(isinstance(e, numbers.Number) for e in n)
+        ):
+            return Vector(self._get_value_at_n(e) for e in n)
+        elif isinstance(n, slice):
+            return Vector(self._get_value_at_n(e) for e in
+                          list(range(n.start, n.stop, n.step or 1)))
+        else:
+            raise Exception(
+                "I do not know how to evaluate a DiscreteTimeFunction "
+                "at that time."
+            )
+                
 
     def __call__(self, t):
         fs = self.index_set.fs
