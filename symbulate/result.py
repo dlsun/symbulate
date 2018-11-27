@@ -476,22 +476,39 @@ class DiscreteTimeFunction(TimeFunction):
             return Vector(self._get_value_at_n(e) for e in n)
         elif isinstance(n, slice):
             return Vector(self._get_value_at_n(e) for e in
-                          list(range(n.start, n.stop, n.step or 1)))
+                          range(n.start, n.stop, n.step or 1))
         else:
             raise Exception(
                 "I do not know how to evaluate a DiscreteTimeFunction "
                 "at that time."
             )
-                
 
-    def __call__(self, t):
+    def _get_value_at_t(self, t):
         fs = self.index_set.fs
         if not t in self.index_set:
             raise KeyError((
                 "No value at time %.2f for a process sampled"
                 "at a rate of %d Hz.") % (t, fs))
-        n = int(t * fs)
-        return self[n]
+        return self._get_value_at_n(int(t * fs))
+
+    def __call__(self, t):
+        if isinstance(t, numbers.Number):
+            return self._get_value_at_t(t)
+        elif (isinstance(t, collections.Iterable) and
+              all(isinstance(e, numbers.Number) for e in t)
+        ):
+            return Vector(self._get_value_at_t(e) for e in t)
+        elif isinstance(t, DiscreteTimeFunction):
+            self.check_same_index_set(t)
+            return DiscreteTimeFunction(
+                fn=lambda n: self(t[n]),
+                index_set=self.index_set
+            )
+        else:
+            raise Exception(
+                "I do not know how to evaluate a DiscreteTimeFunction "
+                "at that time."
+            )        
 
     def apply(self, function):
         """Compose function with the TimeFunction.
@@ -571,7 +588,21 @@ class ContinuousTimeFunction(TimeFunction):
             self.fn = fn
 
     def __call__(self, t):
-        return self.fn(t)
+        if isinstance(t, numbers.Number):
+            return self.fn(t)
+        elif (isinstance(t, collections.Iterable) and
+              all(isinstance(e, numbers.Number) for e in t)
+        ):
+            return Vector(self.fn(e) for e in t)
+        elif isinstance(t, ContinuousTimeFunction):
+            return ContinuousTimeFunction(
+                fn=lambda s: self(t(s))
+            )
+        else:
+            raise Exception(
+                "I do not know how to evaluate a ContinuousTimeFunction "
+                "at that time."
+            )        
 
     def __getitem__(self, t):
         return self(t)

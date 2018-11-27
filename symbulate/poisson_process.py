@@ -7,6 +7,7 @@ from .result import (
     DiscreteValued
 )
 from .random_variables import RV
+from .random_processes import RandomProcess
 
 
 class PoissonProcessResult(ContinuousTimeFunction,
@@ -45,7 +46,7 @@ class PoissonProcessProbabilitySpace(ProbabilitySpace):
         super().__init__(draw)
     
     
-class PoissonProcess(RV):
+class PoissonProcess(RandomProcess, RV):
 
     def __init__(self, rate):
         """Initialize a Poisson process.
@@ -55,5 +56,6 @@ class PoissonProcess(RV):
         """
         self.rate = rate
         probSpace = PoissonProcessProbabilitySpace(self.rate)
-        super().__init__(probSpace)
+        RandomProcess.__init__(self, probSpace)
+        RV.__init__(self, probSpace)
 

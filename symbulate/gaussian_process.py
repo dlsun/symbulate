@@ -10,6 +10,7 @@ from .result import (
     ContinuousTimeFunction
 )
 from .random_variables import RV
+from .random_processes import RandomProcess
 
 MACHINE_EPS = 1e-12
 
@@ -107,7 +108,7 @@ class GaussianProcessProbabilitySpace(ProbabilitySpace):
         super().__init__(draw)
 
 
-class GaussianProcess(RV):
+class GaussianProcess(RandomProcess, RV):
 
     def __init__(self, mean_fn, cov_fn, index_set=Reals()):
         """Initialize Gaussian process.
@@ -122,7 +123,8 @@ class GaussianProcess(RV):
         probSpace = GaussianProcessProbabilitySpace(mean_fn,
                                                     cov_fn,
                                                     index_set)
-        super().__init__(probSpace)
+        RandomProcess.__init__(self, probSpace)
+        RV.__init__(self, probSpace)
 
 
 # Define convenience class for Brownian motion
@@ -141,7 +143,7 @@ class BrownianMotionProbabilitySpace(GaussianProcessProbabilitySpace):
         )
 
 
-class BrownianMotion(RV):
+class BrownianMotion(RandomProcess, RV):
 
     def __init__(self, drift=0, scale=1):
         """Initialize Brownian motion.
@@ -153,4 +155,5 @@ class BrownianMotion(RV):
         probSpace = BrownianMotionProbabilitySpace(
             drift=drift, scale=scale
         )
-        super().__init__(probSpace)
+        RandomProcess.__init__(self, probSpace)
+        RV.__init__(self, probSpace)

@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from .index_sets import Naturals
 from .random_variables import RV
 from .result import TimeFunction, is_scalar
@@ -50,4 +48,7 @@ class RandomProcess(RV):
             return self.rvs[t]
         else:
             return super().__getitem__(t)
-            
+
+    def __call__(self, t):
+        return RV(self.probSpace, lambda x: self.fun(x)(t))
+

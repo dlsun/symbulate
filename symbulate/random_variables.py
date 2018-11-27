@@ -1,3 +1,5 @@
+import collections
+
 from .probability_space import Event
 from .result import (Vector, join,
                      is_scalar, is_nonrandom)
@@ -128,10 +130,16 @@ class RV:
             return RV(self.probSpace,
                       lambda x: self.fun(x)[n.fun(x)])
         # if the indices are a list, return a random vector
-        elif isinstance(n, (list, tuple)):
+        elif isinstance(n, collections.Iterable):
             return self.apply(
-                lambda x: Vector(x[i] for i in n)
+                lambda x: Vector(x[e] for e in n)
             )
+        # if the indices are a slice, return a random vector
+        elif isinstance(n, slice):
+            return self.apply(
+                lambda x: Vector(x[e] for e in
+                                 range(n.start, n.stop, n.step or 1))
+                )
         # otherwise, return the nth value
         else:
             return self.apply(lambda x: x[n])
