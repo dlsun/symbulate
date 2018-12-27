@@ -1,8 +1,7 @@
 import collections
 
 from .probability_space import Event
-from .result import (Vector, join,
-                     is_scalar, is_nonrandom)
+from .result import Vector, join, is_scalar
 from .results import RVResults
 
 class RV:
@@ -81,9 +80,7 @@ class RV:
         return self.fun(input)
 
     def check_same_probSpace(self, other):
-        if is_nonrandom(other):
-            return
-        else:
+        if hasattr(other, "probSpace"):
             self.probSpace.check_same(other.probSpace)
 
     def apply(self, function):
@@ -155,15 +152,13 @@ class RV:
     def _operation_factory(self, op):
 
         def op_fun(self, other):
-            if is_nonrandom(other):
-                return self.apply(lambda x: op(x, other))
-            elif isinstance(other, RV):
+            if isinstance(other, RV):
                 self.check_same_probSpace(other)
                 def fn(outcome):
                     return op(self.fun(outcome), other.fun(outcome))
                 return RV(self.probSpace, fn)
             else:
-                return NotImplemented
+                return self.apply(lambda x: op(x, other))
 
         return op_fun
 

@@ -183,6 +183,88 @@ class Results(object):
     # The following functions define vectorized operations
     # on the Results object.
 
+    # e.g., abs(X)
+    def __abs__(self):
+        return self.apply(abs)
+
+    # The code for most operations (+, -, *, /, ...) is the
+    # same, except for the operation itself. The following 
+    # factory function takes in the the operation and 
+    # generates the code to perform that operation.
+    def _operation_factory(self, op):
+
+        def op_fun(self, other):
+            if isinstance(other, Results):
+                if len(self) != len(other):
+                    raise Exception(
+                        "Results objects must be of the "
+                        "same length."
+                    )
+                return type(self)(op(x, y) for x, y in zip(self, other))
+            else:
+                return self.apply(lambda x: op(x, other))
+
+        return op_fun
+
+    # e.g., X + Y or X + 3
+    def __add__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x + y)
+        return op_fun(self, other)
+
+    # e.g., 3 + X
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    # e.g., X - Y or X - 3
+    def __sub__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x - y)
+        return op_fun(self, other)
+
+    # e.g., 3 - X
+    def __rsub__(self, other):
+        return -1 * self.__sub__(other)
+
+    # e.g., -X
+    def __neg__(self):
+        return -1 * self
+
+    # e.g., X * Y or X * 2
+    def __mul__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x * y)
+        return op_fun(self, other)
+            
+    # e.g., 2 * X
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    # e.g., X / Y or X / 2
+    def __truediv__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x / y)
+        return op_fun(self, other)
+
+    # e.g., 2 / X
+    def __rtruediv__(self, other):
+        op_fun = self._operation_factory(lambda x, y: y / x)
+        return op_fun(self, other)
+
+    # e.g., X ** 2
+    def __pow__(self, other):
+        op_fun = self._operation_factory(lambda x, y: x ** y)
+        return op_fun(self, other)
+
+    # e.g., 2 ** X
+    def __rpow__(self, other):
+        op_fun = self._operation_factory(lambda x, y: y ** x)
+        return op_fun(self, other)
+
+    # Alternative notation for powers: e.g., X ^ 2
+    def __xor__(self, other):
+        return self.__pow__(other)
+    
+    # Alternative notation for powers: e.g., 2 ^ X
+    def __rxor__(self, other):
+        return self.__rpow__(other)
+    
     def __eq__(self, other):
         return self.apply(lambda x: x == other)
 

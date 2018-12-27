@@ -744,9 +744,3 @@ def is_scalar(x):
 
 def is_vector(x):
     return hasattr(x, "__len__") and all(is_scalar(i) for i in x)
-
-                    
-def is_nonrandom(x):
-    return (is_scalar(x) or
-            is_vector(x) or
-            isinstance(x, TimeFunction))
