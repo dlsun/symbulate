@@ -289,9 +289,12 @@ class RVResults(Results):
         # determine the dimension and the index set (if applicable) of the Results
         self.dim = None
         self.index_set = None
+        # get type and dimension of the first result, if it exists
         iterresults = iter(self)
-        # get type and dimension of the first result
-        first_result = next(iterresults)
+        try:
+            first_result = next(iterresults)
+        except:
+            return
         if isinstance(first_result, TimeFunction):
             self.index_set = first_result.index_set
         if is_scalar(first_result):
