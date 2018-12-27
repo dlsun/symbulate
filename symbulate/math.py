@@ -6,11 +6,12 @@ import scipy.stats as stats
 
 from .random_variables import RV
 from .result import (
+    Tuple,
     TimeFunction,
     ContinuousTimeFunction,
     DiscreteValued
 )
-from .results import RVResults
+from .results import Results
 
 pi = math.pi
 e = math.e
@@ -19,8 +20,10 @@ inf = float("inf")
 def operation_factory(op):
 
     def op_fun(x):
-        if isinstance(x, (RV, TimeFunction)):
+        if isinstance(x, (RV, Tuple, TimeFunction)):
             # recursively call op_fun until x is a scalar
+            return x.apply(op_fun)
+        elif isinstance(x, Results):
             return x.apply(op_fun)
         else:
             return op(x)
@@ -33,18 +36,9 @@ sin = operation_factory(math.sin)
 cos = operation_factory(math.cos)
 tan = operation_factory(math.tan)
 factorial = operation_factory(math.factorial)
-def log(x, base=e):
-    if isinstance(x, RVResults):
-        with np.errstate(all='raise'):
-            try:
-                return RVResults(np.log(x) / np.log(base))
-            except FloatingPointError as e:
-                raise type(e)("I can't take the log of these values.")
-    else:
-        try: 
-            return operation_factory(lambda y: math.log(y, base))(x)
-        except ValueError as e:
-            raise type(e)("I can't take the log of these values.")
+
+def log(value, base=e):
+    return operation_factory(lambda x: math.log(x, base))(value)
 
 def mean(x):
     if isinstance(x, numbers.Real):
