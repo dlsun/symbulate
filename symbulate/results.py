@@ -772,9 +772,7 @@ class RVResults(Results):
     def standardize(self):
         self._set_array()
         if self.dim is not None:
-            mean_ = self.mean()
-            sd_ = self.std()
-            return RVResults(Vector((row - mean_) / sd_) for row in self.array)
+            return (self - self.mean()) / self.std()
         else:
             raise Exception("Could not standardize the given results.")
 
