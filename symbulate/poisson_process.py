@@ -16,14 +16,14 @@ class PoissonProcessResult(ContinuousTimeFunction,
     def __init__(self, interarrival_times):
         self.interarrival_times = interarrival_times
         
-        def fn(t):
+        def func(t):
             total_time = 0
             for n, time in enumerate(self.interarrival_times):
                 total_time += time
                 if t < total_time:
                     return n
 
-        return super().__init__(fn)
+        return super().__init__(func)
 
     def get_states(self):
         return InfiniteVector(lambda n: n)

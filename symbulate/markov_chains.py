@@ -48,7 +48,7 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
         state = np.random.choice(range(n), p=self.initial_dist)
         self.states = [state]
 
-        def fn(n):
+        def func(n):
             m = len(self.states)
             # If nth state not generated yet, generate it.
             if n >= m:
@@ -63,7 +63,7 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
                 state = self.states[n]
             return self.state_labels[state]
         
-        super().__init__(fn)
+        super().__init__(func)
         
     def get_states(self):
         return self
@@ -120,14 +120,14 @@ class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
         self.state_labels = state_labels
 
         # Define an InfiniteVector of the interarrival times.
-        def fn(n):
+        def func(n):
             for i in range(n + 1):
                 state = self.states[i]
                 interarrival_time = self.times[i] / self.rates[state]
             return interarrival_time
-        self.interarrival_times = InfiniteVector(fn)
+        self.interarrival_times = InfiniteVector(func)
                 
-        def fn(t):
+        def func(t):
             total_time = 0
             n = 0
             while True:
@@ -137,7 +137,7 @@ class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
                     return self.state_labels[state]
                 n += 1
                 
-        super().__init__(fn)
+        super().__init__(func)
     
 
 class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):

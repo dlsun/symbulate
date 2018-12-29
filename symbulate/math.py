@@ -19,16 +19,16 @@ inf = float("inf")
 
 def operation_factory(op):
 
-    def op_fun(x):
+    def op_func(x):
         if isinstance(x, (RV, Tuple, TimeFunction)):
             # recursively call op_fun until x is a scalar
-            return x.apply(op_fun)
+            return x.apply(op_func)
         elif isinstance(x, Results):
-            return x.apply(op_fun)
+            return x.apply(op_func)
         else:
             return op(x)
 
-    return op_fun
+    return op_func
 
 sqrt = operation_factory(math.sqrt)
 exp = operation_factory(math.exp)
@@ -111,44 +111,44 @@ def comparefun(x, compare, value):
             count += 1
     return count
 
-def count(fun=lambda x: True):
-    def func(x):
+def count(func=lambda x: True):
+    def func_(x):
         val = 0
         for i in x:
-            if fun(i):
+            if func(i):
                 val += 1
         return val        
-    return func
+    return func_
 
 def count_eq(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.eq, value)
-    return fun    
+    return func    
 
 def count_neq(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.ne, value)
-    return fun
+    return func
 
 def count_lt(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.lt, value)
-    return fun 
+    return func 
 
 def count_gt(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.gt, value)
-    return fun 
+    return func 
 
 def count_geq(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.ge, value)
-    return fun 
+    return func 
 
 def count_leq(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.le, value)
-    return fun
+    return func
 
 def interarrival_times(continuous_time_function):
     """Given a realization of a continuous-time,

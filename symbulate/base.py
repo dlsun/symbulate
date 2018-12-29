@@ -8,8 +8,8 @@ class Arithmetic:
 
     # e.g., X + Y or X + 3
     def __add__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x + y)
-        return op_fun(self, other)
+        op_func = self._operation_factory(lambda x, y: x + y)
+        return op_func(self, other)
 
     # e.g., 3 + X
     def __radd__(self, other):
@@ -17,8 +17,8 @@ class Arithmetic:
 
     # e.g., X - Y or X - 3
     def __sub__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x - y)
-        return op_fun(self, other)
+        op_func = self._operation_factory(lambda x, y: x - y)
+        return op_func(self, other)
 
     # e.g., 3 - X
     def __rsub__(self, other):
@@ -30,8 +30,8 @@ class Arithmetic:
 
     # e.g., X * Y or X * 2
     def __mul__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x * y)
-        return op_fun(self, other)
+        op_func = self._operation_factory(lambda x, y: x * y)
+        return op_func(self, other)
             
     # e.g., 2 * X
     def __rmul__(self, other):
@@ -39,23 +39,23 @@ class Arithmetic:
 
     # e.g., X / Y or X / 2
     def __truediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x / y)
-        return op_fun(self, other)
+        op_func = self._operation_factory(lambda x, y: x / y)
+        return op_func(self, other)
 
     # e.g., 2 / X
     def __rtruediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y / x)
-        return op_fun(self, other)
+        op_func = self._operation_factory(lambda x, y: y / x)
+        return op_func(self, other)
 
     # e.g., X ** 2
     def __pow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x ** y)
-        return op_fun(self, other)
+        op_func = self._operation_factory(lambda x, y: x ** y)
+        return op_func(self, other)
 
     # e.g., 2 ** X
     def __rpow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y ** x)
-        return op_fun(self, other)
+        op_func = self._operation_factory(lambda x, y: y ** x)
+        return op_func(self, other)
 
     # Alternative notation for powers: e.g., X ^ 2
     def __xor__(self, other):
@@ -75,27 +75,27 @@ class Comparable:
     """
 
     def __eq__(self, other):
-        op_fun = self._comparison_factory(lambda x, y: x == y)
-        return op_fun(self, other)
+        op_func = self._comparison_factory(lambda x, y: x == y)
+        return op_func(self, other)
 
     def __ne__(self, other):
-        op_fun = self._comparison_factory(lambda x, y: x != y)
-        return op_fun(self, other)
+        op_func = self._comparison_factory(lambda x, y: x != y)
+        return op_func(self, other)
 
     def __lt__(self, other):
-        op_fun = self._comparison_factory(lambda x, y: x < y)
-        return op_fun(self, other)
+        op_func = self._comparison_factory(lambda x, y: x < y)
+        return op_func(self, other)
 
     def __le__(self, other):
-        op_fun = self._comparison_factory(lambda x, y: x <= y)
-        return op_fun(self, other)
+        op_func = self._comparison_factory(lambda x, y: x <= y)
+        return op_func(self, other)
 
     def __gt__(self, other):
-        op_fun = self._comparison_factory(lambda x, y: x > y)
-        return op_fun(self, other)
+        op_func = self._comparison_factory(lambda x, y: x > y)
+        return op_func(self, other)
 
     def __ge__(self, other):
-        op_fun = self._comparison_factory(lambda x, y: x >= y)
-        return op_fun(self, other)
+        op_func = self._comparison_factory(lambda x, y: x >= y)
+        return op_func(self, other)
 
 

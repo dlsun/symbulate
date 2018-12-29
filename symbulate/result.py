@@ -60,6 +60,7 @@ class Tuple(Arithmetic):
     def __hash__(self):
         return hash(tuple(self.values))
 
+    # Define comparison operators to handle sorting.
     def __eq__(self, other):
         if not hasattr(other, "__len__"):
             return False
@@ -70,11 +71,11 @@ class Tuple(Arithmetic):
     def __lt__(self, other):
         return tuple(self.values) < tuple(other.values)
             
-    def apply(self, function):
+    def apply(self, func):
         """Apply function to every element of a Tuple.
 
         Args:
-          function: function to apply to the Tuple
+          func: function to apply to the Tuple
         
         Example:
           x = Tuple([1, 2, 3])
@@ -91,7 +92,7 @@ class Tuple(Arithmetic):
             return log(n) ** 2
           y = x.apply(log_squared)
         """
-        return type(self)(function(x) for x in self)
+        return type(self)(func(x) for x in self)
 
     # e.g., abs(X)
     def __abs__(self):
@@ -174,13 +175,13 @@ class Vector(Tuple):
 class TimeFunction(Arithmetic):
 
     @classmethod
-    def from_index_set(cls, index_set, fn=None):
+    def from_index_set(cls, index_set, func=None):
         if isinstance(index_set, DiscreteTimeSequence):
-            return DiscreteTimeFunction(fn, index_set=index_set)
+            return DiscreteTimeFunction(func, index_set=index_set)
         elif isinstance(index_set, Reals):
-            return ContinuousTimeFunction(fn)
+            return ContinuousTimeFunction(func)
         elif isinstance(index_set, Naturals):
-            return InfiniteVector(fn)
+            return InfiniteVector(func)
 
     def check_same_index_set(self, other):
         if (isinstance(other, numbers.Number) or
@@ -205,17 +206,17 @@ class TimeFunction(Arithmetic):
     
 class InfiniteTuple(TimeFunction):
 
-    def __init__(self, fn=lambda n: n):
+    def __init__(self, func=lambda n: n):
         """Initializes a (lazy) data structure for an infinite vector.
 
         Args:
-          fn: A function of n that returns the value in position n.
-              n is assumed to be a natural number (integer >= 0).
-              This function can be defined at initialization time,
-              or later. By default, it is not set at initialization.
+          func: A function of n that returns the value in position n.
+                n is assumed to be a natural number (integer >= 0).
+                This function can be defined at initialization time,
+                or later. By default, it is not set at initialization.
         """
-        if fn is not None:
-            self.fn = fn
+        if func is not None:
+            self.func = func
         self.index_set = Naturals()
         self.values = []
 
@@ -230,7 +231,7 @@ class InfiniteTuple(TimeFunction):
             n0 = n
         if n0 is not None:
             for i in range(m, n0 + 1):
-                self.values.append(self.fn(i))
+                self.values.append(self.func(i))
         # Return the corresponding value(s)
         return self.values[n]
 
@@ -244,11 +245,11 @@ class InfiniteTuple(TimeFunction):
     def __repr__(self):
         return self.__str__()
 
-    def apply(self, function):
+    def apply(self, func):
         """Apply function to every element of an InfiniteTuple.
 
         Args:
-          function: function to apply to the InfiniteTuple
+          func: function to apply to the InfiniteTuple
         
         Example:
           x = InfiniteTuple(lambda n: n)
@@ -265,7 +266,7 @@ class InfiniteTuple(TimeFunction):
             return log(n) ** 2
           y = x.apply(log_squared)
         """
-        return type(self)(lambda n: function(self[n]))
+        return type(self)(lambda n: func(self[n]))
 
     # The code for most operations (+, -, *, /, ...) is the
     # same, except for the operation itself. The following 
@@ -289,9 +290,9 @@ class InfiniteVector(InfiniteTuple):
                     
     def cumsum(self):
         result = InfiniteVector()
-        def fn(n):
+        def func(n):
             return sum(self[i] for i in range(n + 1))
-        result.fn = fn
+        result.func = func
         
         return result
 
@@ -303,23 +304,23 @@ class InfiniteVector(InfiniteTuple):
 
 class DiscreteTimeFunction(TimeFunction):
 
-    def __init__(self, fn=None, fs=1, index_set=None):
+    def __init__(self, func=None, fs=1, index_set=None):
         """Initializes a data structure for a discrete-time function.
 
         Args:
-          fn: A function of n that returns the value at time n / fs.
-              n is assumed to be any integer (postive or negative).
-              This function can be defined at initialization time,
-              or later. By default, it is not set at initialization.
+          func: A function of n that returns the value at time n / fs.
+                n is assumed to be any integer (postive or negative).
+                This function can be defined at initialization time,
+                or later. By default, it is not set at initialization.
           fs: The sampling rate for the function.
           index_set: An IndexSet that specifies the index set of
                      the discrete-time function. (fs is ignored if
                      this is specified.)
         """
-        if fn is not None:
-            self.fn = fn
+        if func is not None:
+            self.func = func
         else:
-            self.fn = lambda n: n / fs
+            self.func = lambda n: n / fs
         if index_set is None:
             self.index_set = DiscreteTimeSequence(fs)
         else:
@@ -341,13 +342,13 @@ class DiscreteTimeFunction(TimeFunction):
             m = len(self.array_pos)
             if n >= m:
                 for i in range(m, n + 1):
-                    self.array_pos.append(self.fn(i))
+                    self.array_pos.append(self.func(i))
             return self.array_pos[n]
         else:
             m = len(self.array_neg)
             if -n > m:
                 for i in range(-m - 1, n - 1, -1):
-                    self.array_neg.append(self.fn(i))
+                    self.array_neg.append(self.func(i))
             return self.array_neg[-n - 1]
         
     def __getitem__(self, n):
@@ -384,7 +385,7 @@ class DiscreteTimeFunction(TimeFunction):
         elif isinstance(t, DiscreteTimeFunction):
             self.check_same_index_set(t)
             return DiscreteTimeFunction(
-                fn=lambda n: self(t[n]),
+                func=lambda n: self(t[n]),
                 index_set=self.index_set
             )
         else:
@@ -393,11 +394,11 @@ class DiscreteTimeFunction(TimeFunction):
                 "at that time."
             )        
 
-    def apply(self, function):
+    def apply(self, func):
         """Compose function with the TimeFunction.
 
         Args:
-          function: function to compose with the TimeFunction
+          func: function to compose with the TimeFunction
         
         Example:
           f = DiscreteTimeFunction(lambda t: t, fs=1)
@@ -414,7 +415,7 @@ class DiscreteTimeFunction(TimeFunction):
             return log(f) ** 2
           g = f.apply(log_squared)
         """
-        return DiscreteTimeFunction(lambda n: function(self[n]),
+        return DiscreteTimeFunction(lambda n: func(self[n]),
                                     index_set=self.index_set)
 
     # The code for most operations (+, -, *, /, ...) is the
@@ -457,29 +458,29 @@ class DiscreteTimeFunction(TimeFunction):
 
 class ContinuousTimeFunction(TimeFunction):
 
-    def __init__(self, fn=lambda t: t):
+    def __init__(self, func=lambda t: t):
         """Initializes a data structure for a discrete-time function.
 
         Args:
-          fn: A function of n that returns the value in position n.
-              n is assumed to be any integer (postive or negative).
-              This function can be defined at initialization time,
-              or later. By default, it is not set at initialization.
+          func: A function of n that returns the value in position n.
+                n is assumed to be any integer (postive or negative).
+                This function can be defined at initialization time,
+                or later. By default, it is not set at initialization.
         """
         self.index_set = Reals()
-        if fn is not None:
-            self.fn = fn
+        if func is not None:
+            self.func = func
 
     def __call__(self, t):
         if isinstance(t, numbers.Number):
-            return self.fn(t)
+            return self.func(t)
         elif (isinstance(t, collections.Iterable) and
               all(isinstance(e, numbers.Number) for e in t)
         ):
-            return Vector(self.fn(e) for e in t)
+            return Vector(self.func(e) for e in t)
         elif isinstance(t, ContinuousTimeFunction):
             return ContinuousTimeFunction(
-                fn=lambda s: self(t(s))
+                func=lambda s: self(t(s))
             )
         else:
             raise Exception(
@@ -490,11 +491,11 @@ class ContinuousTimeFunction(TimeFunction):
     def __getitem__(self, t):
         return self(t)
 
-    def apply(self, function):
+    def apply(self, func):
         """Compose function with the TimeFunction.
 
         Args:
-          function: function to compose with the TimeFunction
+          func: function to compose with the TimeFunction
         
 
         Example:
@@ -512,7 +513,7 @@ class ContinuousTimeFunction(TimeFunction):
             return log(f) ** 2
           g = f.apply(log_squared)
         """
-        return ContinuousTimeFunction(lambda t: function(self(t)))
+        return ContinuousTimeFunction(lambda t: func(self(t)))
 
     # The code for most operations (+, -, *, /, ...) is the
     # same, except for the operation itself. The following 
@@ -603,12 +604,12 @@ def concat(*args):
             # check that InfiniteTuple is the last arg
             if i == len(args) - 1:
                 # define concatenated InfiniteTuple
-                def fn(n):
+                def func(n):
                     if n < len(values):
                         return values[n]
                     else:
                         return arg[n - len(values)]
-                return type(arg)(fn)
+                return type(arg)(func)
             else:
                 raise Exception(
                     "InfiniteTuple must be the last "

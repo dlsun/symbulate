@@ -25,7 +25,7 @@ class Distribution(ProbabilitySpace):
         self.mean = lambda : scipy.mean(**self.params)
         self.var = lambda : scipy.var(**self.params)
         self.sd = lambda : scipy.std(**self.params)
-        self.sim_fn = scipy.rvs
+        self.sim_func = scipy.rvs
 
         self.xlim = (
             scipy.ppf(0.001, **self.params),
@@ -33,7 +33,7 @@ class Distribution(ProbabilitySpace):
             )
 
     def draw(self):
-        return Scalar(self.sim_fn(**self.params))
+        return Scalar(self.sim_func(**self.params))
 
     # Override the inherited __pow__ function to take advantage
     # of vectorized simulations.
@@ -41,13 +41,13 @@ class Distribution(ProbabilitySpace):
         if exponent == float("inf"):
             def draw():
                 result = InfiniteVector()
-                def fn(n):
-                    return self.sim_fn(**self.params)
-                result.fn = fn
+                def func(n):
+                    return self.sim_func(**self.params)
+                result.func = func
                 return result
         else:
             def draw():
-                return Vector(self.sim_fn(**self.params, size=exponent))
+                return Vector(self.sim_func(**self.params, size=exponent))
         return ProbabilitySpace(draw)
     
     def plot(self, type=None, alpha=None, xlim=None, **kwargs):
@@ -720,9 +720,9 @@ class MultivariateNormal(Distribution):
         if exponent == float("inf"):
             def draw():
                 result = InfiniteVector()
-                def fn(n):
+                def func(n):
                     return self.draw()
-                result.fn = fn
+                result.func = func
                 return result
         else:
             def draw():
@@ -819,9 +819,9 @@ class Multinomial(Distribution):
         if exponent == float("inf"):
             def draw():
                 result = InfiniteVector()
-                def fn(n):
+                def func(n):
                     return self.draw()
-                result.fn = fn
+                result.func = func
                 return result
         else:
             def draw():

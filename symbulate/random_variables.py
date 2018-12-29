@@ -18,7 +18,7 @@ class RV(Arithmetic, Comparable):
     Args:
       probSpace (ProbabilitySpace): the underlying probability space
         of the random variable.
-      fun (function, optional): a function that maps draws from the 
+      func (function, optional): a function that maps draws from the 
         probability space to numbers. (By default, the function is the 
         identity function. For named distributions, a draw from the
         underlying probability space is the value of the random
@@ -28,7 +28,7 @@ class RV(Arithmetic, Comparable):
     Attributes:
       probSpace (ProbabilitySpace): the underlying probability space
         of the random variable.
-      fun (function): a function that maps draws from the probability
+      func (function): a function that maps draws from the probability
         space to numbers.
 
     Examples:
@@ -46,9 +46,9 @@ class RV(Arithmetic, Comparable):
       Z = RV(P, min)
     """
 
-    def __init__(self, probSpace, fun=lambda x: x):
+    def __init__(self, probSpace, func=lambda x: x):
         self.probSpace = probSpace
-        self.fun = fun
+        self.func = func
 
     def draw(self):
         """A function that takes no arguments and returns a single 
@@ -58,7 +58,7 @@ class RV(Arithmetic, Comparable):
           X = RV(Normal(0, 1))
           X.draw() might return -0.9, for example.  
         """
-        return self.fun(self.probSpace.draw())
+        return self.func(self.probSpace.draw())
 
     def sim(self, n):
         """Simulate n draws from probability space described by the random 
@@ -78,17 +78,17 @@ class RV(Arithmetic, Comparable):
               "function that defines the RV to the input, regardless of "
               "whether that input is a possible outcome in the underlying "
               "probability space.")
-        return self.fun(input)
+        return self.func(input)
 
     def check_same_probSpace(self, other):
         if hasattr(other, "probSpace"):
             self.probSpace.check_same(other.probSpace)
 
-    def apply(self, function):
+    def apply(self, func):
         """Transform a random variable by a function.
 
         Args:
-          function: function to apply to the random variable
+          func: function to apply to the random variable
         
         Example:
           X = RV(Exponential(1))
@@ -105,9 +105,9 @@ class RV(Arithmetic, Comparable):
             return log(x ** 2)
           Y = X.apply(g)
         """
-        def f_new(outcome):
-            return function(self.fun(outcome))
-        return RV(self.probSpace, f_new)
+        def func_(outcome):
+            return func(self.func(outcome))
+        return RV(self.probSpace, func_)
 
     # This allows us to unpack a random vector,
     # e.g., X, Y = RV(BoxModel([0, 1], size=2))
@@ -126,7 +126,7 @@ class RV(Arithmetic, Comparable):
         # if n is an RV, return a new random variable
         if isinstance(n, RV):
             return RV(self.probSpace,
-                      lambda x: self.fun(x)[n.fun(x)])
+                      lambda x: self.func(x)[n.func(x)])
         # if the indices are a list, return a random vector
         elif isinstance(n, collections.Iterable):
             return self.apply(
@@ -153,9 +153,9 @@ class RV(Arithmetic, Comparable):
         def op_func(self, other):
             if isinstance(other, RV):
                 self.check_same_probSpace(other)
-                def fn(outcome):
-                    return op(self.fun(outcome), other.fun(outcome))
-                return RV(self.probSpace, fn)
+                def func(outcome):
+                    return op(self.func(outcome), other.func(outcome))
+                return RV(self.probSpace, func)
             else:
                 return self.apply(lambda x: op(x, other))
 
@@ -169,10 +169,10 @@ class RV(Arithmetic, Comparable):
         def op_func(self, other):
             if is_scalar(other):
                 return Event(self.probSpace,
-                             lambda x: op(self.fun(x), other))
+                             lambda x: op(self.func(x), other))
             elif isinstance(other, RV):
                 return Event(self.probSpace,
-                             lambda x: op(self.fun(x), other.fun(x)))
+                             lambda x: op(self.func(x), other.func(x)))
             else:
                 raise NotImplementedError
 
@@ -183,24 +183,21 @@ class RV(Arithmetic, Comparable):
     def __and__(self, other):
         self.check_same_probSpace(other)
         if isinstance(other, RV):
-            def fun(outcome):
-                return join(self.fun(outcome), other.fun(outcome))
+            def func(outcome):
+                return join(self.func(outcome), other.func(outcome))
         elif is_scalar(other):
-            def fun(outcome):
-                return join(self.fun(outcome), other)
+            def func(outcome):
+                return join(self.func(outcome), other)
         else:
             raise Exception("Joint distributions are only defined for RVs.")
-        return RV(self.probSpace, fun)
+        return RV(self.probSpace, func)
 
     def __rand__(self, other):
         self.check_same_probSpace(other)
-        if isinstance(other, RV):
-            def fun(outcome):
-                return join(other.fun(outcome), self.fun(outcome))
-        elif is_scalar(other):
-            def fun(outcome):
-                return join(other, self.fun(outcome))
-        return RV(self.probSpace, fun)
+        if is_scalar(other):
+            def func(outcome):
+                return join(other, self.func(outcome))
+        return RV(self.probSpace, func)
                     
     # Define conditional distribution of random variable.
     # e.g., X | (X > 3)
@@ -238,7 +235,7 @@ class RVConditional(RV):
     def __init__(self, random_variable, condition_event):
         self.condition_event = condition_event
         super().__init__(random_variable.probSpace,
-                         random_variable.fun)
+                         random_variable.func)
         
     def draw(self):
         """A function that takes no arguments and returns a value from
@@ -251,6 +248,6 @@ class RVConditional(RV):
         probSpace = self.probSpace
         while True:
             outcome = probSpace.draw()
-            if self.condition_event.fun(outcome):
-                return self.fun(outcome)
+            if self.condition_event.func(outcome):
+                return self.func(outcome)
 

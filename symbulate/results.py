@@ -36,11 +36,11 @@ class Results(Arithmetic, Comparable):
         self.results = list(results)
         self.sim_id = time() if sim_id is None else sim_id
 
-    def apply(self, fun):
+    def apply(self, func):
         """Apply a function to each outcome of a simulation.
 
         Args:
-          fun: A function to apply to each outcome.
+          func: A function to apply to each outcome.
 
         Returns:
           Results: A Results object of the same length,
@@ -49,7 +49,7 @@ class Results(Arithmetic, Comparable):
             Results object.
         """
         return type(self)(
-            [fun(x) for x in self.results],
+            [func(x) for x in self.results],
             self.sim_id
         )
 
@@ -175,12 +175,12 @@ class Results(Arithmetic, Comparable):
     # The following functions return an integer indicating
     # how many outcomes passed a given criterion.
 
-    def count(self, fun=lambda x: True):
+    def count(self, func=lambda x: True):
         """Counts the number of outcomes that satisfied
              a given criterion.
 
         Args:
-          fun (outcome -> bool): A function that
+          func (outcome -> bool): A function that
             takes in an outcome and returns a
             True / False. Only the outcomes that
             return True will be counted.
@@ -189,7 +189,7 @@ class Results(Arithmetic, Comparable):
           int: The number of outcomes for which
             the function returned True.
         """
-        return len(self.filter(fun))
+        return len(self.filter(func))
 
     def count_eq(self, value):
         return len(self.filter_eq(value))
@@ -535,9 +535,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(self.array.mean(axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].mean()
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:
             raise Exception("I don't know how to take the mean of these values.")
 
@@ -548,9 +548,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(self.array.var(axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].var()
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:
             raise Exception("I don't know how to take the variance of these values.")
 
@@ -561,9 +561,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(self.array.std(axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].std()
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:
             raise Exception("I don't know how to take the SD of these values.")
 
@@ -577,9 +577,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(np.percentile(self.array, q * 100, axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].quantile(q)
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:
             raise Exception("I don't know how to take the quanile of these values.")
 
@@ -594,9 +594,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(np.partition(self.array, n - 1, axis=0)[n - 1])
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].orderstatistics(n)
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:                                                                        
             raise Exception("I don't know how to take the order statistics of these values.")
         
@@ -607,9 +607,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(self.array.min(axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].min()
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:
             raise Exception("I don't know how to take the minimum of these values.")
             
@@ -620,9 +620,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(self.array.max(axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].max()
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
 
     def min_max_diff(self):
         self._set_array()
@@ -632,9 +632,9 @@ class RVResults(Results):
             return Vector(self.array.max(axis=0) -
                           self.array.min(axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].min_max_diff()
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:
             raise Exception("I don't know how to take the range of these values.")
 
@@ -647,9 +647,9 @@ class RVResults(Results):
             return Vector(np.percentile(self.array, 75, axis=0) -
                           np.percentile(self.array, 25, axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].iqr()
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:                                                                        
             raise Exception("I don't know how to take the interquartile range of these values.")
 
@@ -660,9 +660,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(stats.skew(self.array, axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].skewness()
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:
             raise Exception("I don't know how to take the skewness of these values.")
 
@@ -673,9 +673,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(stats.kurtosis(self.array, axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].kurtosis()
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:
             raise Exception("I don't know how to take the kurtosis of these values.")
  
@@ -686,9 +686,9 @@ class RVResults(Results):
         elif self.dim is not None:
             return Vector(stats.moment(self.array, k, axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].moment(k)
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:                                                                        
             raise Exception("I don't know how to find the moment of these values.")
     
@@ -700,9 +700,9 @@ class RVResults(Results):
             return Vector(stats.trim_mean(self.array,
                                           alpha, axis=0))
         elif self.index_set is not None:
-            def fn(t):
+            def func(t):
                 return self[t].trimmed_mean(alpha)
-            return TimeFunction.from_index_set(self.index_set, fn)
+            return TimeFunction.from_index_set(self.index_set, func)
         else:                                                                        
             raise Exception("I don't know how to take the trimmed_mean of these values.")
             

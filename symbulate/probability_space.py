@@ -57,9 +57,9 @@ class ProbabilitySpace:
         if exponent == float("inf"):
             def draw():
                 result = InfiniteVector()
-                def fn(n):
+                def func(n):
                     return self.draw()
-                result.fn = fn
+                result.func = func
                 return result
         else:
             def draw():
@@ -69,9 +69,9 @@ class ProbabilitySpace:
 
 class Event:
 
-    def __init__(self, probSpace, fun):
+    def __init__(self, probSpace, func):
         self.probSpace = probSpace
-        self.fun = fun
+        self.func = func
 
     def check_same_probSpace(self, other):
         self.probSpace.check_same(other.probSpace)
@@ -81,18 +81,18 @@ class Event:
         self.check_same_probSpace(other)
         if isinstance(other, Event):
             return Event(self.probSpace,
-                         lambda x: self.fun(x) and other.fun(x))
+                         lambda x: self.func(x) and other.func(x))
 
     # define the event (A | B)
     def __or__(self, other):
         self.check_same_probSpace(other)
         if isinstance(other, Event):
             return Event(self.probSpace,
-                         lambda x: self.fun(x) or other.fun(x))
+                         lambda x: self.func(x) or other.func(x))
 
     # define the event (-A)
     def __invert__(self):
-        return Event(self.probSpace, lambda x: not self.fun(x))
+        return Event(self.probSpace, lambda x: not self.func(x))
 
     # This prevents users from writing expressions like 2 < X < 5,
     # which evaluate to ((2 < X) and (X < 5)). This unfortunately
@@ -106,7 +106,7 @@ class Event:
                     )
 
     def draw(self):
-        return self.fun(self.probSpace.draw())
+        return self.func(self.probSpace.draw())
 
     def sim(self, n):
         return Results(self.draw() for _ in range(n))
@@ -178,9 +178,9 @@ class BoxModel(ProbabilitySpace):
         if self.size is None:
             return self.box[draw_inds(None)]
         elif self.size == float("inf"):
-            def fn(n):
+            def func(n):
                 return self.box[draw_inds(None)]
-            return self.infinite_output_type(fn)
+            return self.infinite_output_type(func)
         else:
             draws = [self.box[i] for i in draw_inds(self.size)]
             if not self.order_matters:
