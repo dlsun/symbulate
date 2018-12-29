@@ -34,6 +34,20 @@ class ProbabilitySpace:
         if self != other:
             raise Exception("Events must be defined on same probability space.")
 
+    def apply(self, func):
+        """Define a new probability space.
+
+        Args:
+          func: function to apply to each realization.
+
+        Returns:
+          A new ProbabilitySpace where each realization is func applied to
+          a realization from the current probability space.
+        """
+        def draw():
+            return func(self.draw())
+        return ProbabilitySpace(draw)
+
     def __mul__(self, other):
         def draw():
             return join(self.draw(), other.draw())
