@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
+from time import time
 
 from .plot import (configure_axes, get_next_color, is_discrete,
     count_var, compute_density, add_colorbar, make_tile,
@@ -30,8 +31,9 @@ def is_hashable(x):
 
 class Results(object):
 
-    def __init__(self, results):
+    def __init__(self, results, sim_id=None):
         self.results = list(results)
+        self.sim_id = time() if sim_id is None else sim_id
 
     def apply(self, fun):
         """Apply a function to each outcome of a simulation.
@@ -45,7 +47,10 @@ class Results(object):
             the function to each outcome from the original
             Results object.
         """
-        return type(self)(fun(x) for x in self.results)
+        return type(self)(
+            [fun(x) for x in self.results],
+            self.sim_id
+        )
 
     def __getitem__(self, i):
         if isinstance(i, Results):
@@ -219,7 +224,15 @@ class Results(object):
                         "Results objects must be of the "
                         "same length."
                     )
-                return type(self)(op(x, y) for x, y in zip(self, other))
+                if self.sim_id != other.sim_id:
+                    raise Exception(
+                        "Results objects must come from the "
+                        "same simulation."
+                    )
+                return type(self)(
+                    [op(x, y) for x, y in zip(self, other)],
+                    self.sim_id
+                )
             else:
                 return self.apply(lambda x: op(x, other))
 
@@ -390,8 +403,8 @@ class Results(object):
 
 class RVResults(Results):
 
-    def __init__(self, results):
-        super().__init__(results)
+    def __init__(self, results, sim_id=None):
+        super().__init__(results, sim_id)
         # determine the dimension and the index set (if applicable) of the Results
         self.dim = None
         self.index_set = None
