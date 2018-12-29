@@ -128,6 +128,11 @@ class Results(object):
             only those outcomes corresponding to True.
         """
         if isinstance(filt, Results):
+            if self.sim_id != filt.sim_id:
+                raise Exception(
+                    "Results objects must come from the "
+                    "same simulation."
+                )
             if len(filt) != len(self):
                 raise ValueError(
                     "Filter must be the same length "
