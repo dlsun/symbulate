@@ -14,7 +14,7 @@ from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
 from time import time
 
-from .base import Arithmetic, Comparable
+from .base import Arithmetic, Comparable, Statistical
 from .plot import (configure_axes, get_next_color, is_discrete,
     count_var, compute_density, add_colorbar, make_tile,
     setup_ticks, make_violin, make_marginal_impulse, make_density2D)
@@ -30,7 +30,7 @@ def is_hashable(x):
     return hasattr(x, "__hash__")
 
 
-class Results(Arithmetic, Comparable):
+class Results(Arithmetic, Comparable, Statistical):
 
     def __init__(self, results, sim_id=None):
         self.results = list(results)
@@ -242,6 +242,12 @@ class Results(Arithmetic, Comparable):
     # usual comparison operations (e.g., <, >, ==, !=, etc.).
     def _comparison_factory(self, op):
         return self._operation_factory(op)
+
+    def _statistic_factory(self, op):
+        raise Exception("Statistical functions are only available "
+                        "for simulations of random variables. "
+                        "Define a RV on this probability space "
+                        "and then try again.")
     
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "
@@ -249,27 +255,6 @@ class Results(Arithmetic, Comparable):
                         "probability space. You must first define a RV "
                         "on your probability space and simulate it. "
                         "Then call .plot() on those simulations.")
- 
-    def mean(self):
-        raise Exception("You can only call .mean() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        "a RV on your probability space and simulate it "
-                        "Then call .mean() on those simulations.")
-
-    def var(self):
-        raise Exception("You can only call .var() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        " a RV on your probability space and simulate it "
-                        "Then call .var() on those simulations.")
-
-    def sd(self):
-        raise Exception("You can only call .sd() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        " a RV on your probability space and simulate it "
-                        "Then call .sd() on those simulations.")
 
     def corr(self):
         raise Exception("You can only call .corr() on simulations of "
@@ -367,6 +352,23 @@ class RVResults(Results):
             raise Exception(
                 "This operation is only possible with results "
                 "of consistent dimension.")
+
+    def _statistic_factory(self, op):
+
+        def op_func(self):
+            self._set_array()
+            if self.dim == 1:
+                return Scalar(op(a=self.array))
+            elif self.dim is not None:
+                return Vector(op(a=self.array, axis=0))
+            elif self.index_set is not None:
+                def func(t):
+                    return op_func(self[t])
+                return TimeFunction.from_index_set(self.index_set, func)
+            else:
+                raise NotImplemented
+
+        return op_func
             
     def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
         bins=None, **kwargs):
@@ -527,185 +529,7 @@ class RVResults(Results):
             for result in self.results:
                 result.plot(alpha=alpha, color=color, **kwargs)
             plt.xlabel("Index")
-            
-    def mean(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.mean())
-        elif self.dim is not None:
-            return Vector(self.array.mean(axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].mean()
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:
-            raise Exception("I don't know how to take the mean of these values.")
-
-    def var(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.var())
-        elif self.dim is not None:
-            return Vector(self.array.var(axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].var()
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:
-            raise Exception("I don't know how to take the variance of these values.")
-
-    def std(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.std())
-        elif self.dim is not None:
-            return Vector(self.array.std(axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].std()
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:
-            raise Exception("I don't know how to take the SD of these values.")
-
-    def sd(self):
-        return self.std()
-
-    def quantile(self, q):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(np.percentile(self.array, q * 100))
-        elif self.dim is not None:
-            return Vector(np.percentile(self.array, q * 100, axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].quantile(q)
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:
-            raise Exception("I don't know how to take the quanile of these values.")
-
-    def median(self):
-        self._set_array()
-        return self.quantile(.5)
         
-    def orderstatistics(self, n):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(np.partition(self.array, n - 1)[n - 1])
-        elif self.dim is not None:
-            return Vector(np.partition(self.array, n - 1, axis=0)[n - 1])
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].orderstatistics(n)
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:                                                                        
-            raise Exception("I don't know how to take the order statistics of these values.")
-        
-    def min(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.min())
-        elif self.dim is not None:
-            return Vector(self.array.min(axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].min()
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:
-            raise Exception("I don't know how to take the minimum of these values.")
-            
-    def max(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.max())
-        elif self.dim is not None:
-            return Vector(self.array.max(axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].max()
-            return TimeFunction.from_index_set(self.index_set, func)
-
-    def min_max_diff(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.max() - self.array.min())
-        elif self.dim is not None:
-            return Vector(self.array.max(axis=0) -
-                          self.array.min(axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].min_max_diff()
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:
-            raise Exception("I don't know how to take the range of these values.")
-
-    def iqr(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(np.percentile(self.array, 75) -
-                          np.percentile(self.array, 25))
-        elif self.dim is not None:
-            return Vector(np.percentile(self.array, 75, axis=0) -
-                          np.percentile(self.array, 25, axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].iqr()
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:                                                                        
-            raise Exception("I don't know how to take the interquartile range of these values.")
-
-    def skewness(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(stats.skew(self.array))
-        elif self.dim is not None:
-            return Vector(stats.skew(self.array, axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].skewness()
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:
-            raise Exception("I don't know how to take the skewness of these values.")
-
-    def kurtosis(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(stats.kurtosis(self.array))
-        elif self.dim is not None:
-            return Vector(stats.kurtosis(self.array, axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].kurtosis()
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:
-            raise Exception("I don't know how to take the kurtosis of these values.")
- 
-    def moment(self, k):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(stats.moment(self.array, k))
-        elif self.dim is not None:
-            return Vector(stats.moment(self.array, k, axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].moment(k)
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:                                                                        
-            raise Exception("I don't know how to find the moment of these values.")
-    
-    def trimmed_mean(self, alpha):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(stats.trim_mean(self.array, alpha))
-        elif self.dim is not None:
-            return Vector(stats.trim_mean(self.array,
-                                          alpha, axis=0))
-        elif self.index_set is not None:
-            def func(t):
-                return self[t].trimmed_mean(alpha)
-            return TimeFunction.from_index_set(self.index_set, func)
-        else:                                                                        
-            raise Exception("I don't know how to take the trimmed_mean of these values.")
-            
     def cov(self, **kwargs):
         self._set_array()
         if self.dim == 2:

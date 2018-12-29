@@ -3,7 +3,7 @@ import numbers
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .base import Arithmetic
+from .base import Arithmetic, Statistical
 from .index_sets import (DiscreteTimeSequence,
                          Reals, Naturals)
 import symbulate
@@ -32,7 +32,7 @@ class Float(float, Scalar):
         return super(Float, cls).__new__(cls, value)
         
 
-class Tuple(Arithmetic):
+class Tuple(Arithmetic, Statistical):
     """A collapsible data structure.
     """
 
@@ -98,10 +98,8 @@ class Tuple(Arithmetic):
     def __abs__(self):
         return self.apply(abs)
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
         def op_func(self, other):
@@ -120,33 +118,16 @@ class Tuple(Arithmetic):
                 return NotImplemented
 
         return op_func
+
+    # The Statistical superclass will use this to define all of the
+    # usual statistical functions (e.g., mean, var, etc.)
+    def _statistic_factory(self, op):
+        def op_func(self):
+            return op(self.values)
+        return op_func
     
-    def sum(self):
-        return np.sum(self.values)
-
-    def mean(self):
-        return np.mean(self.values)
-
     def cumsum(self):
         return Vector(np.cumsum(self.values))
-
-    def median(self):
-        return np.median(self.values)
-    
-    def sd(self):
-        return self.std()
-
-    def std(self):
-        return np.std(self.values)
-
-    def var(self):
-        return np.var(self.values)
-
-    def max(self):
-        return max(self.values)
-
-    def min(self):
-        return min(self.values)
 
     def count_eq(self, x):
         return np.count_nonzero(self.values == x)
@@ -268,10 +249,8 @@ class InfiniteTuple(TimeFunction):
         """
         return type(self)(lambda n: func(self[n]))
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
         def op_func(self, other):
@@ -418,10 +397,8 @@ class DiscreteTimeFunction(TimeFunction):
         return DiscreteTimeFunction(lambda n: func(self[n]),
                                     index_set=self.index_set)
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
         def op_func(self, other):
@@ -515,10 +492,8 @@ class ContinuousTimeFunction(TimeFunction):
         """
         return ContinuousTimeFunction(lambda t: func(self(t)))
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
         def op_func(self, other):
