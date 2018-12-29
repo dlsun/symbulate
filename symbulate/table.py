@@ -4,9 +4,9 @@ This module defines a data structure, Table, that stores the
 output of a .tabulate() operation.  Typically, Table stores
 the possible outcomes and their counts or relative frequencies.
 """
+from .base import Arithmetic
 
-
-class Table(dict):
+class Table(dict, Arithmetic):
 
     table_template = '''
     <table>
@@ -61,36 +61,12 @@ class Table(dict):
         # return HTML for entire table
         return self.table_template.format(table_body=table_body)
 
-    def _transform_values(self, f):
-        return Table({k: f(v) for k, v in self.items()},
-                     self.outcomes)
+    def _operation_factory(self, op):
 
-    def __add__(self, n):
-        return self._transform_values(lambda v: v + n)
+        def op_func(self, other):
+            return Table(
+                {k: op(v, other) for k, v in self.items()},
+                self.outcomes
+            )
 
-    def __radd__(self, n):
-        return self.__add__(n)
-
-    def __sub__(self, n):
-        return self._transform_values(lambda v: v - n)
-
-    def __rsub__(self, n):
-        return self._transform_values(lambda v: n - v)
-
-    def __mul__(self, n):
-        return self._transform_values(lambda v: v * n)
-
-    def __rmul__(self, n):
-        return self.__mul__(n)
-    
-    def __truediv__(self, n):
-        return self._transform_values(lambda v: v / n)
-
-    def __rtruediv__(self, n):
-        return self._transform_values(lambda v: n / v)
-
-    def __pow__(self, n):
-        return self._transform_values(lambda v: v ** n)
-
-    def __rpow__(self, n):
-        return self._transform_values(lambda v: n ** v)
+        return op_func

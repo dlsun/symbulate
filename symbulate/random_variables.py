@@ -1,10 +1,11 @@
 import collections
 
+from .base import Arithmetic, Comparable
 from .probability_space import Event
 from .result import Vector, join, is_scalar
 from .results import RVResults
 
-class RV:
+class RV(Arithmetic, Comparable):
     """Defines a random variable.
     
     A random variable is a function which maps an outcome of
@@ -145,13 +146,11 @@ class RV:
     def __abs__(self):
         return self.apply(abs)
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.)
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def op_func(self, other):
             if isinstance(other, RV):
                 self.check_same_probSpace(other)
                 def fn(outcome):
@@ -160,66 +159,25 @@ class RV:
             else:
                 return self.apply(lambda x: op(x, other))
 
-        return op_fun
+        return op_func
 
-    # e.g., X + Y or X + 3
-    def __add__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x + y)
-        return op_fun(self, other)
+    # The Comparison superclass will use this to define all of the
+    # usual comparison operations (e.g., <, >, ==, !=, etc.).
+    # Note that a comparison of a random variable returns an Event.
+    def _comparison_factory(self, op):
 
-    # e.g., 3 + X
-    def __radd__(self, other):
-        return self.__add__(other)
+        def op_func(self, other):
+            if is_scalar(other):
+                return Event(self.probSpace,
+                             lambda x: op(self.fun(x), other))
+            elif isinstance(other, RV):
+                return Event(self.probSpace,
+                             lambda x: op(self.fun(x), other.fun(x)))
+            else:
+                raise NotImplementedError
 
-    # e.g., X - Y or X - 3
-    def __sub__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x - y)
-        return op_fun(self, other)
-
-    # e.g., 3 - X
-    def __rsub__(self, other):
-        return -1 * self.__sub__(other)
-
-    # e.g., -X
-    def __neg__(self):
-        return -1 * self
-
-    # e.g., X * Y or X * 2
-    def __mul__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x * y)
-        return op_fun(self, other)
+        return op_func
             
-    # e.g., 2 * X
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    # e.g., X / Y or X / 2
-    def __truediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x / y)
-        return op_fun(self, other)
-
-    # e.g., 2 / X
-    def __rtruediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y / x)
-        return op_fun(self, other)
-
-    # e.g., X ** 2
-    def __pow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x ** y)
-        return op_fun(self, other)
-
-    # e.g., 2 ** X
-    def __rpow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y ** x)
-        return op_fun(self, other)
-
-    # Alternative notation for powers: e.g., X ^ 2
-    def __xor__(self, other):
-        return self.__pow__(other)
-    
-    # Alternative notation for powers: e.g., 2 ^ X
-    def __rxor__(self, other):
-        return self.__rpow__(other)
 
     # Define a joint distribution of two random variables: e.g., X & Y
     def __and__(self, other):
@@ -244,75 +202,6 @@ class RV:
                 return join(other, self.fun(outcome))
         return RV(self.probSpace, fun)
                     
-    ## The following operations all return Events
-    ## (Events are used to define conditional distributions)
-
-    # e.g., X < 3
-    def __lt__(self, other):
-        if is_scalar(other):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) < other)
-        elif isinstance(other, RV):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) < other.fun(x))
-        else:
-            raise NotImplementedError
-
-    # e.g., X <= 3
-    def __le__(self, other):
-        if is_scalar(other):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) <= other)
-        elif isinstance(other, RV):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) <= other.fun(x))
-        else:
-            raise NotImplementedError
-
-    # e.g., X > 3
-    def __gt__(self, other):
-        if is_scalar(other):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) > other)
-        elif isinstance(other, RV):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) > other.fun(x))
-        else:
-            raise NotImplementedError
-
-    # e.g., X >= 3
-    def __ge__(self, other):
-        if is_scalar(other):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) >= other)
-        elif isinstance(other, RV):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) >= other.fun(x))
-        else:
-            raise NotImplementedError
-
-    # e.g., X == 3
-    def __eq__(self, other):
-        if is_scalar(other) or type(other) == str:
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) == other)
-        elif isinstance(other, RV):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) == other.fun(x))
-        else:
-            raise NotImplementedError
-
-    # e.g., X != 3
-    def __ne__(self, other):
-        if is_scalar(other) or type(other) == str:
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) != other)
-        elif isinstance(other, RV):
-            return Event(self.probSpace,
-                         lambda x: self.fun(x) != other.fun(x))
-        else:
-            raise NotImplementedError
-
     # Define conditional distribution of random variable.
     # e.g., X | (X > 3)
     def __or__(self, condition_event):

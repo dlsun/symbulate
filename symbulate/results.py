@@ -14,6 +14,7 @@ from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
 from time import time
 
+from .base import Arithmetic, Comparable
 from .plot import (configure_axes, get_next_color, is_discrete,
     count_var, compute_density, add_colorbar, make_tile,
     setup_ticks, make_violin, make_marginal_impulse, make_density2D)
@@ -29,7 +30,7 @@ def is_hashable(x):
     return hasattr(x, "__hash__")
 
 
-class Results(object):
+class Results(Arithmetic, Comparable):
 
     def __init__(self, results, sim_id=None):
         self.results = list(results)
@@ -208,21 +209,15 @@ class Results(object):
     def count_geq(self, value):
         return len(self.filter_geq(value))
 
-
-    # The following functions define vectorized operations
-    # on the Results object.
-
     # e.g., abs(X)
     def __abs__(self):
         return self.apply(abs)
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def op_func(self, other):
             if isinstance(other, Results):
                 if len(self) != len(other):
                     raise Exception(
@@ -241,91 +236,13 @@ class Results(object):
             else:
                 return self.apply(lambda x: op(x, other))
 
-        return op_fun
+        return op_func
 
-    # e.g., X + Y or X + 3
-    def __add__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x + y)
-        return op_fun(self, other)
-
-    # e.g., 3 + X
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    # e.g., X - Y or X - 3
-    def __sub__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x - y)
-        return op_fun(self, other)
-
-    # e.g., 3 - X
-    def __rsub__(self, other):
-        return -1 * self.__sub__(other)
-
-    # e.g., -X
-    def __neg__(self):
-        return -1 * self
-
-    # e.g., X * Y or X * 2
-    def __mul__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x * y)
-        return op_fun(self, other)
-            
-    # e.g., 2 * X
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    # e.g., X / Y or X / 2
-    def __truediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x / y)
-        return op_fun(self, other)
-
-    # e.g., 2 / X
-    def __rtruediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y / x)
-        return op_fun(self, other)
-
-    # e.g., X ** 2
-    def __pow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x ** y)
-        return op_fun(self, other)
-
-    # e.g., 2 ** X
-    def __rpow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y ** x)
-        return op_fun(self, other)
-
-    # Alternative notation for powers: e.g., X ^ 2
-    def __xor__(self, other):
-        return self.__pow__(other)
+    # The Comparison superclass will use this to define all of the
+    # usual comparison operations (e.g., <, >, ==, !=, etc.).
+    def _comparison_factory(self, op):
+        return self._operation_factory(op)
     
-    # Alternative notation for powers: e.g., 2 ^ X
-    def __rxor__(self, other):
-        return self.__rpow__(other)
-    
-    def __eq__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x == y)
-        return op_fun(self, other)
-
-    def __ne__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x != y)
-        return op_fun(self, other)
-
-    def __lt__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x < y)
-        return op_fun(self, other)
-
-    def __le__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x <= y)
-        return op_fun(self, other)
-
-    def __gt__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x > y)
-        return op_fun(self, other)
-
-    def __ge__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x >= y)
-        return op_fun(self, other)
-
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "
                         "can be plotted, but you simulated from a " 

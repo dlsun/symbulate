@@ -3,6 +3,7 @@ import numbers
 import numpy as np
 import matplotlib.pyplot as plt
 
+from .base import Arithmetic
 from .index_sets import (DiscreteTimeSequence,
                          Reals, Naturals)
 import symbulate
@@ -31,7 +32,7 @@ class Float(float, Scalar):
         return super(Float, cls).__new__(cls, value)
         
 
-class Tuple(object):
+class Tuple(Arithmetic):
     """A collapsible data structure.
     """
 
@@ -102,7 +103,7 @@ class Tuple(object):
     # generates the code to perform that operation.
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def op_func(self, other):
             if isinstance(other, numbers.Number):
                 return type(self)(op(value, other) for value in self)
             elif hasattr(other, "__len__"):
@@ -117,67 +118,8 @@ class Tuple(object):
             else:
                 return NotImplemented
 
-        return op_fun
+        return op_func
     
-    # e.g., f + g or f + 3
-    def __add__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x + y)
-        return op_fun(self, other)
-
-    # e.g., 3 + f
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    # e.g., f - g or f - 3
-    def __sub__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x - y)
-        return op_fun(self, other)
-
-    # e.g., 3 - f
-    def __rsub__(self, other):
-        return -1 * self.__sub__(other)
-
-    # e.g., -f
-    def __neg__(self):
-        return -1 * self
-
-    # e.g., f * g or f * 2
-    def __mul__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x * y)
-        return op_fun(self, other)
-            
-    # e.g., 2 * f
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    # e.g., f / g or f / 2
-    def __truediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x / y)
-        return op_fun(self, other)
-
-    # e.g., 2 / f
-    def __rtruediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y / x)
-        return op_fun(self, other)
-
-    # e.g., f ** 2
-    def __pow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x ** y)
-        return op_fun(self, other)
-
-    # e.g., 2 ** f
-    def __rpow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y ** x)
-        return op_fun(self, other)
-
-    # Alternative notation for powers: e.g., f ^ 2
-    def __xor__(self, other):
-        return self.__pow__(other)
-    
-    # Alternative notation for powers: e.g., 2 ^ f
-    def __rxor__(self, other):
-        return self.__rpow__(other)
-
     def sum(self):
         return np.sum(self.values)
 
@@ -229,7 +171,7 @@ class Vector(Tuple):
     pass
 
 
-class TimeFunction(object):
+class TimeFunction(Arithmetic):
 
     @classmethod
     def from_index_set(cls, index_set, fn=None):
@@ -259,65 +201,6 @@ class TimeFunction(object):
     # e.g., abs(X)
     def __abs__(self):
         return self.apply(abs)
-
-    # e.g., f + g or f + 3
-    def __add__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x + y)
-        return op_fun(self, other)
-
-    # e.g., 3 + f
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    # e.g., f - g or f - 3
-    def __sub__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x - y)
-        return op_fun(self, other)
-
-    # e.g., 3 - f
-    def __rsub__(self, other):
-        return -1 * self.__sub__(other)
-
-    # e.g., -f
-    def __neg__(self):
-        return -1 * self
-
-    # e.g., f * g or f * 2
-    def __mul__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x * y)
-        return op_fun(self, other)
-            
-    # e.g., 2 * f
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    # e.g., f / g or f / 2
-    def __truediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x / y)
-        return op_fun(self, other)
-
-    # e.g., 2 / f
-    def __rtruediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y / x)
-        return op_fun(self, other)
-
-    # e.g., f ** 2
-    def __pow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x ** y)
-        return op_fun(self, other)
-
-    # e.g., 2 ** f
-    def __rpow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y ** x)
-        return op_fun(self, other)
-
-    # Alternative notation for powers: e.g., f ^ 2
-    def __xor__(self, other):
-        return self.__pow__(other)
-    
-    # Alternative notation for powers: e.g., 2 ^ f
-    def __rxor__(self, other):
-        return self.__rpow__(other)
 
     
 class InfiniteTuple(TimeFunction):
@@ -390,7 +273,7 @@ class InfiniteTuple(TimeFunction):
     # generates the code to perform that operation.
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def op_func(self, other):
             self.check_same_index_set(other)
             if isinstance(other, numbers.Number):
                 return type(self)(lambda n: op(self[n], other))
@@ -399,7 +282,7 @@ class InfiniteTuple(TimeFunction):
             else:
                 return NotImplemented
 
-        return op_fun
+        return op_func
 
 
 class InfiniteVector(InfiniteTuple):
@@ -540,7 +423,7 @@ class DiscreteTimeFunction(TimeFunction):
     # generates the code to perform that operation.
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def op_func(self, other):
             self.check_same_index_set(other)
             if isinstance(other, numbers.Number):
                 return DiscreteTimeFunction(
@@ -555,7 +438,7 @@ class DiscreteTimeFunction(TimeFunction):
             else:
                 return NotImplemented
 
-        return op_fun
+        return op_func
 
     def __str__(self):
         first_few = ", ".join(str(self[n]) for n in range(-2, 3))
@@ -637,7 +520,7 @@ class ContinuousTimeFunction(TimeFunction):
     # generates the code to perform that operation.
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def op_func(self, other):
             self.check_same_index_set(other)
             if isinstance(other, numbers.Number):
                 return ContinuousTimeFunction(
@@ -650,7 +533,7 @@ class ContinuousTimeFunction(TimeFunction):
             else:
                 return NotImplemented
 
-        return op_fun
+        return op_func
 
     def __str__(self):
         return "[continuous-time function]"
