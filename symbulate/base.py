@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import scipy.stats as stats
 
@@ -105,8 +107,11 @@ class Comparable:
 class Statistical:
     """A class with statistical functions, such as mean, var, etc.
 
-    Subclasses must implement the _statistic_factory method,
-    which specifies how the statistic is calculated on the object.
+    Subclasses must implement the _statistic_factory and 
+    _multivariate_statistic_factory methods, which specify how
+    (univariate) statistics (e.g., mean and variance), as well as
+    multivariate statistics (e.g., covariance and correlation)
+    are calculated on the object.
     """
 
     def sum(self):
@@ -283,3 +288,248 @@ class Statistical:
           The difference between the min and the max.
         """
         return self.max() - self.min()
+
+    def cov(self):
+        r"""Calculate the pairwise covariances.
+
+        The covariance is a measure of the relationship between two variables.
+        The sign of the covariance indicates the direction of the relationship.
+
+        .. math:: 
+
+        \sigma_{XY} = \frac{1}{n} \sum_{i=1}^n (x_i - \mu_X) (y_i - \mu_Y)
+
+        Returns:
+          The pairwise covariances between all coordinates. This is usually
+          a scalar when there are only 2 coordinates and a matrix when
+          there are more than 2 coordinates.
+        """
+        op_func = self._multivariate_statistic_factory(
+            lambda a: np.cov(a, rowvar=False, ddof=0)
+        )
+        return op_func(self)
+
+    def corr(self):
+        r"""Calculate the pairwise correlations.
+
+        The correlation is the covariance, normalized by the standard deviations.
+
+        .. math:: 
+
+        \rho_{XY} = \frac{1}{n} \sum_{i=1}^n \frac{x_i - \mu_X}{\sigma_X} \frac{y_i - \mu_Y}{\sigma_Y}
+
+        Returns:
+          The pairwise correlations between all dimensions. This is usually
+          a scalar when there are only 2 dimensions and a matrix when
+          there are more than 2 dimensions.
+        """
+        op_func = self._multivariate_statistic_factory(
+            lambda a: np.corrcoef(a, rowvar=False, ddof=0)
+        )
+        return op_func(self)
+
+    def corrcoef(self):
+        r"""An alias for .corr()"""
+        return self.corr()
+    
+
+class Filterable:
+    """A class with filtering and counting methods.
+
+    Subclasses must implement the filter method, which specifies how to 
+    construct a new instance containing only those elements that satisfy 
+    a given criterion.
+    """
+
+    def filter_eq(self, value):
+        """Get all elements equal to a particular value.
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          All of the elements that were equal to value.
+        """
+        return self.filter(lambda x: x == value)
+
+    def filter_neq(self, value):
+        """Get all elements _not_ equal to a particular value.
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          All of the elements that were _not_ equal to value.
+        """
+        return self.filter(lambda x: x != value)
+
+    def filter_lt(self, value):
+        """Get all elements less than a particular value.
+
+        N.B. lt stands for "less than". For elements that are 
+        less than _or equal to_ the given value, use .filter_leq(value).
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          All of the elements that were less than value.
+        """
+        return self.filter(lambda x: x < value)
+
+    def filter_leq(self, value):
+        """Get all elements less than or equal to a particular value.
+
+        N.B. leq stands for "less than or equal to". For elements 
+        that are strictly less than the given value, use .filter_lt(value).
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          All of the elements that were less than _or equal to_ value.
+        """
+        return self.filter(lambda x: x <= value)
+
+    def filter_gt(self, value):
+        """Get all elements greater than a particular value.
+
+        N.B. gt stands for "greater than". For elements that are 
+        greater than _or equal to_ the given value, use .filter_geq(value).
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          All of the elements that were greater than value.
+        """
+
+        return self.filter(lambda x: x > value)
+
+    def filter_geq(self, value):
+        """Get all elements greater than or equal to a particular value.
+
+        N.B. geq stands for "greater than or equal to". For elements
+        that are strictly greater than the given value, use .filter_gt(value).
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          All of the elements that were greater than _or equal to_ value.
+        """
+        return self.filter(lambda x: x >= value)
+
+
+    # The following functions return an integer indicating
+    # how many elements passed a given criterion.
+    
+    def count(self, func=lambda x: True):
+        """Counts the number of elements satisfying a given criterion.
+
+        Args:
+          func (element -> bool): A function that takes in an element
+            and returns a boolean (True/False). Only those elements
+            that return True will be counted.
+
+        Returns:
+          int: The number of elements e for which func(e) is True.
+        """
+        return len(self.filter(func))
+
+    def count_eq(self, value):
+        """Count the number of elements equal to a particular value.
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          int: The number of elements that were equal to value.
+        """
+        return len(self.filter_eq(value))
+
+    def count_neq(self, value):
+        """Count the number of elements _not_ equal to a particular value.
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          int: The number of elements that were not equal to value.
+        """
+        return len(self.filter_neq(value))
+
+    def count_lt(self, value):
+        """Count the number of elements less than a particular value.
+
+        N.B. lt stands for "greater than". For the number of elements
+        that are less than _or equal to_ the given value, use 
+        .count_leq(value).
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          int: The number of elements that were less than value.
+        """
+        return len(self.filter_lt(value))
+
+    def count_leq(self, value):
+        """Count the number of elements less than or equal to a particular value.
+
+        N.B. leq stands for "less than or equal to". For the number of
+        elements that are strictly greater than the given value, use 
+        .count_lt(value).
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          int: The number of elements that were less than _or equal to_ value.
+        """
+        return len(self.filter_leq(value))
+
+    def count_gt(self, value):
+        """Count the number of elements greater than a particular value.
+
+        N.B. gt stands for "greater than". For the number of elements
+        that are greater than _or equal to_ the given value, use 
+        .count_geq(value).
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          int: The number of elements that were greater than value.
+        """
+        return len(self.filter_gt(value))
+
+    def count_geq(self, value):
+        """Count the number of elements greater than or equal to a particular value.
+
+        N.B. geq stands for "greater than or equal to". For the number of
+        elements that are strictly greater than the given value, use 
+        .count_gt(value).
+
+        Args:
+          value: A value of the same type as the elements in the object.
+       
+        Returns:
+          int: The number of elements that were greater than _or equal to_ value.
+        """
+        return len(self.filter_geq(value))
+
+
+class Transformable:
+
+    def __abs__(self):
+        return self.apply(abs)
+
+    def __round__(self):
+        return self.apply(round)
+    
+    def __floor__(self):
+        return self.apply(math.floor)
+
+    def __ceil__(self):
+        return self.apply(math.ceil)

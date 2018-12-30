@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import symbulate
-from .base import Arithmetic, Statistical
+from .base import Arithmetic, Transformable, Statistical, Filterable
 from .index_sets import (DiscreteTimeSequence,
                          Reals, Naturals)
 
@@ -32,7 +32,7 @@ class Float(float, Scalar):
         return super(Float, cls).__new__(cls, value)
 
 
-class Tuple(Arithmetic, Statistical):
+class Tuple(Arithmetic, Transformable, Statistical, Filterable):
     """A collapsible data structure.
     """
 
@@ -54,8 +54,8 @@ class Tuple(Arithmetic, Statistical):
         return len(self.values)
 
     def __iter__(self):
-        for x in self.values:
-            yield x
+        for value in self.values:
+            yield value
 
     def __hash__(self):
         return hash(tuple(self.values))
@@ -92,17 +92,28 @@ class Tuple(Arithmetic, Statistical):
             return log(n) ** 2
           y = x.apply(log_squared)
         """
-        return type(self)(func(x) for x in self)
+        return type(self)(func(e) for e in self)
 
-    # e.g., abs(X)
-    def __abs__(self):
-        return self.apply(abs)
+    # The Filterable superclass will use this to define all of the
+    # .filter_*() and .count_*() methods.
+    def filter(self, filt):
+        """Get only the elements that satisfy the given criterion.
 
+        Args:
+          filt: A function that takes in an element and returns
+            a boolean.
+
+        Returns:
+          Tuple: Another Tuple containing only those elements e
+          where filt(e) is True.
+        """
+        return type(self)(e for e in self if filt(e))
+    
     # The Arithmetic superclass will use this to define all of the
     # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_func(self, other):
+        def _op_func(self, other):
             if isinstance(other, numbers.Number):
                 return type(self)(op(value, other) for value in self)
             elif hasattr(other, "__len__"):
@@ -117,20 +128,17 @@ class Tuple(Arithmetic, Statistical):
             else:
                 return NotImplemented
 
-        return op_func
+        return _op_func
 
     # The Statistical superclass will use this to define all of the
     # usual statistical functions (e.g., mean, var, etc.)
     def _statistic_factory(self, op):
-        def op_func(self):
+        def _op_func(self):
             return op(self.values)
-        return op_func
+        return _op_func
 
     def cumsum(self):
         return Vector(np.cumsum(self.values))
-
-    def count_eq(self, x):
-        return np.count_nonzero(self.values == x)
 
     def plot(self, **kwargs):
         plt.plot(range(len(self)), self.values, '.--', **kwargs)
@@ -148,7 +156,7 @@ class Tuple(Arithmetic, Statistical):
 
 
 class Vector(Tuple):
-    """A non-collapsible data structure.
+    """A data structure like a Tuple, except it does not collapse.
     """
     pass
 
@@ -178,10 +186,6 @@ class TimeFunction(Arithmetic):
                 "Cannot combine %s with %s." % (
                     str(type(self)), str(type(other)))
             )
-
-    # e.g., abs(X)
-    def __abs__(self):
-        return self.apply(abs)
 
 
 class InfiniteTuple(TimeFunction):
@@ -252,7 +256,7 @@ class InfiniteTuple(TimeFunction):
     # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_func(self, other):
+        def _op_func(self, other):
             self.check_same_index_set(other)
             if isinstance(other, numbers.Number):
                 return type(self)(lambda n: op(self[n], other))
@@ -261,7 +265,7 @@ class InfiniteTuple(TimeFunction):
             else:
                 return NotImplemented
 
-        return op_func
+        return _op_func
 
 
 class InfiniteVector(InfiniteTuple):
@@ -400,7 +404,7 @@ class DiscreteTimeFunction(TimeFunction):
     # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_func(self, other):
+        def _op_func(self, other):
             self.check_same_index_set(other)
             if isinstance(other, numbers.Number):
                 return DiscreteTimeFunction(
@@ -415,7 +419,7 @@ class DiscreteTimeFunction(TimeFunction):
             else:
                 return NotImplemented
 
-        return op_func
+        return _op_func
 
     def __str__(self):
         first_few = ", ".join(str(self[n]) for n in range(-2, 3))
@@ -495,7 +499,7 @@ class ContinuousTimeFunction(TimeFunction):
     # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_func(self, other):
+        def _op_func(self, other):
             self.check_same_index_set(other)
             if isinstance(other, numbers.Number):
                 return ContinuousTimeFunction(
@@ -508,7 +512,7 @@ class ContinuousTimeFunction(TimeFunction):
             else:
                 return NotImplemented
 
-        return op_func
+        return _op_func
 
     def __str__(self):
         return "[continuous-time function]"

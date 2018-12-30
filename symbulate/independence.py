@@ -40,8 +40,8 @@ def AssumeIndependent(*args):
     outputs = []
     for i, arg in enumerate(args):
         # i=i forces Python to bind i now
-        def func_(x, func=arg.func, i=i):
+        def _func(x, func=arg.func, i=i):
             return func(x[i])
-        outputs.append(RV(P, func_))
+        outputs.append(RV(P, _ofunc))
 
     return tuple(outputs)

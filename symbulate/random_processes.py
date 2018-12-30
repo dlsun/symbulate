@@ -33,7 +33,7 @@ class RandomProcess(RV):
         self.rvs = {}
 
         # Define the function for the RV.
-        def func_(outcome):
+        def _func(outcome):
             def x(t):
                 # First, check if the time is in self.rvs.
                 if t in self.rvs:
@@ -41,7 +41,7 @@ class RandomProcess(RV):
                 return func(outcome, t)
             return TimeFunction.from_index_set(self.index_set, x)
 
-        super().__init__(prob_space, func_)
+        super().__init__(prob_space, _func)
 
     def __setitem__(self, t, value):
         if t not in self.index_set:

@@ -67,10 +67,10 @@ class Table(dict, Arithmetic):
 
     def _operation_factory(self, op):
 
-        def op_func(self, other):
+        def _op_func(self, other):
             return Table(
-                {k: op(v, other) for k, v in self.items()},
+                {outcome: op(count, other) for outcome, count in self.items()},
                 self.outcomes
             )
 
-        return op_func
+        return _op_func

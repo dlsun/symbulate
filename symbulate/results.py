@@ -14,7 +14,8 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
 
-from .base import Arithmetic, Comparable, Statistical
+from .base import (Arithmetic, Transformable, Statistical,
+                   Comparable, Filterable)
 from .plot import (configure_axes, get_next_color, is_discrete,
                    count_var, compute_density, add_colorbar,
                    setup_ticks, make_tile, make_violin,
@@ -27,11 +28,12 @@ from .table import Table
 plt.style.use('seaborn-colorblind')
 
 
-def is_hashable(x):
+def _is_hashable(x):
     return hasattr(x, "__hash__")
 
 
-class Results(Arithmetic, Comparable, Statistical):
+class Results(Arithmetic, Transformable, Statistical,
+              Comparable, Filterable):
 
     def __init__(self, results, sim_id=None):
         self.results = list(results)
@@ -50,41 +52,56 @@ class Results(Arithmetic, Comparable, Statistical):
             Results object.
         """
         return type(self)(
-            [func(x) for x in self.results],
+            [func(result) for result in self.results],
             self.sim_id
         )
 
     def __getitem__(self, i):
+        # if i is a Results object, use it as a boolean mask
         if isinstance(i, Results):
             return self.filter(i)
-        else:
-            return self.apply(lambda x: x[i])
+        # otherwise, return the ith dimension
+        return self.apply(lambda result: result[i])
 
     def __iter__(self):
-        for x in self.results:
-            yield x
+        for result in self.results:
+            yield result
 
     def __len__(self):
         return len(self.results)
 
     def get(self, i):
-        for j, x in enumerate(self.results):
-            if j == i:
-                return x
+        """Get the outcome of the ith simulation.
+
+        Suppose x is an instance of a Results object.
+        Although x behaves like a list, in that you
+        can iterate over it, x[i] does not return
+        the ith simulation. Instead, it returns a
+        Results object, containing the ith dimension
+        of every simulation. To get the outcome of the
+        ith simulation, the .get(i) method is provided.
+
+        Args:
+          i (int): the index of the simulation result to get
+
+        Returns:
+          The outcome of the ith simulation.
+        """
+        return self.results[i]
 
     def _get_counts(self):
         counts = {}
-        for x in self.results:
-            if is_hashable(x):
-                y = x
-            elif isinstance(x, list) and all(is_hashable(i) for i in x):
-                y = tuple(x)
+        for result in self.results:
+            if _is_hashable(result):
+                outcome = result
+            elif isinstance(result, list) and all(_is_hashable(x) for x in result):
+                outcome = tuple(result)
             else:
-                y = str(x)
-            if y in counts:
-                counts[y] += 1
+                outcome = str(result)
+            if outcome in counts:
+                counts[outcome] += 1
             else:
-                counts[y] = 1
+                counts[outcome] = 1
         return counts
 
     def tabulate(self, outcomes=None, normalize=False):
@@ -106,18 +123,13 @@ class Results(Arithmetic, Comparable, Statistical):
         """
         table = Table(self._get_counts(), outcomes)
         if normalize:
-            return table / len(self)
-        else:
-            return table
+            table /= len(self)
+        return table
 
-
-    # The following functions return a Results object
-    # with the outcomes that satisfy a given criterion.
-
+    # The Filterable superclass will use this to define all of the
+    # .filter_*() and .count_*() methods.
     def filter(self, filt):
-        """Filters the results of a simulation and
-             returns only those outcomes that satisfy
-             a given criterion.
+        """Get only the results that satisfy the given criterion.
 
         Args:
           filt: Either a function that takes in
@@ -132,7 +144,8 @@ class Results(Arithmetic, Comparable, Statistical):
         if isinstance(filt, Results):
             if self.sim_id != filt.sim_id:
                 raise Exception(
-                    "Results objects must come from the "
+                    "In order to filter one Results object "
+                    "by another, they must come from the "
                     "same simulation."
                 )
             if len(filt) != len(self):
@@ -145,80 +158,20 @@ class Results(Arithmetic, Comparable, Statistical):
                     "Every element in the filter must "
                     "be a boolean."
                     )
-            return type(self)(x for x, y in zip(self, filt) if y)
+            return type(self)(x for x, cond in zip(self, filt) if cond)
         elif callable(filt):
-            return type(self)(x for x in self.results if filt(x))
+            return type(self)(x for x in self if filt(x))
         else:
             raise TypeError(
                 "A filter must be either a function or a "
                 "boolean Results object of the same length."
             )
 
-    def filter_eq(self, value):
-        return self.filter(lambda x: x == value)
-
-    def filter_neq(self, value):
-        return self.filter(lambda x: x != value)
-
-    def filter_lt(self, value):
-        return self.filter(lambda x: x < value)
-
-    def filter_leq(self, value):
-        return self.filter(lambda x: x <= value)
-
-    def filter_gt(self, value):
-        return self.filter(lambda x: x > value)
-
-    def filter_geq(self, value):
-        return self.filter(lambda x: x >= value)
-
-
-    # The following functions return an integer indicating
-    # how many outcomes passed a given criterion.
-
-    def count(self, func=lambda x: True):
-        """Counts the number of outcomes that satisfied
-             a given criterion.
-
-        Args:
-          func (outcome -> bool): A function that
-            takes in an outcome and returns a
-            True / False. Only the outcomes that
-            return True will be counted.
-
-        Returns:
-          int: The number of outcomes for which
-            the function returned True.
-        """
-        return len(self.filter(func))
-
-    def count_eq(self, value):
-        return len(self.filter_eq(value))
-
-    def count_neq(self, value):
-        return len(self.filter_neq(value))
-
-    def count_lt(self, value):
-        return len(self.filter_lt(value))
-
-    def count_leq(self, value):
-        return len(self.filter_leq(value))
-
-    def count_gt(self, value):
-        return len(self.filter_gt(value))
-
-    def count_geq(self, value):
-        return len(self.filter_geq(value))
-
-    # e.g., abs(X)
-    def __abs__(self):
-        return self.apply(abs)
-
     # The Arithmetic superclass will use this to define all of the
     # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_func(self, other):
+        def _op_func(self, other):
             if isinstance(other, Results):
                 if len(self) != len(other):
                     raise Exception(
@@ -237,18 +190,23 @@ class Results(Arithmetic, Comparable, Statistical):
             else:
                 return self.apply(lambda x: op(x, other))
 
-        return op_func
+        return _op_func
 
     # The Comparison superclass will use this to define all of the
     # usual comparison operations (e.g., <, >, ==, !=, etc.).
     def _comparison_factory(self, op):
         return self._operation_factory(op)
 
-    def _statistic_factory(self, op):
+    # The Statistical superclass will use this to define all of the
+    # usual comparison operations (e.g., <, >, ==, !=, etc.).
+    def _statistic_factory(self, _):
         raise Exception("Statistical functions are only available "
                         "for simulations of random variables. "
                         "Define a RV on this probability space "
                         "and then try again.")
+
+    def _multivariate_statistic_factory(self, op):
+        self._statistic_factory(op)
 
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "
@@ -256,21 +214,6 @@ class Results(Arithmetic, Comparable, Statistical):
                         "probability space. You must first define a RV "
                         "on your probability space and simulate it. "
                         "Then call .plot() on those simulations.")
-
-    def corr(self):
-        raise Exception("You can only call .corr() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        " a RV on your probability space and simulate it "
-                        "Then call .corr() on those simulations.")
-
-    def cov(self):
-        raise Exception("You can only call .cov() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        " a RV on your probability space and simulate it "
-                        "Then call .cov() on those simulations.")
-
 
     def _repr_html_(self):
 
@@ -284,27 +227,26 @@ class Results(Arithmetic, Comparable, Statistical):
         {table_body}
       </tbody>
     </table>
-    '''
+        '''
         row_template = '''
         <tr>
           <td>%s</td><td>%s</td>
         </tr>
         '''
 
-        def truncate(result):
+        def _truncate(result):
             if len(result) > 100:
                 return result[:100] + "..."
-            else:
-                return result
+            return result
 
         table_body = ""
-        for i, x in enumerate(self.results):
-            table_body += row_template % (i, truncate(str(x)))
+        for i, result in enumerate(self.results):
+            table_body += row_template % (i, _truncate(str(result)))
             # if we've already printed 9 rows, skip to end
             if i >= 8:
                 table_body += "<tr><td>...</td><td>...</td></tr>"
                 i_last = len(self) - 1
-                table_body += row_template % (i_last, truncate(str(self.get(i_last))))
+                table_body += row_template % (i_last, _truncate(str(self.get(i_last))))
                 break
         return table_template.format(table_body=table_body)
 
@@ -313,31 +255,32 @@ class RVResults(Results):
 
     def __init__(self, results, sim_id=None):
         super().__init__(results, sim_id)
-        # determine the dimension and the index set (if applicable) of the Results
-        self.dim = None
-        self.index_set = None
         # get type and dimension of the first result, if it exists
         iterresults = iter(self)
         try:
             first_result = next(iterresults)
         except StopIteration:
             return
+        # determine the index set (if each realization is a TimeFunction)
         if isinstance(first_result, TimeFunction):
             self.index_set = first_result.index_set
+        else:
+            self.index_set = None
+        # determine the dimension
         if is_scalar(first_result):
             self.dim = 1
         elif is_vector(first_result):
             self.dim = len(first_result)
+        else:
+            self.dim = None
         # iterate over remaining results, ensure they are consistent with the first
         for result in iterresults:
             if (isinstance(result, TimeFunction) and
                 result.index_set != self.index_set):
                 self.index_set = None
-                break
             if ((is_scalar(result) and self.dim != 1) or
                 (is_vector(result) and self.dim != len(result))):
                 self.dim = None
-                break
 
     def _set_array(self):
         # check if it has already been set
@@ -354,25 +297,57 @@ class RVResults(Results):
                 "This operation is only possible with results "
                 "of consistent dimension.")
 
+    # The Statistical superclass will use this to define all of the
+    # usual comparison operations (e.g., <, >, ==, !=, etc.).
     def _statistic_factory(self, op):
 
-        def op_func(self):
+        def _op_func(self):
             self._set_array()
             if self.dim == 1:
                 return Scalar(op(a=self.array))
             elif self.dim is not None:
                 return Vector(op(a=self.array, axis=0))
             elif self.index_set is not None:
-                def func(t):
-                    return op_func(self[t])
-                return TimeFunction.from_index_set(self.index_set, func)
-            else:
-                raise NotImplementedError(
-                    "Statistics can only be calculated for numerical "
-                    "data of consistent dimension."
-                )
+                def _func(t):
+                    return _op_func(self[t])
+                return TimeFunction.from_index_set(self.index_set, _func)
+            raise NotImplementedError(
+                "Statistics can only be calculated for numerical "
+                "data of consistent dimension."
+            )
 
-        return op_func
+        return _op_func
+
+    def _multivariate_statistic_factory(self, op):
+
+        def _op_func(self):
+            self._set_array()
+            if self.dim == 2:
+                return op(self.array)[0, 1]
+            elif self.dim > 2:
+                return op(self.array)
+            elif self.dim == 1:
+                raise Exception(
+                    "This multivariate statistic is only defined when "
+                    "when there are at least 2 dimensions.")
+            raise NotImplementedError(
+                "Statistics can only be calculated for numerical "
+                "data of consistent dimension."
+            )
+
+        return _op_func
+
+    def standardize(self):
+        """Standardizes the results with respect to the mean and standard deviation.
+
+        Returns:
+          A new RVResults object, where every dimension has mean 0 and variance 1.
+        """
+        self._set_array()
+        if self.dim is not None:
+            return (self - self.mean()) / self.std()
+        else:
+            raise Exception("Could not standardize the given results.")
 
     def plot(self, type=None, alpha=None, normalize=True, jitter=False,
              bins=None, **kwargs):
@@ -535,32 +510,3 @@ class RVResults(Results):
             for result in self.results:
                 result.plot(alpha=alpha, color=color, **kwargs)
             plt.xlabel("Index")
-
-    def cov(self):
-        self._set_array()
-        if self.dim == 2:
-            return np.cov(self.array, rowvar=False)[0, 1]
-        elif self.dim > 2:
-            return np.cov(self.array, rowvar=False)
-        elif self.dim == 1:
-            raise Exception("Covariance can only be calculated when there are at least 2 dimensions.")
-        else:
-            raise Exception("Covariance requires that the simulation results have consistent dimension.")
-
-    def corr(self):
-        self._set_array()
-        if self.dim == 2:
-            return np.corrcoef(self.array, rowvar=False)[0, 1]
-        elif self.dim > 2:
-            return np.corrcoef(self.array, rowvar=False)
-        elif self.dim == 1:
-            raise Exception("Covariance can only be calculated when there are at least 2 dimensions.")
-        else:
-            raise Exception("Correlation requires that the simulation results have consistent dimension.")
-
-    def standardize(self):
-        self._set_array()
-        if self.dim is not None:
-            return (self - self.mean()) / self.std()
-        else:
-            raise Exception("Could not standardize the given results.")

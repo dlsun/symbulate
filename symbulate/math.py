@@ -20,16 +20,16 @@ inf = float("inf")
 
 def operation_factory(operation):
 
-    def op_func(x):
+    def _op_func(x):
         if isinstance(x, (RV, Tuple, TimeFunction)):
             # recursively call op_fun until x is a scalar
-            return x.apply(op_func)
+            return x.apply(_op_func)
         elif isinstance(x, Results):
-            return x.apply(op_func)
+            return x.apply(_op_func)
         else:
             return operation(x)
 
-    return op_func
+    return _op_func
 
 sqrt = operation_factory(math.sqrt)
 exp = operation_factory(math.exp)
@@ -113,13 +113,13 @@ def comparefun(x, compare, value):
     return count
 
 def count(func=lambda x: True):
-    def func_(x):
+    def _func(x):
         val = 0
         for i in x:
             if func(i):
                 val += 1
         return val
-    return func_
+    return _func
 
 def count_eq(value):
     def func(x):
