@@ -300,9 +300,9 @@ class Statistical:
         \sigma_{XY} = \frac{1}{n} \sum_{i=1}^n (x_i - \mu_X) (y_i - \mu_Y)
 
         Returns:
-          The pairwise covariances between all coordinates. This is usually
-          a scalar when there are only 2 coordinates and a matrix when
-          there are more than 2 coordinates.
+          The pairwise covariances between all dimensions. This is usually
+          a scalar when there are only 2 dimensions and a matrix when
+          there are more than 2 dimensions.
         """
         op_func = self._multivariate_statistic_factory(
             lambda a: np.cov(a, rowvar=False, ddof=0)
@@ -312,7 +312,7 @@ class Statistical:
     def corr(self):
         r"""Calculate the pairwise correlations.
 
-        The correlation is the covariance, normalized by the standard deviations.
+        The correlation is the covariance normalized by the standard deviations.
 
         .. math:: 
 

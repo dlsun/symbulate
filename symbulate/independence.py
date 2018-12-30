@@ -42,6 +42,6 @@ def AssumeIndependent(*args):
         # i=i forces Python to bind i now
         def _func(x, func=arg.func, i=i):
             return func(x[i])
-        outputs.append(RV(P, _ofunc))
+        outputs.append(RV(P, _func))
 
     return tuple(outputs)
