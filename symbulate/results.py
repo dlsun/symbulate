@@ -5,19 +5,20 @@ results of a simulation, either outcomes from a
 probability space or realizations of a random variable /
 random process.
 """
+import time
+
 import numpy as np
-import scipy.stats as stats
 import matplotlib.pyplot as plt
 
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
-from time import time
 
 from .base import Arithmetic, Comparable, Statistical
 from .plot import (configure_axes, get_next_color, is_discrete,
-    count_var, compute_density, add_colorbar, make_tile,
-    setup_ticks, make_violin, make_marginal_impulse, make_density2D)
+                   count_var, compute_density, add_colorbar,
+                   setup_ticks, make_tile, make_violin,
+                   make_marginal_impulse, make_density2D)
 from .result import (Scalar, Vector, TimeFunction,
                      is_scalar, is_vector)
 from .table import Table
@@ -34,7 +35,7 @@ class Results(Arithmetic, Comparable, Statistical):
 
     def __init__(self, results, sim_id=None):
         self.results = list(results)
-        self.sim_id = time() if sim_id is None else sim_id
+        self.sim_id = time.time() if sim_id is None else sim_id
 
     def apply(self, func):
         """Apply a function to each outcome of a simulation.
@@ -121,8 +122,8 @@ class Results(Arithmetic, Comparable, Statistical):
         Args:
           filt: Either a function that takes in
             an outcome and returns a boolean, or
-            a Results object of booleans of the 
-            same length as this Results object.            
+            a Results object of booleans of the
+            same length as this Results object.
 
         Returns:
           Results: Another Results object containing
@@ -248,10 +249,10 @@ class Results(Arithmetic, Comparable, Statistical):
                         "for simulations of random variables. "
                         "Define a RV on this probability space "
                         "and then try again.")
-    
+
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "
-                        "can be plotted, but you simulated from a " 
+                        "can be plotted, but you simulated from a "
                         "probability space. You must first define a RV "
                         "on your probability space and simulate it. "
                         "Then call .plot() on those simulations.")
@@ -262,7 +263,7 @@ class Results(Arithmetic, Comparable, Statistical):
                         "a probability space. You must first define "
                         " a RV on your probability space and simulate it "
                         "Then call .corr() on those simulations.")
-   
+
     def cov(self):
         raise Exception("You can only call .cov() on simulations of "
                         "random variables (RV), but you simulated from "
@@ -319,7 +320,7 @@ class RVResults(Results):
         iterresults = iter(self)
         try:
             first_result = next(iterresults)
-        except:
+        except StopIteration:
             return
         if isinstance(first_result, TimeFunction):
             self.index_set = first_result.index_set
@@ -366,22 +367,25 @@ class RVResults(Results):
                     return op_func(self[t])
                 return TimeFunction.from_index_set(self.index_set, func)
             else:
-                raise NotImplemented
+                raise NotImplementedError(
+                    "Statistics can only be calculated for numerical "
+                    "data of consistent dimension."
+                )
 
         return op_func
-            
-    def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
-        bins=None, **kwargs):
+
+    def plot(self, type=None, alpha=None, normalize=True, jitter=False,
+             bins=None, **kwargs):
         if type is not None:
             if isinstance(type, str):
                 type = (type,)
             elif not isinstance(type, (tuple, list)):
                 raise Exception("I don't know how to plot a " + str(type))
-        
+
         if self.dim == 1:
             # make sure self.array, a Numpy array, has been set
             self._set_array()
-            
+
             # determine plotting parameters
             counts = self._get_counts()
             discrete = is_discrete(counts.values())
@@ -397,7 +401,7 @@ class RVResults(Results):
             fig = plt.gcf()
             ax = plt.gca()
             color = get_next_color(ax)
-            
+
             if 'density' in type:
                 if discrete:
                     xs = sorted(list(counts.keys()))
@@ -433,7 +437,7 @@ class RVResults(Results):
                 if discrete:
                     noise_level = .002 * (self.array.max() - self.array.min())
                     xs = xs + np.random.normal(scale=noise_level, size=n)
-                ax.plot(xs, [0.001] * n, '|', linewidth = 5, color='k')
+                ax.plot(xs, [0.001] * n, '|', linewidth=5, color='k')
                 if len(type) == 1:
                     setup_ticks([], [], ax.yaxis)
         elif self.dim == 2:
@@ -467,14 +471,16 @@ class RVResults(Results):
                     densityY = compute_density(y)
                     x_lines = np.linspace(min(x), max(x), 1000)
                     y_lines = np.linspace(min(y), max(y), 1000)
-                    ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2, color=get_next_color(ax))
-                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2, color=get_next_color(ax), 
-                                  transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
+                    ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2,
+                                   color=get_next_color(ax))
+                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2,
+                                   color=get_next_color(ax),
+                                   transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
                 else:
                     if discrete_x:
                         make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
                     else:
-                        ax_marg_x.hist(x, color=get_next_color(ax), density=normalize, 
+                        ax_marg_x.hist(x, color=get_next_color(ax), density=normalize,
                                        alpha=alpha, bins=bins)
                     if discrete_y:
                         make_marginal_impulse(y_count, get_next_color(ax), ax_marg_y, alpha, 'y')
@@ -507,7 +513,7 @@ class RVResults(Results):
                         new_labels.append(int(label.get_text()) / len(x))
                     caxes.set_yticklabels(new_labels)
                 else:
-                    caxes = add_colorbar(fig, type, histo[3], 'Count')    
+                    caxes = add_colorbar(fig, type, histo[3], 'Count')
             elif 'density' in type:
                 den = make_density2D(x, y, ax)
                 add_colorbar(fig, type, den, 'Density')
@@ -518,7 +524,7 @@ class RVResults(Results):
                 if discrete_x and not discrete_y:
                     positions = sorted(list(x_count.keys()))
                     make_violin(self.array, positions, ax, 'x', alpha)
-                elif not discrete_x and discrete_y: 
+                elif not discrete_x and discrete_y:
                     positions = sorted(list(y_count.keys()))
                     make_violin(self.array, positions, ax, 'y', alpha)
         else:
@@ -529,8 +535,8 @@ class RVResults(Results):
             for result in self.results:
                 result.plot(alpha=alpha, color=color, **kwargs)
             plt.xlabel("Index")
-        
-    def cov(self, **kwargs):
+
+    def cov(self):
         self._set_array()
         if self.dim == 2:
             return np.cov(self.array, rowvar=False)[0, 1]
@@ -541,7 +547,7 @@ class RVResults(Results):
         else:
             raise Exception("Covariance requires that the simulation results have consistent dimension.")
 
-    def corr(self, **kwargs):
+    def corr(self):
         self._set_array()
         if self.dim == 2:
             return np.corrcoef(self.array, rowvar=False)[0, 1]
@@ -558,4 +564,3 @@ class RVResults(Results):
             return (self - self.mean()) / self.std()
         else:
             raise Exception("Could not standardize the given results.")
-

@@ -1,7 +1,6 @@
 import numpy as np
 
 from .distributions import Exponential
-from .index_sets import Naturals, Reals
 from .math import inf
 from .probability_space import ProbabilitySpace
 from .random_variables import RV
@@ -16,11 +15,11 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
 
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         # Check transition matrix
-        for i, row in enumerate(transition_matrix):
+        for row in transition_matrix:
             if abs(sum(row) - 1) > EPS:
                 raise Exception("Rows of a transition matrix must sum to 1.")
-            for j, q in enumerate(row):
-                if q < 0:
+            for p in row:
+                if p < 0:
                     raise Exception("Probabilities cannot be negative.")
         # Check that dimensions agree
         self.transition_matrix = np.asarray(transition_matrix)
@@ -53,7 +52,7 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
             # If nth state not generated yet, generate it.
             if n >= m:
                 state = self.states[m - 1]
-                for i in range(m, n + 1):
+                for _ in range(m, n + 1):
                     state = np.random.choice(
                         range(self.n_states),
                         p=self.transition_matrix[state, :]
@@ -62,9 +61,9 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
             else:
                 state = self.states[n]
             return self.state_labels[state]
-        
+
         super().__init__(func)
-        
+
     def get_states(self):
         return self
 
@@ -90,7 +89,7 @@ class MarkovChainProbabilitySpace(ProbabilitySpace):
 
 
 class MarkovChain(RV):
-    
+
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         """Initialize a (discrete-time) Markov chain.
 
@@ -101,13 +100,13 @@ class MarkovChain(RV):
                         (defaults to 0, 1, ..., n-1)
         """
 
-        probSpace = MarkovChainProbabilitySpace(
+        prob_space = MarkovChainProbabilitySpace(
             transition_matrix,
             initial_dist,
             state_labels)
-        super().__init__(probSpace)
-    
-        
+        super().__init__(prob_space)
+
+
 class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
                                       DiscreteValued):
 
@@ -120,13 +119,13 @@ class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
         self.state_labels = state_labels
 
         # Define an InfiniteVector of the interarrival times.
-        def func(n):
+        def interarrival_times(n):
             for i in range(n + 1):
                 state = self.states[i]
                 interarrival_time = self.times[i] / self.rates[state]
             return interarrival_time
-        self.interarrival_times = InfiniteVector(func)
-                
+        self.interarrival_times = InfiniteVector(interarrival_times)
+
         def func(t):
             total_time = 0
             n = 0
@@ -136,12 +135,11 @@ class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
                 if total_time > t:
                     return self.state_labels[state]
                 n += 1
-                
         super().__init__(func)
-    
+
 
 class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
-    
+
     def __init__(self, generator_matrix, initial_dist, state_labels=None):
         """Initialize a probability space for a continuous-time Markov chain.
 
@@ -158,11 +156,11 @@ class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
                 raise Exception("Rows of a generator matrix must sum to 0.")
             for j, q in enumerate(row):
                 if j == i:
-                    if row[j] > 0:
+                    if q > 0:
                         raise Exception("Diagonal elements of a generator matrix " +
                                         "cannot be positive.")
                 else:
-                    if row[j] < 0:
+                    if q < 0:
                         raise Exception("Off-diagonal elements of a generator matrix " +
                                         "cannot be negative.")
         # Check that dimensions agree
@@ -206,7 +204,7 @@ class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
                 rates,
                 unscaled_interarrival_times,
                 self.state_labels)
-        
+
         super().__init__(draw)
 
 
@@ -222,8 +220,8 @@ class ContinuousTimeMarkovChain(RV):
                         (defaults to 0, 1, ..., n-1)
         """
 
-        probSpace = ContinuousTimeMarkovChainProbabilitySpace(
+        prob_space = ContinuousTimeMarkovChainProbabilitySpace(
             generator_matrix,
             initial_dist,
             state_labels)
-        super().__init__(probSpace)
+        super().__init__(prob_space)

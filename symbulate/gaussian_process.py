@@ -27,9 +27,9 @@ def get_gaussian_process_result(mean_fn, cov_fn, index_set=Reals()):
             "Index set for Gaussian process must be Reals or "
             "DiscreteTimeSequence."
         )
-    
+
     class GaussianProcessResult(base_class):
-        
+
         def __init__(self, mean_fn, cov_fn):
 
             self.mean = np.empty(shape=0)
@@ -42,17 +42,17 @@ def get_gaussian_process_result(mean_fn, cov_fn, index_set=Reals()):
                 # Convert it to a time.
                 if isinstance(index_set, DiscreteTimeSequence):
                     t0 /= index_set.fs
-                
+
                 # Check that t0 is in the index set
                 if t0 not in index_set:
                     raise KeyError(
                         "Gaussian process is not defined at time %.2f." % t0
                     )
-            
+
                 # if variance is 0, just return the mean
                 if cov_fn(t0, t0) == 0:
                     return mean_fn(t0)
-        
+
                 # calculate conditional mean and variance
                 mean2 = mean_fn(t0)
                 cov11 = self.cov + MACHINE_EPS * np.identity(len(self.times))
@@ -78,15 +78,15 @@ def get_gaussian_process_result(mean_fn, cov_fn, index_set=Reals()):
                 # simulate normal with given mean and variance
                 self.times.append(t0)
                 value = np.random.normal(cond_mean, np.sqrt(cond_var))
-                self.values.append(value)              
+                self.values.append(value)
                 return value
-            
+
             super().__init__(fn=fn)
             self.index_set = index_set
 
     return GaussianProcessResult(mean_fn, cov_fn)
 
-    
+
 class GaussianProcessProbabilitySpace(ProbabilitySpace):
 
     def __init__(self, mean_fn, cov_fn, index_set=Reals()):
@@ -98,7 +98,7 @@ class GaussianProcessProbabilitySpace(ProbabilitySpace):
           index_set: index set for the Gaussian process
                      (by default, all real numbers)
         """
-        
+
         def draw():
             return get_gaussian_process_result(
                 mean_fn,
@@ -120,11 +120,11 @@ class GaussianProcess(RandomProcess, RV):
                      (by default, all real numbers)
         """
 
-        probSpace = GaussianProcessProbabilitySpace(mean_fn,
-                                                    cov_fn,
-                                                    index_set)
-        RandomProcess.__init__(self, probSpace)
-        RV.__init__(self, probSpace)
+        prob_space = GaussianProcessProbabilitySpace(mean_fn,
+                                                     cov_fn,
+                                                     index_set)
+        RandomProcess.__init__(self, prob_space)
+        RV.__init__(self, prob_space)
 
 
 # Define convenience class for Brownian motion
@@ -152,8 +152,8 @@ class BrownianMotion(RandomProcess, RV):
           drift: drift parameter of Brownian motion
           scale: scale parameter of Brownian motion
         """
-        probSpace = BrownianMotionProbabilitySpace(
+        prob_space = BrownianMotionProbabilitySpace(
             drift=drift, scale=scale
         )
-        RandomProcess.__init__(self, probSpace)
-        RV.__init__(self, probSpace)
+        RandomProcess.__init__(self, prob_space)
+        RV.__init__(self, prob_space)

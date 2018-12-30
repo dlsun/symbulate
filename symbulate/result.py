@@ -3,10 +3,10 @@ import numbers
 import numpy as np
 import matplotlib.pyplot as plt
 
+import symbulate
 from .base import Arithmetic, Statistical
 from .index_sets import (DiscreteTimeSequence,
                          Reals, Naturals)
-import symbulate
 
 
 class Scalar(numbers.Number):
@@ -21,16 +21,16 @@ class Scalar(numbers.Number):
 
 
 class Int(int, Scalar):
-    
+
     def __new__(cls, value, *args, **kwargs):
         return super(Int, cls).__new__(cls, value)
-    
+
 
 class Float(float, Scalar):
-    
+
     def __new__(cls, value, *args, **kwargs):
         return super(Float, cls).__new__(cls, value)
-        
+
 
 class Tuple(Arithmetic, Statistical):
     """A collapsible data structure.
@@ -46,7 +46,7 @@ class Tuple(Arithmetic, Statistical):
                 "Tuples can only be created from "
                 "finite iterable data."
             )
-    
+
     def __getitem__(self, key):
         return self.values[key]
 
@@ -70,13 +70,13 @@ class Tuple(Arithmetic, Statistical):
 
     def __lt__(self, other):
         return tuple(self.values) < tuple(other.values)
-            
+
     def apply(self, func):
         """Apply function to every element of a Tuple.
 
         Args:
           func: function to apply to the Tuple
-        
+
         Example:
           x = Tuple([1, 2, 3])
           y = x.apply(log)
@@ -125,7 +125,7 @@ class Tuple(Arithmetic, Statistical):
         def op_func(self):
             return op(self.values)
         return op_func
-    
+
     def cumsum(self):
         return Vector(np.cumsum(self.values))
 
@@ -134,7 +134,7 @@ class Tuple(Arithmetic, Statistical):
 
     def plot(self, **kwargs):
         plt.plot(range(len(self)), self.values, '.--', **kwargs)
-        
+
     def __str__(self):
         if len(self) <= 6:
             return "(" + ", ".join(str(x) for x in self) + ")"
@@ -146,9 +146,9 @@ class Tuple(Arithmetic, Statistical):
     def __repr__(self):
         return self.__str__()
 
-    
+
 class Vector(Tuple):
-    """A non-collapsible data structure.    
+    """A non-collapsible data structure.
     """
     pass
 
@@ -165,8 +165,7 @@ class TimeFunction(Arithmetic):
             return InfiniteVector(func)
 
     def check_same_index_set(self, other):
-        if (isinstance(other, numbers.Number) or
-            isinstance(other, symbulate.RV)):
+        if isinstance(other, (numbers.Number, symbulate.RV)):
             return
         elif isinstance(other, TimeFunction):
             if self.index_set != other.index_set:
@@ -179,12 +178,12 @@ class TimeFunction(Arithmetic):
                 "Cannot combine %s with %s." % (
                     str(type(self)), str(type(other)))
             )
-    
+
     # e.g., abs(X)
     def __abs__(self):
         return self.apply(abs)
 
-    
+
 class InfiniteTuple(TimeFunction):
 
     def __init__(self, func=lambda n: n):
@@ -218,7 +217,7 @@ class InfiniteTuple(TimeFunction):
 
     def __call__(self, n):
         return self[n]
-    
+
     def __str__(self):
         first_few = [str(self[i]) for i in range(6)]
         return "(" + ", ".join(first_few) + ", ...)"
@@ -231,7 +230,7 @@ class InfiniteTuple(TimeFunction):
 
         Args:
           func: function to apply to the InfiniteTuple
-        
+
         Example:
           x = InfiniteTuple(lambda n: n)
           y = x.apply(log)
@@ -266,13 +265,13 @@ class InfiniteTuple(TimeFunction):
 
 
 class InfiniteVector(InfiniteTuple):
-                    
+
     def cumsum(self):
         result = InfiniteVector()
         def func(n):
             return sum(self[i] for i in range(n + 1))
         result.func = func
-        
+
         return result
 
     def plot(self, tmin=0, tmax=10, **kwargs):
@@ -329,7 +328,7 @@ class DiscreteTimeFunction(TimeFunction):
                 for i in range(-m - 1, n - 1, -1):
                     self.array_neg.append(self.func(i))
             return self.array_neg[-n - 1]
-        
+
     def __getitem__(self, n):
         if isinstance(n, numbers.Number):
             return self._get_value_at_n(n)
@@ -371,14 +370,14 @@ class DiscreteTimeFunction(TimeFunction):
             raise Exception(
                 "I do not know how to evaluate a DiscreteTimeFunction "
                 "at that time."
-            )        
+            )
 
     def apply(self, func):
         """Compose function with the TimeFunction.
 
         Args:
           func: function to compose with the TimeFunction
-        
+
         Example:
           f = DiscreteTimeFunction(lambda t: t, fs=1)
           g = f.apply(log)
@@ -463,7 +462,7 @@ class ContinuousTimeFunction(TimeFunction):
             raise Exception(
                 "I do not know how to evaluate a ContinuousTimeFunction "
                 "at that time."
-            )        
+            )
 
     def __getitem__(self, t):
         return self(t)
@@ -473,7 +472,7 @@ class ContinuousTimeFunction(TimeFunction):
 
         Args:
           func: function to compose with the TimeFunction
-        
+
 
         Example:
           f = ContinuousTimeFunction(lambda t: t)
@@ -521,7 +520,7 @@ class ContinuousTimeFunction(TimeFunction):
         ts = np.linspace(tmin, tmax, 200)
         ys = [self(t) for t in ts]
         plt.plot(ts, ys, "-", **kwargs)
-        
+
 
 class DiscreteValued:
 
@@ -596,9 +595,9 @@ def concat(*args):
                 "InfiniteTuple.")
     return Vector(values)
 
-    
+
 def is_scalar(x):
-    return isinstance(x, numbers.Number) or isinstance(x, str)
+    return isinstance(x, (numbers.Number, str))
 
 
 def is_vector(x):

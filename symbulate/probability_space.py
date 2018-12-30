@@ -1,4 +1,3 @@
-import numbers
 import numpy as np
 
 from .result import (
@@ -12,7 +11,7 @@ class ProbabilitySpace:
     """Defines a probability space.
 
     Attributes:
-      draw (function): A function explaining how to draw one 
+      draw (function): A function explaining how to draw one
         outcome from the probability space.
     """
 
@@ -29,7 +28,7 @@ class ProbabilitySpace:
           Results: A list-like object containing the simulation results.
         """
         return Results(self.draw() for _ in range(n))
-        
+
     def check_same(self, other):
         if self != other:
             raise Exception("Events must be defined on same probability space.")
@@ -57,7 +56,7 @@ class ProbabilitySpace:
         if exponent == float("inf"):
             def draw():
                 result = InfiniteVector()
-                def func(n):
+                def func(_):
                     return self.draw()
                 result.func = func
                 return result
@@ -65,48 +64,47 @@ class ProbabilitySpace:
             def draw():
                 return Vector(self.draw() for _ in range(exponent))
         return ProbabilitySpace(draw)
-            
+
 
 class Event:
 
-    def __init__(self, probSpace, func):
-        self.probSpace = probSpace
+    def __init__(self, prob_space, func):
+        self.prob_space = prob_space
         self.func = func
 
-    def check_same_probSpace(self, other):
-        self.probSpace.check_same(other.probSpace)
+    def check_same_prob_space(self, other):
+        self.prob_space.check_same(other.prob_space)
 
     # define the event (A & B)
     def __and__(self, other):
-        self.check_same_probSpace(other)
+        self.check_same_prob_space(other)
         if isinstance(other, Event):
-            return Event(self.probSpace,
+            return Event(self.prob_space,
                          lambda x: self.func(x) and other.func(x))
 
     # define the event (A | B)
     def __or__(self, other):
-        self.check_same_probSpace(other)
+        self.check_same_prob_space(other)
         if isinstance(other, Event):
-            return Event(self.probSpace,
+            return Event(self.prob_space,
                          lambda x: self.func(x) or other.func(x))
 
     # define the event (-A)
     def __invert__(self):
-        return Event(self.probSpace, lambda x: not self.func(x))
+        return Event(self.prob_space, lambda x: not self.func(x))
 
     # This prevents users from writing expressions like 2 < X < 5,
     # which evaluate to ((2 < X) and (X < 5)). This unfortunately
     # is not well-defined in Python and cannot be overloaded.
     def __bool__(self):
-        raise Exception("I do not know how to cast " + 
+        raise Exception("I do not know how to cast " +
                         "an event to a boolean. " +
                         "If you wrote an expression " +
                         "like (2 < X < 5), try writing " +
-                        "((2 < X) & (X < 5)) instead."
-                    )
+                        "((2 < X) & (X < 5)) instead.")
 
     def draw(self):
-        return self.func(self.probSpace.draw())
+        return self.func(self.prob_space.draw())
 
     def sim(self, n):
         return Results(self.draw() for _ in range(n))
@@ -137,8 +135,8 @@ class BoxModel(ProbabilitySpace):
             self.probs = probs
         elif isinstance(box, dict):
             self.box = []
-            for k, v in box.items():
-                self.box.extend([k] * v)
+            for ticket, count in box.items():
+                self.box.extend([ticket] * count)
             self.probs = None
         else:
             raise Exception(
@@ -149,7 +147,7 @@ class BoxModel(ProbabilitySpace):
         self.order_matters = order_matters
         self.output_type = Vector
         self.infinite_output_type = InfiniteVector
-        
+
         # If drawing without replacement, check to make sure that
         # the number of draws does not exceed the number in the box.
         if not self.replace and self.size > len(self.box):
@@ -160,12 +158,12 @@ class BoxModel(ProbabilitySpace):
 
     def draw(self):
         """
-        A function that takes no arguments and returns a value(s) from the 
+        A function that takes no arguments and returns a value(s) from the
             "box" argument of the BoxModel.
 
-        Based on BoxModel inputs: 
-        Number of values returned depends on the input of the "size" 
-            argument. 
+        Based on BoxModel inputs:
+        Number of values returned depends on the input of the "size"
+            argument.
         Whether or not a value in the box can appear multiple times
             depends on the "replace" argument.
         If a list of probabilities is specified, values drawn will be drawn
@@ -174,11 +172,11 @@ class BoxModel(ProbabilitySpace):
 
         def draw_inds(size):
             return np.random.choice(len(self.box), size, self.replace, self.probs)
-        
+
         if self.size is None:
             return self.box[draw_inds(None)]
         elif self.size == float("inf"):
-            def func(n):
+            def func(_):
                 return self.box[draw_inds(None)]
             return self.infinite_output_type(func)
         else:
@@ -187,25 +185,21 @@ class BoxModel(ProbabilitySpace):
                 draws.sort()
             return self.output_type(draws)
 
-        
+
 class DeckOfCards(BoxModel):
     """Defines the probability space for drawing from a deck of cards.
 
     Attributes:
       size (int): How many draws to make.
       replace (bool): Sample with replacement or without?
+      order_matters (bool): Should we count different orderings of
+        the same cards as different outcomes or the same outcome?
     """
-    
+
     def __init__(self, size=None, replace=False, order_matters=True):
-        self.box = []
+        box = []
         for rank in list(range(2, 11)) + ["J", "Q", "K", "A"]:
             for suit in ["Diamonds", "Hearts", "Clubs", "Spades"]:
-                self.box.append((rank, suit))
-        self.size = None if size == 1 else size
-        self.replace = replace
-        self.probs = None
-        self.order_matters = order_matters
-        self.output_type = Vector
-        self.infinite_output_type = InfiniteVector
-
-
+                box.append((rank, suit))
+        super().__init__(box, size, replace,
+                         probs=None, order_matters=order_matters)

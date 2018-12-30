@@ -1,7 +1,8 @@
 import math
 import numbers
-import numpy as np
 import operator as op
+
+import numpy as np
 import scipy.stats as stats
 
 from .random_variables import RV
@@ -17,7 +18,7 @@ pi = math.pi
 e = math.e
 inf = float("inf")
 
-def operation_factory(op):
+def operation_factory(operation):
 
     def op_func(x):
         if isinstance(x, (RV, Tuple, TimeFunction)):
@@ -26,7 +27,7 @@ def operation_factory(op):
         elif isinstance(x, Results):
             return x.apply(op_func)
         else:
-            return op(x)
+            return operation(x)
 
     return op_func
 
@@ -71,7 +72,7 @@ def med_abs_dev(x):
     return median(list(abs(i-median(x)) for i in x))
 
 def quantile(q):
-    return lambda x: np.percentile(x, q * 100)    
+    return lambda x: np.percentile(x, q * 100)
 
 def iqr(x):
     if isinstance(x, numbers.Real):
@@ -100,7 +101,7 @@ def kurtosis(x):
 
 def moment(k):
     return lambda x: stats.moment(x, k)
-    
+
 def trimmed_mean(alpha):
     return lambda x: stats.trim_mean(x, alpha)
 
@@ -117,13 +118,13 @@ def count(func=lambda x: True):
         for i in x:
             if func(i):
                 val += 1
-        return val        
+        return val
     return func_
 
 def count_eq(value):
     def func(x):
         return comparefun(x, op.eq, value)
-    return func    
+    return func
 
 def count_neq(value):
     def func(x):
@@ -133,17 +134,17 @@ def count_neq(value):
 def count_lt(value):
     def func(x):
         return comparefun(x, op.lt, value)
-    return func 
+    return func
 
 def count_gt(value):
     def func(x):
         return comparefun(x, op.gt, value)
-    return func 
+    return func
 
 def count_geq(value):
     def func(x):
         return comparefun(x, op.ge, value)
-    return func 
+    return func
 
 def count_leq(value):
     def func(x):
@@ -152,7 +153,7 @@ def count_leq(value):
 
 def interarrival_times(continuous_time_function):
     """Given a realization of a continuous-time,
-       discrete-state process, returns the interarrival 
+       discrete-state process, returns the interarrival
        times (i.e., the times between each state change).
 
     Args:
@@ -166,13 +167,13 @@ def interarrival_times(continuous_time_function):
                        DiscreteValued)):
         raise TypeError(
             "Interarrival times are only defined for "
-            "continuous-time, discrete-valued functions." 
+            "continuous-time, discrete-valued functions."
         )
     return continuous_time_function.get_interarrival_times()
 
 def arrival_times(continuous_time_function):
     """Given a realization of a continuous-time,
-       discrete-state process, returns the arrival 
+       discrete-state process, returns the arrival
        times (i.e., the times when the state changes).
 
     Args:
@@ -186,13 +187,13 @@ def arrival_times(continuous_time_function):
                        DiscreteValued)):
         raise TypeError(
             "Interarrival times are only defined for "
-            "continuous-time, discrete-valued functions." 
+            "continuous-time, discrete-valued functions."
         )
     return continuous_time_function.get_arrival_times()
 
 def states(discrete_valued_function):
     """Given a realization of a discrete-valued function,
-       returns an InfiniteVector of the sequence of 
+       returns an InfiniteVector of the sequence of
        values (or states).
 
     Args:

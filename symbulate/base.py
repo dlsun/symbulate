@@ -35,7 +35,7 @@ class Arithmetic:
     def __mul__(self, other):
         op_func = self._operation_factory(lambda x, y: x * y)
         return op_func(self, other)
-            
+
     # e.g., 2 * X
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -63,7 +63,7 @@ class Arithmetic:
     # Alternative notation for powers: e.g., X ^ 2
     def __xor__(self, other):
         return self.__pow__(other)
-    
+
     # Alternative notation for powers: e.g., 2 ^ X
     def __rxor__(self, other):
         return self.__rpow__(other)
@@ -137,9 +137,9 @@ class Statistical:
         r"""Calculate a specified quantile (percentile).
 
         The (100q)th quantile is the value x such that
-        
+
         .. math:: \frac{\#\{ i: x_i \leq x \}}{n} = q
-        
+
         Args:
           q (float): A number between 0 and 1 specifying
             the desired quantile or percentile.
@@ -153,7 +153,7 @@ class Statistical:
         return op_func(self)
 
     def percentile(self, q):
-        r"""Calculate a specified percentile. 
+        r"""Calculate a specified percentile.
 
         Alias for .quantile().
         """
@@ -168,7 +168,7 @@ class Statistical:
           The interquartile range.
         """
         return self.quantile(.75) - self.quantile(.25)
-    
+
     def median(self):
         r"""Calculate the median.
 
@@ -187,8 +187,8 @@ class Statistical:
         The standard deviation is the square root of the variance.
         It is a measure of spread.
 
-        .. math:: 
-        
+        .. math::
+
         \sigma &= \sqrt{\frac{1}{n} \sum_{i=1}^n (x_i - \mu)^2} \\
                &= \sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2 - \mu^2}
 
@@ -197,15 +197,15 @@ class Statistical:
         """
         op_func = self._statistic_factory(np.std)
         return op_func(self)
-    
+
     def sd(self):
         r"""Calculate the standard deviation.
 
         The standard deviation is the square root of the variance.
         It is a measure of spread.
 
-        .. math:: 
-        
+        .. math::
+
         \sigma &= \sqrt{\frac{1}{n} \sum_{i=1}^n (x_i - \mu)^2} \\
                &= \sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2 - \mu^2}
 
@@ -220,8 +220,8 @@ class Statistical:
         The variance is the average squared distance between
         each number and the mean. It is a measure of spread.
 
-        .. math:: 
-        
+        .. math::
+
         \sigma^2 &= \frac{1}{n} \sum_{i=1}^n (x_i - \mu)^2 \\
                &= \frac{1}{n} \sum_{i=1}^n x_i^2 - \mu^2
 
@@ -283,5 +283,3 @@ class Statistical:
           The difference between the min and the max.
         """
         return self.max() - self.min()
-
-        

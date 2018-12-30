@@ -11,7 +11,7 @@ class IndexSet(object):
             return t
         else:
             raise KeyError("Time %.2f not in index set." % t)
-        
+
     def __contains__(self, value):
         return False
 
@@ -45,7 +45,7 @@ class Naturals(IndexSet):
             )
         except:
             return False
-    
+
 
 class DiscreteTimeSequence(IndexSet):
 
@@ -54,7 +54,7 @@ class DiscreteTimeSequence(IndexSet):
 
     def __getitem__(self, n):
         return n / self.fs
-        
+
     def __contains__(self, value):
         return float(value * self.fs).is_integer()
 
