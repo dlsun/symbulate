@@ -14,8 +14,8 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
 
-from .base import (Arithmetic, Transformable, Statistical,
-                   Comparable, Filterable)
+from .base import (Arithmetic, Statistical, Comparable,
+                   Logical, Filterable, Transformable)
 from .plot import (configure_axes, get_next_color, is_discrete,
                    count_var, compute_density, add_colorbar,
                    setup_ticks, make_tile, make_violin,
@@ -31,9 +31,12 @@ plt.style.use('seaborn-colorblind')
 def _is_hashable(obj):
     return hasattr(obj, "__hash__")
 
+def _is_boolean_vector(vector):
+    return all(isinstance(x, (bool, np.bool_)) for x in vector)
 
-class Results(Arithmetic, Transformable, Statistical,
-              Comparable, Filterable):
+
+class Results(Arithmetic, Statistical, Comparable,
+              Logical, Filterable, Transformable):
 
     def __init__(self, results, sim_id=None):
         self.results = list(results)
@@ -150,14 +153,13 @@ class Results(Arithmetic, Transformable, Statistical,
                 )
             if len(filt) != len(self):
                 raise ValueError(
-                    "Filter must be the same length "
-                    "as the Results object."
-                    )
-            if not all(type(x) in (bool, np.bool_) for x in filt):
+                    "Filter must be the same length as the "
+                    "Results object."
+                )
+            if not _is_boolean_vector(filt):
                 raise ValueError(
-                    "Every element in the filter must "
-                    "be a boolean."
-                    )
+                    "Every element in the filter must be a boolean."
+                )
             return type(self)(x for x, cond in zip(self, filt) if cond)
         elif callable(filt):
             return type(self)(x for x in self if filt(x))
@@ -207,6 +209,38 @@ class Results(Arithmetic, Transformable, Statistical,
 
     def _multivariate_statistic_factory(self, op):
         self._statistic_factory(op)
+
+    # The Logical superclass will use this to define the three
+    # logical operations: and (&), or (|), not (~).
+    def _logical_factory(self, op):
+
+        def _op_func(self, other=None):
+            # check that the vector only contains booleans
+            if not _is_boolean_vector(self):
+                raise ValueError(
+                    "Logical operations are only defined for "
+                    "boolean (True/False) Results objects.")
+            # other will be None when op is the "not" operator
+            if other is None:
+                return Results(op(x) for x in self)
+            else:
+                if isinstance(other, Results):
+                    if self.sim_id != other.sim_id:
+                        raise Exception("Results objects must come "
+                                        "from the same simulation.")
+                    if not _is_boolean_vector(other):
+                        raise ValueError(
+                            "Logical operations are only defined for "
+                            "boolean (True/False) Results objects.")
+                else:
+                    raise TypeError(
+                        "Logical operations are only defined "
+                        "between two Results, not between a Result "
+                        "and a %s." % type(other).__name__)
+                return Results(op(x, y) for x, y in zip(self, other))
+
+        return _op_func
+
 
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "

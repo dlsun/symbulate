@@ -1,5 +1,6 @@
 import numpy as np
 
+from .base import Logical
 from .result import Vector, InfiniteVector, join
 from .results import Results
 
@@ -61,7 +62,7 @@ class ProbabilitySpace:
         return ProbabilitySpace(draw)
 
 
-class Event:
+class Event(Logical):
 
     def __init__(self, prob_space, func):
         self.prob_space = prob_space
@@ -70,23 +71,28 @@ class Event:
     def check_same_prob_space(self, other):
         self.prob_space.check_same(other.prob_space)
 
-    # define the event (A & B)
-    def __and__(self, other):
-        self.check_same_prob_space(other)
-        if isinstance(other, Event):
-            return Event(self.prob_space,
-                         lambda x: self.func(x) and other.func(x))
+    # The Logical superclass will use this to define the three
+    # logical operations: and (&), or (|), not (~).
+    def _logical_factory(self, op):
 
-    # define the event (A | B)
-    def __or__(self, other):
-        self.check_same_prob_space(other)
-        if isinstance(other, Event):
-            return Event(self.prob_space,
-                         lambda x: self.func(x) or other.func(x))
+        def _op_func(self, other=None):
+            # other will be None when op is the "not" operator
+            if other is None:
+                return Event(self.prob_space,
+                             lambda outcome: op(self.func(outcome)))
+            else:
+                if isinstance(other, Event):
+                    self.check_same_prob_space(other)
+                else:
+                    raise TypeError(
+                        "Logical operations are only defined "
+                        "between two Events, not between an Event "
+                        "and a %s." % type(other).__name__)
+                return Event(self.prob_space,
+                             lambda outcome: op(self.func(outcome),
+                                                other.func(outcome)))
 
-    # define the event (-A)
-    def __invert__(self):
-        return Event(self.prob_space, lambda x: not self.func(x))
+        return _op_func
 
     # This prevents users from writing expressions like 2 < X < 5,
     # which evaluate to ((2 < X) and (X < 5)). This unfortunately

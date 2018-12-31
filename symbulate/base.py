@@ -333,6 +333,27 @@ class Statistical:
         return self.corr()
     
 
+class Logical:
+    """A class that supports logical operations: and, or, and not.
+
+    Subclasses must implement the _logical_factory method, which 
+    specifies how the logical operator operates on two objects
+    of that type.
+    """
+
+    def __and__(self, other):
+        op_func = self._logical_factory(lambda x, y: x and y)
+        return op_func(self, other)
+
+    def __or__(self, other):
+        op_func = self._logical_factory(lambda x, y: x or y)
+        return op_func(self, other)
+
+    def __invert__(self):
+        op_func = self._logical_factory(lambda x: not x)
+        return op_func(self)
+
+    
 class Filterable:
     """A class with filtering and counting methods.
 
@@ -521,6 +542,11 @@ class Filterable:
 
 
 class Transformable:
+    """A class that supports transformations.
+
+    Subclasses must implement the apply method, which specifies how to 
+    apply a function to the object.
+    """
 
     def __abs__(self):
         return self.apply(abs)
@@ -533,3 +559,5 @@ class Transformable:
 
     def __ceil__(self):
         return self.apply(math.ceil)
+
+    
