@@ -37,7 +37,7 @@ def get_gaussian_process_result(mean_fn, cov_fn, index_set=Reals()):
             self.times = []
             self.values = []
 
-            def fn(t0):
+            def _func(t0):
                 # If this is a discrete process, t0 will be an index.
                 # Convert it to a time.
                 if isinstance(index_set, DiscreteTimeSequence):
@@ -81,7 +81,7 @@ def get_gaussian_process_result(mean_fn, cov_fn, index_set=Reals()):
                 self.values.append(value)
                 return value
 
-            super().__init__(fn=fn)
+            super().__init__(func=_func)
             self.index_set = index_set
 
     return GaussianProcessResult(mean_fn, cov_fn)
