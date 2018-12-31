@@ -18,6 +18,9 @@ pi = math.pi
 e = math.e
 inf = float("inf")
 
+floor = math.floor
+ceil = math.ceil
+
 def operation_factory(operation):
 
     def _op_func(x):
