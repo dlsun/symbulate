@@ -53,7 +53,10 @@ class Results(object):
         )
 
     def __getitem__(self, i):
-        return self.apply(lambda x: x[i])
+        if isinstance(i, Results):
+            return self.filter(i)
+        else:
+            return self.apply(lambda x: x[i])
 
     def __iter__(self):
         for x in self.results:
@@ -109,24 +112,45 @@ class Results(object):
     # The following functions return a Results object
     # with the outcomes that satisfy a given criterion.
 
-    def filter(self, fun):
+    def filter(self, filt):
         """Filters the results of a simulation and
              returns only those outcomes that satisfy
              a given criterion.
 
         Args:
-          fun (outcome -> bool): A function that
-            takes in an outcome and returns
-            True / False. Only the outcomes that
-            return True will be kept; the others
-            will be filtered out.
+          filt: Either a function that takes in
+            an outcome and returns a boolean, or
+            a Results object of booleans of the 
+            same length as this Results object.            
 
         Returns:
           Results: Another Results object containing
-            only those outcomes for which the function
-            returned True.
+            only those outcomes corresponding to True.
         """
-        return type(self)(x for x in self.results if fun(x))
+        if isinstance(filt, Results):
+            if self.sim_id != filt.sim_id:
+                raise Exception(
+                    "Results objects must come from the "
+                    "same simulation."
+                )
+            if len(filt) != len(self):
+                raise ValueError(
+                    "Filter must be the same length "
+                    "as the Results object."
+                    )
+            if not all(type(x) in (bool, np.bool_) for x in filt):
+                raise ValueError(
+                    "Every element in the filter must "
+                    "be a boolean."
+                    )
+            return type(self)(x for x, y in zip(self, filt) if y)
+        elif callable(filt):
+            return type(self)(x for x in self.results if filt(x))
+        else:
+            raise TypeError(
+                "A filter must be either a function or a "
+                "boolean Results object of the same length."
+            )
 
     def filter_eq(self, value):
         return self.filter(lambda x: x == value)
@@ -279,23 +303,28 @@ class Results(object):
         return self.__rpow__(other)
     
     def __eq__(self, other):
-        return self.apply(lambda x: x == other)
+        op_fun = self._operation_factory(lambda x, y: x == y)
+        return op_fun(self, other)
 
     def __ne__(self, other):
-        return self.apply(lambda x: x != other)
+        op_fun = self._operation_factory(lambda x, y: x != y)
+        return op_fun(self, other)
 
     def __lt__(self, other):
-        return self.apply(lambda x: x < other)
+        op_fun = self._operation_factory(lambda x, y: x < y)
+        return op_fun(self, other)
 
     def __le__(self, other):
-        return self.apply(lambda x: x <= other)
+        op_fun = self._operation_factory(lambda x, y: x <= y)
+        return op_fun(self, other)
 
     def __gt__(self, other):
-        return self.apply(lambda x: x > other)
+        op_fun = self._operation_factory(lambda x, y: x > y)
+        return op_fun(self, other)
 
     def __ge__(self, other):
-        return self.apply(lambda x: x >= other)
-
+        op_fun = self._operation_factory(lambda x, y: x >= y)
+        return op_fun(self, other)
 
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "
