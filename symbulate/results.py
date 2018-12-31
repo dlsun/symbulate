@@ -28,8 +28,8 @@ from .table import Table
 plt.style.use('seaborn-colorblind')
 
 
-def _is_hashable(x):
-    return hasattr(x, "__hash__")
+def _is_hashable(obj):
+    return hasattr(obj, "__hash__")
 
 
 class Results(Arithmetic, Transformable, Statistical,

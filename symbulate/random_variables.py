@@ -1,8 +1,6 @@
-import collections
-
 from .base import Arithmetic, Transformable, Comparable
 from .probability_space import Event
-from .result import Vector, join, is_scalar
+from .result import Vector, join, is_scalar, is_numeric_vector
 from .results import RVResults
 
 class RV(Arithmetic, Transformable, Comparable):
@@ -128,14 +126,14 @@ class RV(Arithmetic, Transformable, Comparable):
             return RV(self.prob_space,
                       lambda x: self.func(x)[n.func(x)])
         # if the indices are a list, return a random vector
-        elif isinstance(n, collections.Iterable):
+        elif is_numeric_vector(n):
             return self.apply(
-                lambda x: Vector(x[e] for e in n)
+                lambda x: Vector(x[i] for i in n)
             )
         # if the indices are a slice, return a random vector
         elif isinstance(n, slice):
             return self.apply(
-                lambda x: Vector(x[e] for e in
+                lambda x: Vector(x[i] for i in
                                  range(n.start, n.stop, n.step or 1))
                 )
         # otherwise, return the nth value
@@ -146,13 +144,14 @@ class RV(Arithmetic, Transformable, Comparable):
     def _operation_factory(self, op):
 
         def _op_func(self, other):
+            # operations between this RV and another RV
             if isinstance(other, RV):
                 self.check_same_prob_space(other)
                 def _func(outcome):
                     return op(self.func(outcome), other.func(outcome))
                 return RV(self.prob_space, _func)
-            else:
-                return self.apply(lambda x: op(x, other))
+            # operations between this RV and a scalar
+            return self.apply(lambda x: op(x, other))
 
         return _op_func
 
@@ -243,8 +242,7 @@ class RVConditional(RV):
           X, Y = RV(Binomial(10, 0.4) ** 2)
           (X | (X + Y == 5)).draw() might return a value of 4, for example.
         """
-        prob_space = self.prob_space
         while True:
-            outcome = prob_space.draw()
+            outcome = self.prob_space.draw()
             if self.condition_event.func(outcome):
                 return self.func(outcome)

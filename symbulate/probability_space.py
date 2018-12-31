@@ -1,9 +1,6 @@
 import numpy as np
 
-from .result import (
-    Vector, InfiniteVector,
-    join
-)
+from .result import Vector, InfiniteVector, join
 from .results import Results
 
 
@@ -55,11 +52,9 @@ class ProbabilitySpace:
     def __pow__(self, exponent):
         if exponent == float("inf"):
             def draw():
-                result = InfiniteVector()
-                def func(_):
+                def _func(_):
                     return self.draw()
-                result.func = func
-                return result
+                return InfiniteVector(_func)
         else:
             def draw():
                 return Vector(self.draw() for _ in range(exponent))
@@ -97,11 +92,10 @@ class Event:
     # which evaluate to ((2 < X) and (X < 5)). This unfortunately
     # is not well-defined in Python and cannot be overloaded.
     def __bool__(self):
-        raise Exception("I do not know how to cast " +
-                        "an event to a boolean. " +
-                        "If you wrote an expression " +
-                        "like (2 < X < 5), try writing " +
-                        "((2 < X) & (X < 5)) instead.")
+        raise Exception("Cannot cast an Event to a boolean. "
+                        "You may be getting this error if you "
+                        "wrote an expression like (2 < X < 5). "
+                        "Try ((2 < X) & (X < 5)) instead.")
 
     def draw(self):
         return self.func(self.prob_space.draw())
@@ -148,11 +142,11 @@ class BoxModel(ProbabilitySpace):
         self.output_type = Vector
         self.infinite_output_type = InfiniteVector
 
-        # If drawing without replacement, check to make sure that
-        # the number of draws does not exceed the number in the box.
+        # If drawing without replacement, check that the number
+        # of draws does not exceed the number of tickets in the box.
         if not self.replace and self.size > len(self.box):
             raise Exception(
-                "I cannot draw more tickets without replacement "
+                "Cannot draw more tickets (without replacement) "
                 "than there are tickets in the box."
             )
 
@@ -176,9 +170,9 @@ class BoxModel(ProbabilitySpace):
         if self.size is None:
             return self.box[draw_inds(None)]
         elif self.size == float("inf"):
-            def func(_):
+            def _func(_):
                 return self.box[draw_inds(None)]
-            return self.infinite_output_type(func)
+            return self.infinite_output_type(_func)
         else:
             draws = [self.box[i] for i in draw_inds(self.size)]
             if not self.order_matters:

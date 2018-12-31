@@ -65,6 +65,8 @@ class Table(dict, Arithmetic):
         # return HTML for entire table
         return TABLE_TEMPLATE.format(table_body=table_body)
 
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
         def _op_func(self, other):
