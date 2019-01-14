@@ -40,11 +40,9 @@ class Distribution(ProbabilitySpace):
     def __pow__(self, exponent):
         if exponent == float("inf"):
             def draw():
-                result = InfiniteVector()
-                def func(_):
+                def _func(_):
                     return self.sim_func(**self.params)
-                result.func = func
-                return result
+                return InfiniteVector(_func)
         else:
             def draw():
                 return Vector(self.sim_func(**self.params, size=exponent))
@@ -724,11 +722,9 @@ class MultivariateNormal(Distribution):
     def __pow__(self, exponent):
         if exponent == float("inf"):
             def draw():
-                result = InfiniteVector()
-                def func(n):
+                def _func(n):
                     return self.draw()
-                result.func = func
-                return result
+                return InfiniteVector(_func)
         else:
             def draw():
                 return Vector(self.draw() for _ in range(exponent))
@@ -826,11 +822,9 @@ class Multinomial(Distribution):
     def __pow__(self, exponent):
         if exponent == float("inf"):
             def draw():
-                result = InfiniteVector()
-                def func(_):
+                def _func(_):
                     return self.draw()
-                result.func = func
-                return result
+                return InfiniteVector(_func)
         else:
             def draw():
                 return Vector(self.draw() for _ in range(exponent))

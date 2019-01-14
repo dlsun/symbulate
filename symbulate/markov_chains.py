@@ -47,7 +47,7 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
         state = np.random.choice(range(n), p=self.initial_dist)
         self.states = [state]
 
-        def func(n):
+        def _func(n):
             m = len(self.states)
             # If nth state not generated yet, generate it.
             if n >= m:
@@ -62,7 +62,7 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
                 state = self.states[n]
             return self.state_labels[state]
 
-        super().__init__(func)
+        super().__init__(_func)
 
     def get_states(self):
         return self
@@ -80,12 +80,12 @@ class MarkovChainProbabilitySpace(ProbabilitySpace):
                         (defaults to 0, 1, ..., n-1)
         """
 
-        def draw():
+        def _draw():
             return MarkovChainResult(transition_matrix,
                                      initial_dist,
                                      state_labels)
 
-        super().__init__(draw)
+        super().__init__(_draw)
 
 
 class MarkovChain(RV):
@@ -126,7 +126,7 @@ class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
             return interarrival_time
         self.interarrival_times = InfiniteVector(interarrival_times)
 
-        def func(t):
+        def _func(t):
             total_time = 0
             n = 0
             while True:
@@ -135,7 +135,7 @@ class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
                 if total_time > t:
                     return self.state_labels[state]
                 n += 1
-        super().__init__(func)
+        super().__init__(_func)
 
 
 class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
@@ -194,7 +194,7 @@ class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
 
         # A continuous-time Markov chain is specified by the
         # sequence of states and the unscaled interarrival times.
-        def draw():
+        def _draw():
             states = MarkovChain(self.transition_matrix,
                                  self.initial_dist).draw()
             rates = -np.diag(self.generator_matrix)
@@ -205,7 +205,7 @@ class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
                 unscaled_interarrival_times,
                 self.state_labels)
 
-        super().__init__(draw)
+        super().__init__(_draw)
 
 
 class ContinuousTimeMarkovChain(RV):
