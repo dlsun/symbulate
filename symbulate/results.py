@@ -222,7 +222,7 @@ class Results(Arithmetic, Statistical, Comparable,
                     "boolean (True/False) Results objects.")
             # other will be None when op is the "not" operator
             if other is None:
-                return Results(op(x) for x in self)
+                return Results([op(x) for x in self], self.sim_id)
             else:
                 if isinstance(other, Results):
                     if self.sim_id != other.sim_id:
@@ -237,7 +237,10 @@ class Results(Arithmetic, Statistical, Comparable,
                         "Logical operations are only defined "
                         "between two Results, not between a Result "
                         "and a %s." % type(other).__name__)
-                return Results(op(x, y) for x, y in zip(self, other))
+                return Results(
+                    [op(x, y) for x, y in zip(self, other)],
+                    self.sim_id
+                )
 
         return _op_func
 
