@@ -114,7 +114,7 @@ class Tuple(Arithmetic, Transformable, Statistical, Filterable):
         def _op_func(self, other):
             if is_number(other):
                 return type(self)(op(value, other) for value in self)
-            elif is_numeric_vector(other):
+            elif is_vector(other):
                 # check that other is the same length as the Tuple
                 if len(self) != len(other):
                     raise Exception(
@@ -131,8 +131,8 @@ class Tuple(Arithmetic, Transformable, Statistical, Filterable):
                         ))
                 # return a new Tuple/Vector of the same length
                 return type(self)(op(a, b) for a, b in zip(self, other))
-
-            raise_arithmetic_error(self, other)
+            else:
+                return NotImplemented
 
         return _op_func
 
@@ -267,8 +267,8 @@ class InfiniteTuple(TimeFunction):
                 return type(self)(lambda n: op(self[n], other))
             elif isinstance(other, InfiniteTuple):
                 return type(self)(lambda n: op(self[n], other[n]))
-
-            raise_arithmetic_error(self, other)
+            else:
+                return NotImplemented
 
         return _op_func
 
@@ -394,7 +394,7 @@ class DiscreteTimeFunction(TimeFunction):
 
         def _op_func(self, other):
             self.check_same_index_set(other)
-            if isinstance(other, numbers.Number):
+            if is_number(other):
                 return DiscreteTimeFunction(
                     lambda n: op(self[n], other),
                     index_set=self.index_set
@@ -404,8 +404,8 @@ class DiscreteTimeFunction(TimeFunction):
                     lambda n: op(self[n], other[n]),
                     index_set=self.index_set
                 )
-
-            raise_arithmetic_error(self, other)
+            else:
+                return NotImplemented
 
         return _op_func
 
@@ -483,7 +483,7 @@ class ContinuousTimeFunction(TimeFunction):
 
         def _op_func(self, other):
             self.check_same_index_set(other)
-            if isinstance(other, numbers.Number):
+            if is_number(other):
                 return ContinuousTimeFunction(
                     lambda t: op(self(t), other)
                 )
@@ -491,8 +491,8 @@ class ContinuousTimeFunction(TimeFunction):
                 return ContinuousTimeFunction(
                     lambda t: op(self(t), other(t))
                 )
-
-            raise_arithmetic_error(self, other)
+            else:
+                return NotImplemented
 
         return _op_func
 
@@ -584,7 +584,7 @@ def is_scalar(x):
 
 
 def is_vector(x):
-    return hasattr(x, "__len__") and all(is_scalar(i) for i in x)
+    return hasattr(x, "__len__")
 
 
 def is_number(x):
@@ -593,18 +593,3 @@ def is_number(x):
 
 def is_numeric_vector(x):
     return hasattr(x, "__len__") and all(is_number(i) for i in x)
-
-
-def raise_arithmetic_error(object1, object2):
-    raise TypeError(
-        "Attempted an arithmetic operation between a %s (e.g., "
-        "%s) and a %s (e.g., %s). Arithmetic operations are only "
-        "defined between two %ss or between a %s and a scalar." % (
-            type(object1).__name__,
-            object1,
-            type(object2).__name__,
-            object2,
-            type(object1).__name__,
-            type(object1).__name__
-        )
-    )

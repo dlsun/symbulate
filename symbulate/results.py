@@ -21,7 +21,7 @@ from .plot import (configure_axes, get_next_color, is_discrete,
                    setup_ticks, make_tile, make_violin,
                    make_marginal_impulse, make_density2D)
 from .result import (Scalar, Vector, TimeFunction,
-                     is_scalar, is_vector)
+                     is_number, is_numeric_vector)
 from .table import Table
 
 
@@ -304,9 +304,9 @@ class RVResults(Results):
         else:
             self.index_set = None
         # determine the dimension
-        if is_scalar(first_result):
+        if is_number(first_result):
             self.dim = 1
-        elif is_vector(first_result):
+        elif is_numeric_vector(first_result):
             self.dim = len(first_result)
         else:
             self.dim = None
@@ -315,8 +315,8 @@ class RVResults(Results):
             if (isinstance(result, TimeFunction) and
                 result.index_set != self.index_set):
                 self.index_set = None
-            if ((is_scalar(result) and self.dim != 1) or
-                (is_vector(result) and self.dim != len(result))):
+            if ((is_number(result) and self.dim != 1) or
+                (is_numeric_vector(result) and self.dim != len(result))):
                 self.dim = None
 
     def _set_array(self):
