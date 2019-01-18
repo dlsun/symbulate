@@ -643,15 +643,13 @@ class Pareto(Distribution):
         super().__init__(params, stats.pareto, False)
         self.xlim = (scale, self.xlim[1]) # Pareto distributions are not defined for x < scale
 
-        def draw(self):
-            """A function that takes no arguments and
-            returns a single draw from the Pareto distribution."""
-
-            # Numpy's Pareto is Lomax distribution, or Type II Pareto
-            # but we want the more standard parametrization
-            return self.scale * (1 + np.random.pareto(self.b))
-
-        self.draw = draw
+    def draw(self):
+        """A function that takes no arguments and
+           returns a single draw from the Pareto distribution."""
+        
+        # Numpy's Pareto is Lomax distribution, or Type II Pareto
+        # but we want the more standard parametrization
+        return self.scale * (1 + np.random.pareto(self.b))
 
 
 # class Weibull(Distribution):
