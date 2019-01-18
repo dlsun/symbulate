@@ -59,12 +59,18 @@ class Results(Arithmetic, Statistical, Comparable,
             self.sim_id
         )
 
-    def __getitem__(self, i):
-        # if i is a Results object, use it as a boolean mask
-        if isinstance(i, Results):
-            return self.filter(i)
-        # otherwise, return the ith dimension
-        return self.apply(lambda result: result[i])
+    def __getitem__(self, n):
+        # if n is a Results object, use it as a boolean mask
+        if isinstance(n, Results):
+            return self.filter(n)
+        # if n is a numeric array of values, return a Results
+        # object with those dimensions
+        elif is_numeric_vector(n):
+            return self.apply(
+                lambda result: type(result)(result[i] for i in n)
+            )
+        # otherwise, return the nth value of every simulation
+        return self.apply(lambda result: result[n])
 
     def __iter__(self):
         for result in self.results:
@@ -73,24 +79,31 @@ class Results(Arithmetic, Statistical, Comparable,
     def __len__(self):
         return len(self.results)
 
-    def get(self, i):
-        """Get the outcome of the ith simulation.
+    def get(self, n):
+        """Get the outcome of the nth simulation.
 
         Suppose x is an instance of a Results object.
         Although x behaves like a list, in that you
-        can iterate over it, x[i] does not return
-        the ith simulation. Instead, it returns a
-        Results object, containing the ith dimension
+        can iterate over it, x[n] does not return
+        the nth simulation. Instead, it returns a
+        Results object, containing the nth dimension
         of every simulation. To get the outcome of the
-        ith simulation, the .get(i) method is provided.
+        nth simulation, the .get(n) method is provided.
 
         Args:
-          i (int): the index of the simulation result to get
+          n (int): the index of the simulation result to get
 
         Returns:
-          The outcome of the ith simulation.
+          The outcome of the nth simulation.
         """
-        return self.results[i]
+
+        # if n is a numeric array, return a Results object with those results
+        if is_numeric_vector(n):
+            return type(self)(
+                self.results[i] for i in n
+            )
+        # otherwise, return the nth result (this also works when n is a slice)
+        return self.results[n]
 
     def _get_counts(self):
         counts = {}

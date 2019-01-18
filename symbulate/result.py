@@ -45,8 +45,12 @@ class Tuple(Arithmetic, Transformable, Statistical, Filterable):
                 "finite iterable data."
             )
 
-    def __getitem__(self, key):
-        return self.values[key]
+    def __getitem__(self, n):
+        # if n is a numeric array, return a Tuple of those values
+        if is_numeric_vector(n):
+            return type(self)(self.values[i] for i in n)
+        # otherwise, return the value at n
+        return self.values[n]
 
     def __len__(self):
         return len(self.values)
