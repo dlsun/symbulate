@@ -573,8 +573,9 @@ def concat(*args):
 
             raise Exception("InfiniteTuple must be the last "
                             "argument to concat().")
-        raise TypeError("Every argument to concat() must be either "
-                        "a scalar, a vector, or an InfiniteTuple.")
+        else:
+            raise TypeError("Every argument to concat() must be either "
+                            "a scalar, a vector, or an InfiniteTuple.")
 
     return Vector(values)
 
