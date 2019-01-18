@@ -15,7 +15,7 @@ from .random_processes import RandomProcess
 MACHINE_EPS = 1e-12
 
 
-def get_gaussian_process_result(mean_fn, cov_fn, index_set=Reals()):
+def get_gaussian_process_result(mean_func, cov_func, index_set=Reals()):
 
     # Determine whether the process is discrete-time or continous-time
     if isinstance(index_set, DiscreteTimeSequence):
@@ -30,7 +30,7 @@ def get_gaussian_process_result(mean_fn, cov_fn, index_set=Reals()):
 
     class GaussianProcessResult(base_class):
 
-        def __init__(self, mean_fn, cov_fn):
+        def __init__(self, mean_func, cov_func):
 
             self.mean = np.empty(shape=0)
             self.cov = np.empty(shape=(0, 0))
@@ -50,14 +50,14 @@ def get_gaussian_process_result(mean_fn, cov_fn, index_set=Reals()):
                     )
 
                 # if variance is 0, just return the mean
-                if cov_fn(t0, t0) == 0:
-                    return mean_fn(t0)
+                if cov_func(t0, t0) == 0:
+                    return mean_func(t0)
 
                 # calculate conditional mean and variance
-                mean2 = mean_fn(t0)
+                mean2 = mean_func(t0)
                 cov11 = self.cov + MACHINE_EPS * np.identity(len(self.times))
-                cov12 = [cov_fn(t0, t) for t in self.times]
-                cov22 = cov_fn(t0, t0)
+                cov12 = [cov_func(t0, t) for t in self.times]
+                cov22 = cov_func(t0, t0)
                 cond_mean = (mean2 + (
                     cov12 *
                     np.linalg.solve(cov11, self.values - self.mean)
@@ -84,25 +84,25 @@ def get_gaussian_process_result(mean_fn, cov_fn, index_set=Reals()):
             super().__init__(func=_func)
             self.index_set = index_set
 
-    return GaussianProcessResult(mean_fn, cov_fn)
+    return GaussianProcessResult(mean_func, cov_func)
 
 
 class GaussianProcessProbabilitySpace(ProbabilitySpace):
 
-    def __init__(self, mean_fn, cov_fn, index_set=Reals()):
+    def __init__(self, mean_func, cov_func, index_set=Reals()):
         """Initialize probability space for a Gaussian process.
 
         Args:
-          mean_fn: mean function (function of one argument)
-          cov_fn: (auto)covariance function (function of two arguments)
+          mean_func: mean function (function of one argument)
+          cov_func: (auto)covariance function (function of two arguments)
           index_set: index set for the Gaussian process
                      (by default, all real numbers)
         """
 
         def draw():
             return get_gaussian_process_result(
-                mean_fn,
-                cov_fn,
+                mean_func,
+                cov_func,
                 index_set)
 
         super().__init__(draw)
@@ -110,18 +110,18 @@ class GaussianProcessProbabilitySpace(ProbabilitySpace):
 
 class GaussianProcess(RandomProcess, RV):
 
-    def __init__(self, mean_fn, cov_fn, index_set=Reals()):
+    def __init__(self, mean_func, cov_func, index_set=Reals()):
         """Initialize Gaussian process.
 
         Args:
-          mean_fn: mean function (function of one argument)
-          cov_fn: (auto)covariance function (function of two arguments)
+          mean_func: mean function (function of one argument)
+          cov_func: (auto)covariance function (function of two arguments)
           index_set: index set for the Gaussian process
                      (by default, all real numbers)
         """
 
-        prob_space = GaussianProcessProbabilitySpace(mean_fn,
-                                                     cov_fn,
+        prob_space = GaussianProcessProbabilitySpace(mean_func,
+                                                     cov_func,
                                                      index_set)
         RandomProcess.__init__(self, prob_space)
         RV.__init__(self, prob_space)
@@ -138,8 +138,8 @@ class BrownianMotionProbabilitySpace(GaussianProcessProbabilitySpace):
           scale: scale parameter of Brownian motion
         """
         super().__init__(
-            mean_fn=lambda t: drift * t,
-            cov_fn=lambda s, t: (scale ** 2) * min(s, t)
+            mean_func=lambda t: drift * t,
+            cov_func=lambda s, t: (scale ** 2) * min(s, t)
         )
 
 
