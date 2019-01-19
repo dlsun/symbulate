@@ -5,41 +5,48 @@ results of a simulation, either outcomes from a
 probability space or realizations of a random variable /
 random process.
 """
+import time
+
 import numpy as np
-import scipy.stats as stats
 import matplotlib.pyplot as plt
 
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
-from time import time
 
+from .base import (Arithmetic, Statistical, Comparable,
+                   Logical, Filterable, Transformable)
 from .plot import (configure_axes, get_next_color, is_discrete,
-    count_var, compute_density, add_colorbar, make_tile,
-    setup_ticks, make_violin, make_marginal_impulse, make_density2D)
+                   count_var, compute_density, add_colorbar,
+                   setup_ticks, make_tile, make_violin,
+                   make_marginal_impulse, make_density2D)
 from .result import (Scalar, Vector, TimeFunction,
-                     is_scalar, is_vector)
+                     is_number, is_numeric_vector)
 from .table import Table
 
 
 plt.style.use('seaborn-colorblind')
 
 
-def is_hashable(x):
-    return hasattr(x, "__hash__")
+def _is_hashable(obj):
+    return hasattr(obj, "__hash__")
+
+def _is_boolean_vector(vector):
+    return all(isinstance(x, (bool, np.bool_)) for x in vector)
 
 
-class Results(object):
+class Results(Arithmetic, Statistical, Comparable,
+              Logical, Filterable, Transformable):
 
     def __init__(self, results, sim_id=None):
         self.results = list(results)
-        self.sim_id = time() if sim_id is None else sim_id
+        self.sim_id = time.time() if sim_id is None else sim_id
 
-    def apply(self, fun):
+    def apply(self, func):
         """Apply a function to each outcome of a simulation.
 
         Args:
-          fun: A function to apply to each outcome.
+          func: A function to apply to each outcome.
 
         Returns:
           Results: A Results object of the same length,
@@ -48,41 +55,69 @@ class Results(object):
             Results object.
         """
         return type(self)(
-            [fun(x) for x in self.results],
+            [func(result) for result in self.results],
             self.sim_id
         )
 
-    def __getitem__(self, i):
-        if isinstance(i, Results):
-            return self.filter(i)
-        else:
-            return self.apply(lambda x: x[i])
+    def __getitem__(self, n):
+        # if n is a Results object, use it as a boolean mask
+        if isinstance(n, Results):
+            return self.filter(n)
+        # if n is a numeric array of values, return a Results
+        # object with those dimensions
+        elif is_numeric_vector(n):
+            return self.apply(
+                lambda result: type(result)(result[i] for i in n)
+            )
+        # otherwise, return the nth value of every simulation
+        return self.apply(lambda result: result[n])
 
     def __iter__(self):
-        for x in self.results:
-            yield x
+        for result in self.results:
+            yield result
 
     def __len__(self):
         return len(self.results)
 
-    def get(self, i):
-        for j, x in enumerate(self.results):
-            if j == i:
-                return x
+    def get(self, n):
+        """Get the outcome of the nth simulation.
+
+        Suppose x is an instance of a Results object.
+        Although x behaves like a list, in that you
+        can iterate over it, x[n] does not return
+        the nth simulation. Instead, it returns a
+        Results object, containing the nth dimension
+        of every simulation. To get the outcome of the
+        nth simulation, the .get(n) method is provided.
+
+        Args:
+          n (int): the index of the simulation result to get
+
+        Returns:
+          The outcome of the nth simulation.
+        """
+
+        # if n is a numeric array, return a Results object with those results
+        if is_numeric_vector(n):
+            return type(self)(
+                self.results[i] for i in n
+            )
+        # otherwise, return the nth result (this also works when n is a slice)
+        return self.results[n]
 
     def _get_counts(self):
         counts = {}
-        for x in self.results:
-            if is_hashable(x):
-                y = x
-            elif isinstance(x, list) and all(is_hashable(i) for i in x):
-                y = tuple(x)
+        for result in self.results:
+            if _is_hashable(result):
+                outcome = result
+            elif isinstance(result, list) and all(_is_hashable(x) for x in result):
+                outcome = tuple(result)
             else:
-                y = str(x)
-            if y in counts:
-                counts[y] += 1
+                outcome = str(result)
+            if outcome in counts:
+                counts[outcome] += 1
             else:
-                counts[y] = 1
+                counts[outcome] = 1
         return counts
 
     def tabulate(self, outcomes=None, normalize=False):
@@ -104,24 +139,19 @@ class Results(object):
         """
         table = Table(self._get_counts(), outcomes)
         if normalize:
-            return table / len(self)
-        else:
-            return table
+            table /= len(self)
+        return table
 
-
-    # The following functions return a Results object
-    # with the outcomes that satisfy a given criterion.
-
+    # The Filterable superclass will use this to define all of the
+    # .filter_*() and .count_*() methods.
     def filter(self, filt):
-        """Filters the results of a simulation and
-             returns only those outcomes that satisfy
-             a given criterion.
+        """Get only the results that satisfy the given criterion.
 
         Args:
           filt: Either a function that takes in
             an outcome and returns a boolean, or
-            a Results object of booleans of the 
-            same length as this Results object.            
+            a Results object of booleans of the
+            same length as this Results object.
 
         Returns:
           Results: Another Results object containing
@@ -130,99 +160,33 @@ class Results(object):
         if isinstance(filt, Results):
             if self.sim_id != filt.sim_id:
                 raise Exception(
-                    "Results objects must come from the "
+                    "In order to filter one Results object "
+                    "by another, they must come from the "
                     "same simulation."
                 )
             if len(filt) != len(self):
                 raise ValueError(
-                    "Filter must be the same length "
-                    "as the Results object."
-                    )
-            if not all(type(x) in (bool, np.bool_) for x in filt):
+                    "Filter must be the same length as the "
+                    "Results object."
+                )
+            if not _is_boolean_vector(filt):
                 raise ValueError(
-                    "Every element in the filter must "
-                    "be a boolean."
-                    )
-            return type(self)(x for x, y in zip(self, filt) if y)
+                    "Every element in the filter must be a boolean."
+                )
+            return type(self)(x for x, cond in zip(self, filt) if cond)
         elif callable(filt):
-            return type(self)(x for x in self.results if filt(x))
+            return type(self)(x for x in self if filt(x))
         else:
             raise TypeError(
                 "A filter must be either a function or a "
                 "boolean Results object of the same length."
             )
 
-    def filter_eq(self, value):
-        return self.filter(lambda x: x == value)
-
-    def filter_neq(self, value):
-        return self.filter(lambda x: x != value)
-
-    def filter_lt(self, value):
-        return self.filter(lambda x: x < value)
-
-    def filter_leq(self, value):
-        return self.filter(lambda x: x <= value)
-
-    def filter_gt(self, value):
-        return self.filter(lambda x: x > value)
-
-    def filter_geq(self, value):
-        return self.filter(lambda x: x >= value)
-
-
-    # The following functions return an integer indicating
-    # how many outcomes passed a given criterion.
-
-    def count(self, fun=lambda x: True):
-        """Counts the number of outcomes that satisfied
-             a given criterion.
-
-        Args:
-          fun (outcome -> bool): A function that
-            takes in an outcome and returns a
-            True / False. Only the outcomes that
-            return True will be counted.
-
-        Returns:
-          int: The number of outcomes for which
-            the function returned True.
-        """
-        return len(self.filter(fun))
-
-    def count_eq(self, value):
-        return len(self.filter_eq(value))
-
-    def count_neq(self, value):
-        return len(self.filter_neq(value))
-
-    def count_lt(self, value):
-        return len(self.filter_lt(value))
-
-    def count_leq(self, value):
-        return len(self.filter_leq(value))
-
-    def count_gt(self, value):
-        return len(self.filter_gt(value))
-
-    def count_geq(self, value):
-        return len(self.filter_geq(value))
-
-
-    # The following functions define vectorized operations
-    # on the Results object.
-
-    # e.g., abs(X)
-    def __abs__(self):
-        return self.apply(abs)
-
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def _op_func(self, other):
             if isinstance(other, Results):
                 if len(self) != len(other):
                     raise Exception(
@@ -241,133 +205,65 @@ class Results(object):
             else:
                 return self.apply(lambda x: op(x, other))
 
-        return op_fun
+        return _op_func
 
-    # e.g., X + Y or X + 3
-    def __add__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x + y)
-        return op_fun(self, other)
+    # The Comparison superclass will use this to define all of the
+    # usual comparison operations (e.g., <, >, ==, !=, etc.).
+    def _comparison_factory(self, op):
+        return self._operation_factory(op)
 
-    # e.g., 3 + X
-    def __radd__(self, other):
-        return self.__add__(other)
+    # The Statistical superclass will use this to define all of the
+    # usual comparison operations (e.g., <, >, ==, !=, etc.).
+    def _statistic_factory(self, _):
+        raise Exception("Statistical functions are only available "
+                        "for simulations of random variables. "
+                        "Define a RV on this probability space "
+                        "and then try again.")
 
-    # e.g., X - Y or X - 3
-    def __sub__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x - y)
-        return op_fun(self, other)
+    def _multivariate_statistic_factory(self, op):
+        self._statistic_factory(op)
 
-    # e.g., 3 - X
-    def __rsub__(self, other):
-        return -1 * self.__sub__(other)
+    # The Logical superclass will use this to define the three
+    # logical operations: and (&), or (|), not (~).
+    def _logical_factory(self, op):
 
-    # e.g., -X
-    def __neg__(self):
-        return -1 * self
+        def _op_func(self, other=None):
+            # check that the vector only contains booleans
+            if not _is_boolean_vector(self):
+                raise ValueError(
+                    "Logical operations are only defined for "
+                    "boolean (True/False) Results objects.")
+            # other will be None when op is the "not" operator
+            if other is None:
+                return Results([op(x) for x in self], self.sim_id)
+            else:
+                if isinstance(other, Results):
+                    if self.sim_id != other.sim_id:
+                        raise Exception("Results objects must come "
+                                        "from the same simulation.")
+                    if not _is_boolean_vector(other):
+                        raise ValueError(
+                            "Logical operations are only defined for "
+                            "boolean (True/False) Results objects.")
+                else:
+                    raise TypeError(
+                        "Logical operations are only defined "
+                        "between two Results, not between a Result "
+                        "and a %s." % type(other).__name__)
+                return Results(
+                    [op(x, y) for x, y in zip(self, other)],
+                    self.sim_id
+                )
 
-    # e.g., X * Y or X * 2
-    def __mul__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x * y)
-        return op_fun(self, other)
-            
-    # e.g., 2 * X
-    def __rmul__(self, other):
-        return self.__mul__(other)
+        return _op_func
 
-    # e.g., X / Y or X / 2
-    def __truediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x / y)
-        return op_fun(self, other)
-
-    # e.g., 2 / X
-    def __rtruediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y / x)
-        return op_fun(self, other)
-
-    # e.g., X ** 2
-    def __pow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x ** y)
-        return op_fun(self, other)
-
-    # e.g., 2 ** X
-    def __rpow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y ** x)
-        return op_fun(self, other)
-
-    # Alternative notation for powers: e.g., X ^ 2
-    def __xor__(self, other):
-        return self.__pow__(other)
-    
-    # Alternative notation for powers: e.g., 2 ^ X
-    def __rxor__(self, other):
-        return self.__rpow__(other)
-    
-    def __eq__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x == y)
-        return op_fun(self, other)
-
-    def __ne__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x != y)
-        return op_fun(self, other)
-
-    def __lt__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x < y)
-        return op_fun(self, other)
-
-    def __le__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x <= y)
-        return op_fun(self, other)
-
-    def __gt__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x > y)
-        return op_fun(self, other)
-
-    def __ge__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x >= y)
-        return op_fun(self, other)
 
     def plot(self):
         raise Exception("Only simulations of random variables (RV) "
-                        "can be plotted, but you simulated from a " 
+                        "can be plotted, but you simulated from a "
                         "probability space. You must first define a RV "
                         "on your probability space and simulate it. "
                         "Then call .plot() on those simulations.")
- 
-    def mean(self):
-        raise Exception("You can only call .mean() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        "a RV on your probability space and simulate it "
-                        "Then call .mean() on those simulations.")
-
-    def var(self):
-        raise Exception("You can only call .var() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        " a RV on your probability space and simulate it "
-                        "Then call .var() on those simulations.")
-
-    def sd(self):
-        raise Exception("You can only call .sd() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        " a RV on your probability space and simulate it "
-                        "Then call .sd() on those simulations.")
-
-    def corr(self):
-        raise Exception("You can only call .corr() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        " a RV on your probability space and simulate it "
-                        "Then call .corr() on those simulations.")
-   
-    def cov(self):
-        raise Exception("You can only call .cov() on simulations of "
-                        "random variables (RV), but you simulated from "
-                        "a probability space. You must first define "
-                        " a RV on your probability space and simulate it "
-                        "Then call .cov() on those simulations.")
-
 
     def _repr_html_(self):
 
@@ -381,27 +277,26 @@ class Results(object):
         {table_body}
       </tbody>
     </table>
-    '''
+        '''
         row_template = '''
         <tr>
           <td>%s</td><td>%s</td>
         </tr>
         '''
 
-        def truncate(result):
+        def _truncate(result):
             if len(result) > 100:
                 return result[:100] + "..."
-            else:
-                return result
+            return result
 
         table_body = ""
-        for i, x in enumerate(self.results):
-            table_body += row_template % (i, truncate(str(x)))
+        for i, result in enumerate(self.results):
+            table_body += row_template % (i, _truncate(str(result)))
             # if we've already printed 9 rows, skip to end
             if i >= 8:
                 table_body += "<tr><td>...</td><td>...</td></tr>"
                 i_last = len(self) - 1
-                table_body += row_template % (i_last, truncate(str(self.get(i_last))))
+                table_body += row_template % (i_last, _truncate(str(self.get(i_last))))
                 break
         return table_template.format(table_body=table_body)
 
@@ -410,31 +305,32 @@ class RVResults(Results):
 
     def __init__(self, results, sim_id=None):
         super().__init__(results, sim_id)
-        # determine the dimension and the index set (if applicable) of the Results
-        self.dim = None
-        self.index_set = None
         # get type and dimension of the first result, if it exists
         iterresults = iter(self)
         try:
             first_result = next(iterresults)
-        except:
+        except StopIteration:
             return
+        # determine the index set (if each realization is a TimeFunction)
         if isinstance(first_result, TimeFunction):
             self.index_set = first_result.index_set
-        if is_scalar(first_result):
+        else:
+            self.index_set = None
+        # determine the dimension
+        if is_number(first_result):
             self.dim = 1
-        elif is_vector(first_result):
+        elif is_numeric_vector(first_result):
             self.dim = len(first_result)
+        else:
+            self.dim = None
         # iterate over remaining results, ensure they are consistent with the first
         for result in iterresults:
             if (isinstance(result, TimeFunction) and
                 result.index_set != self.index_set):
                 self.index_set = None
-                break
-            if ((is_scalar(result) and self.dim != 1) or
-                (is_vector(result) and self.dim != len(result))):
+            if ((is_number(result) and self.dim != 1) or
+                (is_numeric_vector(result) and self.dim != len(result))):
                 self.dim = None
-                break
 
     def _set_array(self):
         # check if it has already been set
@@ -450,19 +346,71 @@ class RVResults(Results):
             raise Exception(
                 "This operation is only possible with results "
                 "of consistent dimension.")
-            
-    def plot(self, type=None, alpha=None, normalize=True, jitter=False, 
-        bins=None, **kwargs):
+
+    # The Statistical superclass will use this to define all of the
+    # usual comparison operations (e.g., <, >, ==, !=, etc.).
+    def _statistic_factory(self, op):
+
+        def _op_func(self):
+            self._set_array()
+            if self.dim == 1:
+                return Scalar(op(a=self.array))
+            elif self.dim is not None:
+                return Vector(op(a=self.array, axis=0))
+            elif self.index_set is not None:
+                def _func(t):
+                    return _op_func(self[t])
+                return TimeFunction.from_index_set(self.index_set, _func)
+            raise NotImplementedError(
+                "Statistics can only be calculated for numerical "
+                "data of consistent dimension."
+            )
+
+        return _op_func
+
+    def _multivariate_statistic_factory(self, op):
+
+        def _op_func(self):
+            self._set_array()
+            if self.dim == 2:
+                return op(self.array)[0, 1]
+            elif self.dim > 2:
+                return op(self.array)
+            elif self.dim == 1:
+                raise Exception(
+                    "This multivariate statistic is only defined when "
+                    "when there are at least 2 dimensions.")
+            raise NotImplementedError(
+                "Statistics can only be calculated for numerical "
+                "data of consistent dimension."
+            )
+
+        return _op_func
+
+    def standardize(self):
+        """Standardizes the results with respect to the mean and standard deviation.
+
+        Returns:
+          A new RVResults object, where every dimension has mean 0 and variance 1.
+        """
+        self._set_array()
+        if self.dim is not None:
+            return (self - self.mean()) / self.std()
+        else:
+            raise Exception("Could not standardize the given results.")
+
+    def plot(self, type=None, alpha=None, normalize=True, jitter=False,
+             bins=None, **kwargs):
         if type is not None:
             if isinstance(type, str):
                 type = (type,)
             elif not isinstance(type, (tuple, list)):
                 raise Exception("I don't know how to plot a " + str(type))
-        
+
         if self.dim == 1:
             # make sure self.array, a Numpy array, has been set
             self._set_array()
-            
+
             # determine plotting parameters
             counts = self._get_counts()
             discrete = is_discrete(counts.values())
@@ -478,7 +426,7 @@ class RVResults(Results):
             fig = plt.gcf()
             ax = plt.gca()
             color = get_next_color(ax)
-            
+
             if 'density' in type:
                 if discrete:
                     xs = sorted(list(counts.keys()))
@@ -514,7 +462,7 @@ class RVResults(Results):
                 if discrete:
                     noise_level = .002 * (self.array.max() - self.array.min())
                     xs = xs + np.random.normal(scale=noise_level, size=n)
-                ax.plot(xs, [0.001] * n, '|', linewidth = 5, color='k')
+                ax.plot(xs, [0.001] * n, '|', linewidth=5, color='k')
                 if len(type) == 1:
                     setup_ticks([], [], ax.yaxis)
         elif self.dim == 2:
@@ -548,14 +496,16 @@ class RVResults(Results):
                     densityY = compute_density(y)
                     x_lines = np.linspace(min(x), max(x), 1000)
                     y_lines = np.linspace(min(y), max(y), 1000)
-                    ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2, color=get_next_color(ax))
-                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2, color=get_next_color(ax), 
-                                  transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
+                    ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2,
+                                   color=get_next_color(ax))
+                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2,
+                                   color=get_next_color(ax),
+                                   transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
                 else:
                     if discrete_x:
                         make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
                     else:
-                        ax_marg_x.hist(x, color=get_next_color(ax), density=normalize, 
+                        ax_marg_x.hist(x, color=get_next_color(ax), density=normalize,
                                        alpha=alpha, bins=bins)
                     if discrete_y:
                         make_marginal_impulse(y_count, get_next_color(ax), ax_marg_y, alpha, 'y')
@@ -588,7 +538,7 @@ class RVResults(Results):
                         new_labels.append(int(label.get_text()) / len(x))
                     caxes.set_yticklabels(new_labels)
                 else:
-                    caxes = add_colorbar(fig, type, histo[3], 'Count')    
+                    caxes = add_colorbar(fig, type, histo[3], 'Count')
             elif 'density' in type:
                 den = make_density2D(x, y, ax)
                 add_colorbar(fig, type, den, 'Density')
@@ -599,7 +549,7 @@ class RVResults(Results):
                 if discrete_x and not discrete_y:
                     positions = sorted(list(x_count.keys()))
                     make_violin(self.array, positions, ax, 'x', alpha)
-                elif not discrete_x and discrete_y: 
+                elif not discrete_x and discrete_y:
                     positions = sorted(list(y_count.keys()))
                     make_violin(self.array, positions, ax, 'y', alpha)
         else:
@@ -610,211 +560,3 @@ class RVResults(Results):
             for result in self.results:
                 result.plot(alpha=alpha, color=color, **kwargs)
             plt.xlabel("Index")
-            
-    def mean(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.mean())
-        elif self.dim is not None:
-            return Vector(self.array.mean(axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].mean()
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:
-            raise Exception("I don't know how to take the mean of these values.")
-
-    def var(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.var())
-        elif self.dim is not None:
-            return Vector(self.array.var(axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].var()
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:
-            raise Exception("I don't know how to take the variance of these values.")
-
-    def std(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.std())
-        elif self.dim is not None:
-            return Vector(self.array.std(axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].std()
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:
-            raise Exception("I don't know how to take the SD of these values.")
-
-    def sd(self):
-        return self.std()
-
-    def quantile(self, q):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(np.percentile(self.array, q * 100))
-        elif self.dim is not None:
-            return Vector(np.percentile(self.array, q * 100, axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].quantile(q)
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:
-            raise Exception("I don't know how to take the quanile of these values.")
-
-    def median(self):
-        self._set_array()
-        return self.quantile(.5)
-        
-    def orderstatistics(self, n):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(np.partition(self.array, n - 1)[n - 1])
-        elif self.dim is not None:
-            return Vector(np.partition(self.array, n - 1, axis=0)[n - 1])
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].orderstatistics(n)
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:                                                                        
-            raise Exception("I don't know how to take the order statistics of these values.")
-        
-    def min(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.min())
-        elif self.dim is not None:
-            return Vector(self.array.min(axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].min()
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:
-            raise Exception("I don't know how to take the minimum of these values.")
-            
-    def max(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.max())
-        elif self.dim is not None:
-            return Vector(self.array.max(axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].max()
-            return TimeFunction.from_index_set(self.index_set, fn)
-
-    def min_max_diff(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(self.array.max() - self.array.min())
-        elif self.dim is not None:
-            return Vector(self.array.max(axis=0) -
-                          self.array.min(axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].min_max_diff()
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:
-            raise Exception("I don't know how to take the range of these values.")
-
-    def iqr(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(np.percentile(self.array, 75) -
-                          np.percentile(self.array, 25))
-        elif self.dim is not None:
-            return Vector(np.percentile(self.array, 75, axis=0) -
-                          np.percentile(self.array, 25, axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].iqr()
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:                                                                        
-            raise Exception("I don't know how to take the interquartile range of these values.")
-
-    def skewness(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(stats.skew(self.array))
-        elif self.dim is not None:
-            return Vector(stats.skew(self.array, axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].skewness()
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:
-            raise Exception("I don't know how to take the skewness of these values.")
-
-    def kurtosis(self):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(stats.kurtosis(self.array))
-        elif self.dim is not None:
-            return Vector(stats.kurtosis(self.array, axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].kurtosis()
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:
-            raise Exception("I don't know how to take the kurtosis of these values.")
- 
-    def moment(self, k):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(stats.moment(self.array, k))
-        elif self.dim is not None:
-            return Vector(stats.moment(self.array, k, axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].moment(k)
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:                                                                        
-            raise Exception("I don't know how to find the moment of these values.")
-    
-    def trimmed_mean(self, alpha):
-        self._set_array()
-        if self.dim == 1:
-            return Scalar(stats.trim_mean(self.array, alpha))
-        elif self.dim is not None:
-            return Vector(stats.trim_mean(self.array,
-                                          alpha, axis=0))
-        elif self.index_set is not None:
-            def fn(t):
-                return self[t].trimmed_mean(alpha)
-            return TimeFunction.from_index_set(self.index_set, fn)
-        else:                                                                        
-            raise Exception("I don't know how to take the trimmed_mean of these values.")
-            
-    def cov(self, **kwargs):
-        self._set_array()
-        if self.dim == 2:
-            return np.cov(self.array, rowvar=False)[0, 1]
-        elif self.dim > 2:
-            return np.cov(self.array, rowvar=False)
-        elif self.dim == 1:
-            raise Exception("Covariance can only be calculated when there are at least 2 dimensions.")
-        else:
-            raise Exception("Covariance requires that the simulation results have consistent dimension.")
-
-    def corr(self, **kwargs):
-        self._set_array()
-        if self.dim == 2:
-            return np.corrcoef(self.array, rowvar=False)[0, 1]
-        elif self.dim > 2:
-            return np.corrcoef(self.array, rowvar=False)
-        elif self.dim == 1:
-            raise Exception("Covariance can only be calculated when there are at least 2 dimensions.")
-        else:
-            raise Exception("Correlation requires that the simulation results have consistent dimension.")
-
-    def standardize(self):
-        self._set_array()
-        if self.dim is not None:
-            return (self - self.mean()) / self.std()
-        else:
-            raise Exception("Could not standardize the given results.")
-

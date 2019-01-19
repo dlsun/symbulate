@@ -1,7 +1,8 @@
 import math
 import numbers
-import numpy as np
 import operator as op
+
+import numpy as np
 import scipy.stats as stats
 
 from .random_variables import RV
@@ -17,18 +18,21 @@ pi = math.pi
 e = math.e
 inf = float("inf")
 
-def operation_factory(op):
+floor = math.floor
+ceil = math.ceil
 
-    def op_fun(x):
+def operation_factory(operation):
+
+    def _op_func(x):
         if isinstance(x, (RV, Tuple, TimeFunction)):
             # recursively call op_fun until x is a scalar
-            return x.apply(op_fun)
+            return x.apply(_op_func)
         elif isinstance(x, Results):
-            return x.apply(op_fun)
+            return x.apply(_op_func)
         else:
-            return op(x)
+            return operation(x)
 
-    return op_fun
+    return _op_func
 
 sqrt = operation_factory(math.sqrt)
 exp = operation_factory(math.exp)
@@ -71,7 +75,7 @@ def med_abs_dev(x):
     return median(list(abs(i-median(x)) for i in x))
 
 def quantile(q):
-    return lambda x: np.percentile(x, q * 100)    
+    return lambda x: np.percentile(x, q * 100)
 
 def iqr(x):
     if isinstance(x, numbers.Real):
@@ -100,7 +104,7 @@ def kurtosis(x):
 
 def moment(k):
     return lambda x: stats.moment(x, k)
-    
+
 def trimmed_mean(alpha):
     return lambda x: stats.trim_mean(x, alpha)
 
@@ -111,48 +115,48 @@ def comparefun(x, compare, value):
             count += 1
     return count
 
-def count(fun=lambda x: True):
-    def func(x):
+def count(func=lambda x: True):
+    def _func(x):
         val = 0
         for i in x:
-            if fun(i):
+            if func(i):
                 val += 1
-        return val        
-    return func
+        return val
+    return _func
 
 def count_eq(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.eq, value)
-    return fun    
+    return func
 
 def count_neq(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.ne, value)
-    return fun
+    return func
 
 def count_lt(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.lt, value)
-    return fun 
+    return func
 
 def count_gt(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.gt, value)
-    return fun 
+    return func
 
 def count_geq(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.ge, value)
-    return fun 
+    return func
 
 def count_leq(value):
-    def fun(x):
+    def func(x):
         return comparefun(x, op.le, value)
-    return fun
+    return func
 
 def interarrival_times(continuous_time_function):
     """Given a realization of a continuous-time,
-       discrete-state process, returns the interarrival 
+       discrete-state process, returns the interarrival
        times (i.e., the times between each state change).
 
     Args:
@@ -166,13 +170,13 @@ def interarrival_times(continuous_time_function):
                        DiscreteValued)):
         raise TypeError(
             "Interarrival times are only defined for "
-            "continuous-time, discrete-valued functions." 
+            "continuous-time, discrete-valued functions."
         )
     return continuous_time_function.get_interarrival_times()
 
 def arrival_times(continuous_time_function):
     """Given a realization of a continuous-time,
-       discrete-state process, returns the arrival 
+       discrete-state process, returns the arrival
        times (i.e., the times when the state changes).
 
     Args:
@@ -186,13 +190,13 @@ def arrival_times(continuous_time_function):
                        DiscreteValued)):
         raise TypeError(
             "Interarrival times are only defined for "
-            "continuous-time, discrete-valued functions." 
+            "continuous-time, discrete-valued functions."
         )
     return continuous_time_function.get_arrival_times()
 
 def states(discrete_valued_function):
     """Given a realization of a discrete-valued function,
-       returns an InfiniteVector of the sequence of 
+       returns an InfiniteVector of the sequence of
        values (or states).
 
     Args:

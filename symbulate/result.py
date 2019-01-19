@@ -1,11 +1,10 @@
-import collections
 import numbers
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .index_sets import (DiscreteTimeSequence,
-                         Reals, Naturals)
 import symbulate
+from .base import Arithmetic, Transformable, Statistical, Filterable
+from .index_sets import DiscreteTimeSequence, Reals, Naturals
 
 
 class Scalar(numbers.Number):
@@ -20,18 +19,18 @@ class Scalar(numbers.Number):
 
 
 class Int(int, Scalar):
-    
+
     def __new__(cls, value, *args, **kwargs):
         return super(Int, cls).__new__(cls, value)
-    
+
 
 class Float(float, Scalar):
-    
+
     def __new__(cls, value, *args, **kwargs):
         return super(Float, cls).__new__(cls, value)
-        
 
-class Tuple(object):
+
+class Tuple(Arithmetic, Transformable, Statistical, Filterable):
     """A collapsible data structure.
     """
 
@@ -45,20 +44,25 @@ class Tuple(object):
                 "Tuples can only be created from "
                 "finite iterable data."
             )
-    
-    def __getitem__(self, key):
-        return self.values[key]
+
+    def __getitem__(self, n):
+        # if n is a numeric array, return a Tuple of those values
+        if is_numeric_vector(n):
+            return type(self)(self.values[i] for i in n)
+        # otherwise, return the value at n
+        return self.values[n]
 
     def __len__(self):
         return len(self.values)
 
     def __iter__(self):
-        for x in self.values:
-            yield x
+        for value in self.values:
+            yield value
 
     def __hash__(self):
         return hash(tuple(self.values))
 
+    # Define comparison operators to handle sorting.
     def __eq__(self, other):
         if not hasattr(other, "__len__"):
             return False
@@ -68,13 +72,13 @@ class Tuple(object):
 
     def __lt__(self, other):
         return tuple(self.values) < tuple(other.values)
-            
-    def apply(self, function):
+
+    def apply(self, func):
         """Apply function to every element of a Tuple.
 
         Args:
-          function: function to apply to the Tuple
-        
+          func: function to apply to the Tuple
+
         Example:
           x = Tuple([1, 2, 3])
           y = x.apply(log)
@@ -90,127 +94,65 @@ class Tuple(object):
             return log(n) ** 2
           y = x.apply(log_squared)
         """
-        return type(self)(function(x) for x in self)
+        return type(self)(func(e) for e in self)
 
-    # e.g., abs(X)
-    def __abs__(self):
-        return self.apply(abs)
+    # The Filterable superclass will use this to define all of the
+    # .filter_*() and .count_*() methods.
+    def filter(self, filt):
+        """Get only the elements that satisfy the given criterion.
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+        Args:
+          filt: A function that takes in an element and returns
+            a boolean.
+
+        Returns:
+          Tuple: Another Tuple containing only those elements e
+          where filt(e) is True.
+        """
+        return type(self)(e for e in self if filt(e))
+
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
-            if isinstance(other, numbers.Number):
+        def _op_func(self, other):
+            if is_number(other):
                 return type(self)(op(value, other) for value in self)
-            elif hasattr(other, "__len__"):
+            elif is_vector(other):
+                # check that other is the same length as the Tuple
                 if len(self) != len(other):
                     raise Exception(
-                        "Operations can only be performed between "
-                        "two Tuples of the same length."
-                    )
-
-                # otherwise, use a list comprehension
-                return Vector(op(a, b) for a, b in zip(self, other))
+                        "Arithmetic operations between a %s and a %s "
+                        "are only valid if they are the same length. "
+                        "You attempted to combine a %s of length %d "
+                        "with a %s of length %d." % (
+                            type(self).__name__,
+                            type(other).__name__,
+                            type(self).__name__,
+                            len(self),
+                            type(other).__name__,
+                            len(other)
+                        ))
+                # return a new Tuple/Vector of the same length
+                return type(self)(op(a, b) for a, b in zip(self, other))
             else:
                 return NotImplemented
 
-        return op_fun
-    
-    # e.g., f + g or f + 3
-    def __add__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x + y)
-        return op_fun(self, other)
+        return _op_func
 
-    # e.g., 3 + f
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    # e.g., f - g or f - 3
-    def __sub__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x - y)
-        return op_fun(self, other)
-
-    # e.g., 3 - f
-    def __rsub__(self, other):
-        return -1 * self.__sub__(other)
-
-    # e.g., -f
-    def __neg__(self):
-        return -1 * self
-
-    # e.g., f * g or f * 2
-    def __mul__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x * y)
-        return op_fun(self, other)
-            
-    # e.g., 2 * f
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    # e.g., f / g or f / 2
-    def __truediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x / y)
-        return op_fun(self, other)
-
-    # e.g., 2 / f
-    def __rtruediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y / x)
-        return op_fun(self, other)
-
-    # e.g., f ** 2
-    def __pow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x ** y)
-        return op_fun(self, other)
-
-    # e.g., 2 ** f
-    def __rpow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y ** x)
-        return op_fun(self, other)
-
-    # Alternative notation for powers: e.g., f ^ 2
-    def __xor__(self, other):
-        return self.__pow__(other)
-    
-    # Alternative notation for powers: e.g., 2 ^ f
-    def __rxor__(self, other):
-        return self.__rpow__(other)
-
-    def sum(self):
-        return np.sum(self.values)
-
-    def mean(self):
-        return np.mean(self.values)
+    # The Statistical superclass will use this to define all of the
+    # usual statistical functions (e.g., mean, var, etc.)
+    def _statistic_factory(self, op):
+        def _op_func(self):
+            return op(self.values)
+        return _op_func
 
     def cumsum(self):
-        return Vector(np.cumsum(self.values))
-
-    def median(self):
-        return np.median(self.values)
-    
-    def sd(self):
-        return self.std()
-
-    def std(self):
-        return np.std(self.values)
-
-    def var(self):
-        return np.var(self.values)
-
-    def max(self):
-        return max(self.values)
-
-    def min(self):
-        return min(self.values)
-
-    def count_eq(self, x):
-        return np.count_nonzero(self.values == x)
+        return type(self)(np.cumsum(self.values))
 
     def plot(self, **kwargs):
         plt.plot(range(len(self)), self.values, '.--', **kwargs)
-        
+
     def __str__(self):
         if len(self) <= 6:
             return "(" + ", ".join(str(x) for x in self) + ")"
@@ -222,27 +164,26 @@ class Tuple(object):
     def __repr__(self):
         return self.__str__()
 
-    
+
 class Vector(Tuple):
-    """A non-collapsible data structure.    
+    """A data structure like a Tuple, except it does not collapse.
     """
     pass
 
 
-class TimeFunction(object):
+class TimeFunction(Arithmetic):
 
     @classmethod
-    def from_index_set(cls, index_set, fn=None):
+    def from_index_set(cls, index_set, func=None):
         if isinstance(index_set, DiscreteTimeSequence):
-            return DiscreteTimeFunction(fn, index_set=index_set)
+            return DiscreteTimeFunction(func, index_set=index_set)
         elif isinstance(index_set, Reals):
-            return ContinuousTimeFunction(fn)
+            return ContinuousTimeFunction(func)
         elif isinstance(index_set, Naturals):
-            return InfiniteVector(fn)
+            return InfiniteVector(func)
 
     def check_same_index_set(self, other):
-        if (isinstance(other, numbers.Number) or
-            isinstance(other, symbulate.RV)):
+        if isinstance(other, (numbers.Number, symbulate.RV)):
             return
         elif isinstance(other, TimeFunction):
             if self.index_set != other.index_set:
@@ -251,88 +192,24 @@ class TimeFunction(object):
                     "TimeFunctions with the same index set."
                 )
         else:
-            raise Exception(
-                "Cannot combine %s with %s." % (
-                    str(type(self)), str(type(other)))
-            )
-    
-    # e.g., abs(X)
-    def __abs__(self):
-        return self.apply(abs)
+            raise Exception("Cannot combine %s with %s." % (
+                type(self).__name__, type(other).__name__
+            ))
 
-    # e.g., f + g or f + 3
-    def __add__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x + y)
-        return op_fun(self, other)
 
-    # e.g., 3 + f
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    # e.g., f - g or f - 3
-    def __sub__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x - y)
-        return op_fun(self, other)
-
-    # e.g., 3 - f
-    def __rsub__(self, other):
-        return -1 * self.__sub__(other)
-
-    # e.g., -f
-    def __neg__(self):
-        return -1 * self
-
-    # e.g., f * g or f * 2
-    def __mul__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x * y)
-        return op_fun(self, other)
-            
-    # e.g., 2 * f
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    # e.g., f / g or f / 2
-    def __truediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x / y)
-        return op_fun(self, other)
-
-    # e.g., 2 / f
-    def __rtruediv__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y / x)
-        return op_fun(self, other)
-
-    # e.g., f ** 2
-    def __pow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: x ** y)
-        return op_fun(self, other)
-
-    # e.g., 2 ** f
-    def __rpow__(self, other):
-        op_fun = self._operation_factory(lambda x, y: y ** x)
-        return op_fun(self, other)
-
-    # Alternative notation for powers: e.g., f ^ 2
-    def __xor__(self, other):
-        return self.__pow__(other)
-    
-    # Alternative notation for powers: e.g., 2 ^ f
-    def __rxor__(self, other):
-        return self.__rpow__(other)
-
-    
 class InfiniteTuple(TimeFunction):
 
-    def __init__(self, fn=lambda n: n):
+    def __init__(self, func=lambda n: n):
         """Initializes a (lazy) data structure for an infinite vector.
 
         Args:
-          fn: A function of n that returns the value in position n.
-              n is assumed to be a natural number (integer >= 0).
-              This function can be defined at initialization time,
-              or later. By default, it is not set at initialization.
+          func: A function of n that returns the value in position n.
+                n is assumed to be a natural number (integer >= 0).
+                This function can be defined at initialization time,
+                or later. By default, it is not set at initialization.
         """
-        if fn is not None:
-            self.fn = fn
+        if func is not None:
+            self.func = func
         self.index_set = Naturals()
         self.values = []
 
@@ -347,13 +224,13 @@ class InfiniteTuple(TimeFunction):
             n0 = n
         if n0 is not None:
             for i in range(m, n0 + 1):
-                self.values.append(self.fn(i))
+                self.values.append(self.func(i))
         # Return the corresponding value(s)
         return self.values[n]
 
     def __call__(self, n):
         return self[n]
-    
+
     def __str__(self):
         first_few = [str(self[i]) for i in range(6)]
         return "(" + ", ".join(first_few) + ", ...)"
@@ -361,12 +238,12 @@ class InfiniteTuple(TimeFunction):
     def __repr__(self):
         return self.__str__()
 
-    def apply(self, function):
+    def apply(self, func):
         """Apply function to every element of an InfiniteTuple.
 
         Args:
-          function: function to apply to the InfiniteTuple
-        
+          func: function to apply to the InfiniteTuple
+
         Example:
           x = InfiniteTuple(lambda n: n)
           y = x.apply(log)
@@ -382,35 +259,30 @@ class InfiniteTuple(TimeFunction):
             return log(n) ** 2
           y = x.apply(log_squared)
         """
-        return type(self)(lambda n: function(self[n]))
+        return type(self)(lambda n: func(self[n]))
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def _op_func(self, other):
             self.check_same_index_set(other)
-            if isinstance(other, numbers.Number):
+            if is_number(other):
                 return type(self)(lambda n: op(self[n], other))
             elif isinstance(other, InfiniteTuple):
                 return type(self)(lambda n: op(self[n], other[n]))
             else:
                 return NotImplemented
 
-        return op_fun
+        return _op_func
 
 
 class InfiniteVector(InfiniteTuple):
-                    
+
     def cumsum(self):
-        result = InfiniteVector()
-        def fn(n):
+        def _func(n):
             return sum(self[i] for i in range(n + 1))
-        result.fn = fn
-        
-        return result
+        return InfiniteVector(_func)
 
     def plot(self, tmin=0, tmax=10, **kwargs):
         xs = range(tmin, tmax)
@@ -420,23 +292,22 @@ class InfiniteVector(InfiniteTuple):
 
 class DiscreteTimeFunction(TimeFunction):
 
-    def __init__(self, fn=None, fs=1, index_set=None):
+    def __init__(self, func=None, fs=1, index_set=None):
         """Initializes a data structure for a discrete-time function.
 
         Args:
-          fn: A function of n that returns the value at time n / fs.
-              n is assumed to be any integer (postive or negative).
-              This function can be defined at initialization time,
-              or later. By default, it is not set at initialization.
-          fs: The sampling rate for the function.
-          index_set: An IndexSet that specifies the index set of
-                     the discrete-time function. (fs is ignored if
-                     this is specified.)
+          func: A function of n that returns the value at time n / fs.
+            n is assumed to be any integer (postive or negative).
+            By default, it is set to the identity function f[n] = n / fs.
+          fs (int): The sampling rate of the function, in Hertz (samples
+            per second).
+          index_set (IndexSet): The index set of the discrete-time function
+            (fs is ignored if this is specified.)
         """
-        if fn is not None:
-            self.fn = fn
+        if func is not None:
+            self.func = func
         else:
-            self.fn = lambda n: n / fs
+            self.func = lambda n: n / fs
         if index_set is None:
             self.index_set = DiscreteTimeSequence(fs)
         else:
@@ -444,78 +315,65 @@ class DiscreteTimeFunction(TimeFunction):
         self.array_pos = [] # stores values for t >= 0
         self.array_neg = [] # stores values for t < 0
 
-    def _get_value_at_n(self, n):
+    def _get_value_at_index(self, n):
         if not isinstance(n, numbers.Integral):
-            raise Exception(
-                "With a DiscreteTimeFunction f, "
-                "f[n] returns the nth time sample, "
-                "so n must be an integer. If you "
-                "intended to get the value at time t, "
-                "call f(t) instead."
-            )
+            raise KeyError(
+                "For a DiscreteTimeFunction f, f[n] returns the "
+                "the nth time sample, so n must be an integer. "
+                "If you want the value at time t, try f(t) instead.")
 
         if n >= 0:
             m = len(self.array_pos)
             if n >= m:
                 for i in range(m, n + 1):
-                    self.array_pos.append(self.fn(i))
+                    self.array_pos.append(self.func(i))
             return self.array_pos[n]
         else:
             m = len(self.array_neg)
             if -n > m:
                 for i in range(-m - 1, n - 1, -1):
-                    self.array_neg.append(self.fn(i))
+                    self.array_neg.append(self.func(i))
             return self.array_neg[-n - 1]
-        
-    def __getitem__(self, n):
-        if isinstance(n, numbers.Number):
-            return self._get_value_at_n(n)
-        elif (isinstance(n, collections.Iterable) and
-              all(isinstance(e, numbers.Number) for e in n)
-        ):
-            return Vector(self._get_value_at_n(e) for e in n)
-        elif isinstance(n, slice):
-            return Vector(self._get_value_at_n(e) for e in
-                          range(n.start, n.stop, n.step or 1))
-        else:
-            raise Exception(
-                "I do not know how to evaluate a DiscreteTimeFunction "
-                "at that time."
-            )
 
-    def _get_value_at_t(self, t):
+    def _get_value_at_time(self, t):
         fs = self.index_set.fs
         if not t in self.index_set:
             raise KeyError((
-                "No value at time %.2f for a process sampled"
-                "at a rate of %d Hz.") % (t, fs))
-        return self._get_value_at_n(int(t * fs))
+                "No value at time %.2f for a function with "
+                "a sampling rate of %d Hz.") % (t, fs))
+        return self._get_value_at_index(int(t * fs))
+
+    def __getitem__(self, n):
+        if is_number(n):
+            return self._get_value_at_index(n)
+        elif is_numeric_vector(n):
+            return Vector(self._get_value_at_index(e) for e in n)
+        elif isinstance(n, slice):
+            return Vector(self._get_value_at_index(e) for e in
+                          range(n.start, n.stop, n.step or 1))
+        else:
+            raise TypeError("Cannot evaluate DiscreteTimeFunction at "
+                            "index %s (type %s)." % (n, type(n).__name__))
 
     def __call__(self, t):
-        if isinstance(t, numbers.Number):
-            return self._get_value_at_t(t)
-        elif (isinstance(t, collections.Iterable) and
-              all(isinstance(e, numbers.Number) for e in t)
-        ):
-            return Vector(self._get_value_at_t(e) for e in t)
+        if is_number(t):
+            return self._get_value_at_time(t)
+        elif is_numeric_vector(t):
+            return Vector(self._get_value_at_time(e) for e in t)
         elif isinstance(t, DiscreteTimeFunction):
             self.check_same_index_set(t)
-            return DiscreteTimeFunction(
-                fn=lambda n: self(t[n]),
-                index_set=self.index_set
-            )
+            return DiscreteTimeFunction(func=lambda n: self(t[n]),
+                                        index_set=self.index_set)
         else:
-            raise Exception(
-                "I do not know how to evaluate a DiscreteTimeFunction "
-                "at that time."
-            )        
+            raise TypeError("Cannot evaluate DiscreteTimeFunction at "
+                            "time %s (type %s)." % (t, type(t).__name__))
 
-    def apply(self, function):
+    def apply(self, func):
         """Compose function with the TimeFunction.
 
         Args:
-          function: function to compose with the TimeFunction
-        
+          func: function to compose with the TimeFunction
+
         Example:
           f = DiscreteTimeFunction(lambda t: t, fs=1)
           g = f.apply(log)
@@ -531,18 +389,16 @@ class DiscreteTimeFunction(TimeFunction):
             return log(f) ** 2
           g = f.apply(log_squared)
         """
-        return DiscreteTimeFunction(lambda n: function(self[n]),
+        return DiscreteTimeFunction(lambda n: func(self[n]),
                                     index_set=self.index_set)
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def _op_func(self, other):
             self.check_same_index_set(other)
-            if isinstance(other, numbers.Number):
+            if is_number(other):
                 return DiscreteTimeFunction(
                     lambda n: op(self[n], other),
                     index_set=self.index_set
@@ -555,7 +411,7 @@ class DiscreteTimeFunction(TimeFunction):
             else:
                 return NotImplemented
 
-        return op_fun
+        return _op_func
 
     def __str__(self):
         first_few = ", ".join(str(self[n]) for n in range(-2, 3))
@@ -574,45 +430,39 @@ class DiscreteTimeFunction(TimeFunction):
 
 class ContinuousTimeFunction(TimeFunction):
 
-    def __init__(self, fn=lambda t: t):
+    def __init__(self, func=lambda t: t):
         """Initializes a data structure for a discrete-time function.
 
         Args:
-          fn: A function of n that returns the value in position n.
-              n is assumed to be any integer (postive or negative).
-              This function can be defined at initialization time,
-              or later. By default, it is not set at initialization.
+          func: A function of n that returns the value in position n.
+                n is assumed to be any integer (postive or negative).
+                This function can be defined at initialization time,
+                or later. By default, it is not set at initialization.
         """
         self.index_set = Reals()
-        if fn is not None:
-            self.fn = fn
+        if func is not None:
+            self.func = func
 
     def __call__(self, t):
-        if isinstance(t, numbers.Number):
-            return self.fn(t)
-        elif (isinstance(t, collections.Iterable) and
-              all(isinstance(e, numbers.Number) for e in t)
-        ):
-            return Vector(self.fn(e) for e in t)
+        if is_number(t):
+            return self.func(t)
+        elif is_numeric_vector(t):
+            return Vector(self.func(e) for e in t)
         elif isinstance(t, ContinuousTimeFunction):
-            return ContinuousTimeFunction(
-                fn=lambda s: self(t(s))
-            )
+            return ContinuousTimeFunction(func=lambda s: self(t(s)))
         else:
-            raise Exception(
-                "I do not know how to evaluate a ContinuousTimeFunction "
-                "at that time."
-            )        
+            raise TypeError("Cannot evaluate ContinuousTimeFunction at "
+                            "time %s (type %s)." % (t, type(t).__name__))
 
     def __getitem__(self, t):
         return self(t)
 
-    def apply(self, function):
+    def apply(self, func):
         """Compose function with the TimeFunction.
 
         Args:
-          function: function to compose with the TimeFunction
-        
+          func: function to compose with the TimeFunction
+
 
         Example:
           f = ContinuousTimeFunction(lambda t: t)
@@ -629,17 +479,15 @@ class ContinuousTimeFunction(TimeFunction):
             return log(f) ** 2
           g = f.apply(log_squared)
         """
-        return ContinuousTimeFunction(lambda t: function(self(t)))
+        return ContinuousTimeFunction(lambda t: func(self(t)))
 
-    # The code for most operations (+, -, *, /, ...) is the
-    # same, except for the operation itself. The following 
-    # factory function takes in the the operation and 
-    # generates the code to perform that operation.
+    # The Arithmetic superclass will use this to define all of the
+    # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
     def _operation_factory(self, op):
 
-        def op_fun(self, other):
+        def _op_func(self, other):
             self.check_same_index_set(other)
-            if isinstance(other, numbers.Number):
+            if is_number(other):
                 return ContinuousTimeFunction(
                     lambda t: op(self(t), other)
                 )
@@ -650,7 +498,7 @@ class ContinuousTimeFunction(TimeFunction):
             else:
                 return NotImplemented
 
-        return op_fun
+        return _op_func
 
     def __str__(self):
         return "[continuous-time function]"
@@ -662,7 +510,7 @@ class ContinuousTimeFunction(TimeFunction):
         ts = np.linspace(tmin, tmax, 200)
         ys = [self(t) for t in ts]
         plt.plot(ts, ys, "-", **kwargs)
-        
+
 
 class DiscreteValued:
 
@@ -707,8 +555,8 @@ def concat(*args):
           argument can be an InfiniteTuple.
 
     Returns:
-      A Vector or an InfiniteTuple, depending on whether there
-      is an InfiniteTuple in *args.
+      A Vector or an InfiniteTuple, depending on whether the
+      last argument is an InfiniteTuple.
     """
     values = []
     for i, arg in enumerate(args):
@@ -720,27 +568,33 @@ def concat(*args):
             # check that InfiniteTuple is the last arg
             if i == len(args) - 1:
                 # define concatenated InfiniteTuple
-                def fn(n):
+                def _func(n):
                     if n < len(values):
                         return values[n]
                     else:
                         return arg[n - len(values)]
-                return type(arg)(fn)
-            else:
-                raise Exception(
-                    "InfiniteTuple must be the last "
-                    "argument to concat().")
+                return type(arg)(_func)
+
+            raise Exception("InfiniteTuple must be the last "
+                            "argument to concat().")
         else:
-            raise TypeError(
-                "Every argument to concat() must be either "
-                "an RV, a scalar, a vector, or an "
-                "InfiniteTuple.")
+            raise TypeError("Every argument to concat() must be either "
+                            "a scalar, a vector, or an InfiniteTuple.")
+
     return Vector(values)
 
-    
+
 def is_scalar(x):
-    return isinstance(x, numbers.Number) or isinstance(x, str)
+    return isinstance(x, (numbers.Number, str))
 
 
 def is_vector(x):
-    return hasattr(x, "__len__") and all(is_scalar(i) for i in x)
+    return hasattr(x, "__len__")
+
+
+def is_number(x):
+    return isinstance(x, numbers.Number)
+
+
+def is_numeric_vector(x):
+    return hasattr(x, "__len__") and all(is_number(i) for i in x)

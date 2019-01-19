@@ -15,15 +15,15 @@ class PoissonProcessResult(ContinuousTimeFunction,
 
     def __init__(self, interarrival_times):
         self.interarrival_times = interarrival_times
-        
-        def fn(t):
+
+        def func(t):
             total_time = 0
             for n, time in enumerate(self.interarrival_times):
                 total_time += time
                 if t < total_time:
                     return n
 
-        return super().__init__(fn)
+        super().__init__(func)
 
     def get_states(self):
         return InfiniteVector(lambda n: n)
@@ -44,8 +44,8 @@ class PoissonProcessProbabilitySpace(ProbabilitySpace):
             return PoissonProcessResult(interarrival_times)
 
         super().__init__(draw)
-    
-    
+
+
 class PoissonProcess(RandomProcess, RV):
 
     def __init__(self, rate):
@@ -55,7 +55,6 @@ class PoissonProcess(RandomProcess, RV):
           rate: rate of the Poisson process
         """
         self.rate = rate
-        probSpace = PoissonProcessProbabilitySpace(self.rate)
-        RandomProcess.__init__(self, probSpace)
-        RV.__init__(self, probSpace)
-
+        prob_space = PoissonProcessProbabilitySpace(self.rate)
+        RandomProcess.__init__(self, prob_space)
+        RV.__init__(self, prob_space)
