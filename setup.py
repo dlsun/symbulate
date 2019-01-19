@@ -23,5 +23,11 @@ setup(
     
     keywords='probability simulation',
 
-    packages=find_packages()
+    packages=find_packages(),
+
+    install_requires=[
+        'numpy',
+        'scipy',
+        'matplotlib'
+    ]
 )
