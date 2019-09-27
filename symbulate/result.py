@@ -217,9 +217,15 @@ class InfiniteTuple(TimeFunction):
         m = len(self.values)
         # Add necessary elements to self.values
         n0 = None
-        # TODO: add support for infinite slices with no stop
-        if isinstance(n, slice) and n.stop >= m:
-            n0 = n.stop
+        # handle the case where n is a slice
+        if isinstance(n, slice):
+            if n.stop is None:
+                if n.start is None:
+                    return self
+                else:
+                    return type(self)(lambda i: self[i + n.start])
+            if n.stop >= m:
+                n0 = n.stop
         elif isinstance(n, numbers.Integral) and n >= m:
             n0 = n
         if n0 is not None:
