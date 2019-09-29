@@ -57,7 +57,7 @@ class Distribution(ProbabilitySpace):
 
         # get the x and y values
         if self.discrete:
-            xs = np.arange(int(xlim[0]), int(xlim[1]))
+            xs = np.arange(int(xlim[0]), int(xlim[1]) + 1)
         else:
             xs = np.linspace(xlim[0], xlim[1], 200)
         ys = self.pdf(xs)

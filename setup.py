@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="symbulate",
-    version="0.5.4",
+    version="0.5.5",
 
     description="A symbolic algebra for specifying simulations.",
 
