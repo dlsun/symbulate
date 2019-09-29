@@ -51,20 +51,10 @@ class Distribution(ProbabilitySpace):
 
     def plot(self, xlim=None, alpha=None, ax=None, **kwargs):
 
-        # use distribution defaults if xlim is None
+        # use distribution defaults for xlim if none set
         if xlim is None:
             xlim = self.xlim
-        
-        # set limits of figure
-        fig = plt.gcf()
-        if fig.axes:
-            ax = plt.gca()
-            xlower, xupper = ax.get_xlim()
-            ax.set_xlim(min(xlim[0], xlower), max(xlim[1], xupper))
-        else:
-            ax = plt.gca()
-            ax.set_xlim(*xlim)
-        
+
         # get the x and y values
         if self.discrete:
             xs = np.arange(int(xlim[0]), int(xlim[1]))
@@ -72,6 +62,23 @@ class Distribution(ProbabilitySpace):
             xs = np.linspace(xlim[0], xlim[1], 200)
         ys = self.pdf(xs)
 
+        # determine limits for y-axes based on y values
+        ymin, ymax = ys[np.isfinite(ys)].min(), ys[np.isfinite(ys)].max()
+        ylim = ymin - 0.05 * (ymax - ymin), 1.05 * ymax
+        
+        # determine and set axes limits
+        fig = plt.gcf()
+        if fig.axes:
+            ax = plt.gca()
+            xlower, xupper = ax.get_xlim()
+            ax.set_xlim(min(xlim[0], xlower), max(xlim[1], xupper))
+            ylower, yupper = ax.get_ylim()
+            ax.set_ylim(min(0, ylim[0], ylower), max(ylim[1], yupper))
+        else:
+            ax = plt.gca()
+            ax.set_xlim(*xlim)
+            ax.set_ylim(*ylim)
+        
         # get next color in cycle
         color = get_next_color(ax)
 
@@ -83,7 +90,6 @@ class Distribution(ProbabilitySpace):
         ax.plot(xs, ys, color=color, alpha=alpha, **kwargs)
 
         # adjust the axes, base x-axis at 0
-        ax.set_ylim(min(0, min(ys) - .05 * (max(ys) - min(ys))), 1.05 * max(ys))
         ax.spines["bottom"].set_position("zero")
 
 
