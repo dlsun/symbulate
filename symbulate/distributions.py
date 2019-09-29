@@ -48,37 +48,42 @@ class Distribution(ProbabilitySpace):
                 return Vector(self.sim_func(**self.params, size=exponent))
         return ProbabilitySpace(draw)
 
-    def plot(self, type=None, alpha=None, xlim=None, **kwargs):
+    def plot(self, xlim=None, alpha=None, ax=None, **kwargs):
 
-        new_fig = len(plt.gcf().axes) == 0
-
-        # use limits if specified
-        if xlim is not None:
-            xlower, xupper = xlim
-        # use distribution defaults if new figure
-        elif new_fig:
-            xlower, xupper = self.xlim
-        # otherwise, use limits of existing figure
+        # use distribution defaults if xlim is None
+        if xlim is None:
+            xlim = self.xlim
+        
+        # set limits of figure
+        fig = plt.gcf()
+        if fig.axes:
+            ax = plt.gca()
+            xlower, xupper = ax.get_xlim()
+            ax.set_xlim(min(xlim[0], xlower), max(xlim[1], xupper))
         else:
-            xlower, xupper = plt.gca().get_xlim()
-
+            ax = plt.gca()
+            ax.set_xlim(*xlim)
+        
+        # get the x and y values
         if self.discrete:
-            xlower, xupper = int(xlower), int(xupper)
-            xvals = np.arange(xlower, xupper+1)
+            xs = np.arange(int(xlim[0]), int(xlim[1]))
         else:
-            xvals = np.linspace(xlower, xupper, 100)
-
-        yvals = self.pdf(xvals)
+            xs = np.linspace(xlim[0], xlim[1], 200)
+        ys = self.pdf(xs)
 
         # get next color in cycle
-        axes = plt.gca()
-        color = get_next_color(axes)
+        color = get_next_color(ax)
 
+        # plot points for discrete distributions
         if self.discrete:
-            plt.scatter(xvals, yvals, s=40, color=color, alpha=alpha, **kwargs)
+            ax.scatter(xs, ys, s=40, color=color, alpha=alpha, **kwargs)
 
-        plt.plot(xvals, yvals, color=color, alpha=alpha, **kwargs)
-        plt.xlim(xlower, xupper)
+        # plot curve
+        ax.plot(xs, ys, color=color, alpha=alpha, **kwargs)
+
+        # adjust the axes, base x-axis at 0
+        ax.set_ylim(min(0, min(ys) - .05 * (max(ys) - min(ys))), 1.05 * max(ys))
+        ax.spines["bottom"].set_position("zero")
 
 
 ## Discrete Distributions
