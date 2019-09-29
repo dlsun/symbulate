@@ -14,7 +14,8 @@ class Distribution(ProbabilitySpace):
         self.discrete = discrete
 
         if discrete:
-            self.pdf = lambda x: scipy.pmf(x, **self.params)
+            self.pmf = lambda x: scipy.pmf(x, **self.params)
+            self.pdf = self.pmf # add pdf as an alias for pmf
         else:
             self.pdf = lambda x: scipy.pdf(x, **self.params)
 
