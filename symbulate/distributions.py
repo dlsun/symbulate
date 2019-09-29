@@ -66,18 +66,23 @@ class Distribution(ProbabilitySpace):
         ymin, ymax = ys[np.isfinite(ys)].min(), ys[np.isfinite(ys)].max()
         ylim = min(0, ymin - 0.05 * (ymax - ymin)), 1.05 * ymax
         
-        # determine and set axes limits
+        # get the current axis if they exist and no axis is specified
         fig = plt.gcf()
-        if fig.axes:
+        if ax is None and fig.axes:
             ax = plt.gca()
+
+        # if axis already exists, set it to the union of existing and current axis
+        if ax is not None:
             xlower, xupper = ax.get_xlim()
-            ax.set_xlim(min(xlim[0], xlower), max(xlim[1], xupper))
+            xlim = min(xlim[0], xlower), max(xlim[1], xupper)
             ylower, yupper = ax.get_ylim()
-            ax.set_ylim(min(ylim[0], ylower), max(ylim[1], yupper))
+            ylim = min(ylim[0], ylower), max(ylim[1], yupper)
         else:
-            ax = plt.gca()
-            ax.set_xlim(*xlim)
-            ax.set_ylim(*ylim)
+            ax = plt.gca() # creates new axis
+
+        # set the axis limits
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
         
         # get next color in cycle
         color = get_next_color(ax)
