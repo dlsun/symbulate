@@ -64,7 +64,7 @@ class Distribution(ProbabilitySpace):
 
         # determine limits for y-axes based on y values
         ymin, ymax = ys[np.isfinite(ys)].min(), ys[np.isfinite(ys)].max()
-        ylim = ymin - 0.05 * (ymax - ymin), 1.05 * ymax
+        ylim = min(0, ymin - 0.05 * (ymax - ymin)), 1.05 * ymax
         
         # determine and set axes limits
         fig = plt.gcf()
@@ -73,7 +73,7 @@ class Distribution(ProbabilitySpace):
             xlower, xupper = ax.get_xlim()
             ax.set_xlim(min(xlim[0], xlower), max(xlim[1], xupper))
             ylower, yupper = ax.get_ylim()
-            ax.set_ylim(min(0, ylim[0], ylower), max(ylim[1], yupper))
+            ax.set_ylim(min(ylim[0], ylower), max(ylim[1], yupper))
         else:
             ax = plt.gca()
             ax.set_xlim(*xlim)
