@@ -7,7 +7,10 @@ from .index_sets import (
 from .probability_space import ProbabilitySpace
 from .result import (
     DiscreteTimeFunction,
-    ContinuousTimeFunction
+    ContinuousTimeFunction,
+    Vector,
+    is_number,
+    is_numeric_vector
 )
 from .random_variables import RV
 from .random_processes import RandomProcess
@@ -37,50 +40,83 @@ def get_gaussian_process_result(mean_func, cov_func, index_set=Reals()):
             self.times = []
             self.values = []
 
-            def _func(t0):
-                # If this is a discrete process, t0 will be an index.
+            def _vfunc(ts):
+                # This function assumes that t is an array of times.
+                ts = list(ts)
+
+                # If this is a discrete process, t will be an index.
                 # Convert it to a time.
                 if isinstance(index_set, DiscreteTimeSequence):
-                    t0 /= index_set.fs
+                    ts = [t / index_set.fs for t in ts]
 
-                # Check that t0 is in the index set
-                if t0 not in index_set:
-                    raise KeyError(
-                        "Gaussian process is not defined at time %.2f." % t0
-                    )
+                # Check that every t is in the index set
+                for t in ts:
+                    if t not in index_set:
+                        raise KeyError(
+                            "Gaussian process is not defined at time %.2f." % t0
+                        )
 
-                # if variance is 0, just return the mean
-                if cov_func(t0, t0) == 0:
-                    return mean_func(t0)
+                # Create an object to store the results
+                n = len(ts)
+                values = np.empty(shape=n)
+                values[:] = np.nan
 
-                # calculate conditional mean and variance
-                mean2 = mean_func(t0)
+                # Handle times that have already been calculated,
+                # as well as times where the variance is 0
+                i_delete = []
+                for i, t in enumerate(ts):
+                    if cov_func(t, t) == 0:
+                        values[i] = mean_func(t)
+                        i_delete.append(i)
+                        continue
+                    for s, v in zip(self.times, self.values):
+                        if t == s: 
+                            values[i] = v
+                            i_delete.append(i)
+                            break
+                ts = [t for i, t in enumerate(ts) if i not in i_delete]
+                if not ts:
+                    return values
+
+                # Simulate values for the remaining times
+                mean2 = np.array([mean_func(t) for t in ts])
                 cov11 = self.cov + MACHINE_EPS * np.identity(len(self.times))
-                cov12 = [cov_func(t0, t) for t in self.times]
-                cov22 = cov_func(t0, t0)
+                cov12 = np.empty(shape=(len(self.times), len(ts)))
+                for i, s in enumerate(self.times):
+                    for j, t in enumerate(ts):
+                        cov12[i, j] = cov_func(s, t)
+                cov22 = np.empty(shape=(len(ts), len(ts)))
+                for i, s in enumerate(ts):
+                    for j, t in enumerate(ts):
+                        cov22[i, j] = cov_func(s, t)
+                        
                 cond_mean = (mean2 + (
-                    cov12 *
+                    cov12.T @
                     np.linalg.solve(cov11, self.values - self.mean)
-                ).sum())
+                ))
                 cond_var = (cov22 - (
-                    cov12 * np.linalg.solve(cov11, cov12)
-                ).sum())
-                cond_var = max(cond_var, 0)
+                    cov12.T @
+                    np.linalg.solve(cov11, cov12)
+                ))
 
                 # update mean vector and covariance matrix
                 self.mean = np.append(self.mean, mean2)
-                self.cov = np.column_stack((self.cov, cov12))
-                self.cov = np.vstack((
-                    self.cov,
-                    np.append(cov12, cov22)
-                ))
+                self.cov = np.block([[cov11, cov12], [cov12.T, cov22]])
 
                 # simulate normal with given mean and variance
-                self.times.append(t0)
-                value = np.random.normal(cond_mean, np.sqrt(cond_var))
-                self.values.append(value)
-                return value
+                new_values = np.random.multivariate_normal(cond_mean, cond_var)
+                self.times.extend(ts)
+                self.values.extend(new_values)
 
+                values[np.isnan(values)] = new_values
+                
+                return values
+
+            self.vfunc = _vfunc
+
+            def _func(t):
+                return _vfunc([t])[0]
+            
             super().__init__(func=_func)
             self.index_set = index_set
 

@@ -453,7 +453,11 @@ class ContinuousTimeFunction(TimeFunction):
         if is_number(t):
             return self.func(t)
         elif is_numeric_vector(t):
-            return Vector(self.func(e) for e in t)
+            try:
+                # Use vectorized function if it exists
+                return Vector(self.vfunc(t))
+            except:
+                return Vector(self.func(e) for e in t)
         elif isinstance(t, ContinuousTimeFunction):
             return ContinuousTimeFunction(func=lambda s: self(t(s)))
         else:
