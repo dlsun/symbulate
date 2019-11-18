@@ -37,12 +37,14 @@ def get_gaussian_process_result(mean_func, cov_func, index_set=Reals()):
 
             self.mean = np.empty(shape=0)
             self.cov = np.empty(shape=(0, 0))
-            self.times = []
-            self.values = []
+            self.observed = {}
 
             def _vfunc(ts):
                 # This function assumes that t is an array of times.
                 ts = list(ts)
+
+                # Get current times
+                times = list(self.observed.keys())
 
                 # If this is a discrete process, t will be an index.
                 # Convert it to a time.
@@ -68,31 +70,28 @@ def get_gaussian_process_result(mean_func, cov_func, index_set=Reals()):
                     if cov_func(t, t) == 0:
                         values[i] = mean_func(t)
                         i_delete.append(i)
-                        continue
-                    for s, v in zip(self.times, self.values):
-                        if t == s: 
-                            values[i] = v
-                            i_delete.append(i)
-                            break
+                    elif t in self.observed:
+                        values[i] = self.observed[t]
+                        i_delete.append(i)
                 ts = [t for i, t in enumerate(ts) if i not in i_delete]
                 if not ts:
                     return values
 
                 # Simulate values for the remaining times
                 mean2 = np.array([mean_func(t) for t in ts])
-                cov11 = self.cov + MACHINE_EPS * np.identity(len(self.times))
-                cov12 = np.empty(shape=(len(self.times), len(ts)))
-                for i, s in enumerate(self.times):
+                cov11 = self.cov + MACHINE_EPS * np.identity(len(times))
+                cov12 = np.empty(shape=(len(times), len(ts)))
+                for i, s in enumerate(times):
                     for j, t in enumerate(ts):
                         cov12[i, j] = cov_func(s, t)
                 cov22 = np.empty(shape=(len(ts), len(ts)))
                 for i, s in enumerate(ts):
                     for j, t in enumerate(ts):
                         cov22[i, j] = cov_func(s, t)
-                        
+
                 cond_mean = (mean2 + (
                     cov12.T @
-                    np.linalg.solve(cov11, self.values - self.mean)
+                    np.linalg.solve(cov11, list(self.observed.values()) - self.mean)
                 ))
                 cond_var = (cov22 - (
                     cov12.T @
@@ -105,9 +104,10 @@ def get_gaussian_process_result(mean_func, cov_func, index_set=Reals()):
 
                 # simulate normal with given mean and variance
                 new_values = np.random.multivariate_normal(cond_mean, cond_var)
-                self.times.extend(ts)
-                self.values.extend(new_values)
 
+                # store the new values
+                for t, v in zip(ts, new_values):
+                    self.observed[t] = v
                 values[np.isnan(values)] = new_values
                 
                 return values
