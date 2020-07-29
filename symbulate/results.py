@@ -264,6 +264,44 @@ class Results(Arithmetic, Statistical, Comparable,
                         "probability space. You must first define a RV "
                         "on your probability space and simulate it. "
                         "Then call .plot() on those simulations.")
+        
+    def __repr__(self):
+
+        i_last = len(self) - 1
+        max_index_length = len(str(i_last))
+
+        if max_index_length <= 5:
+            index_header_space = ''
+            index_value_space = ' ' * 4
+        else:
+            index_header_space = ' ' * (max_index_length - 5)
+            index_value_space = ' ' * (max_index_length - 1)
+
+        table_rows = []
+
+        table_rows.append(f"Index{index_header_space} Result")
+
+        for i, result in enumerate(self.results):
+            table_rows.append(f"{str(i)}{index_value_space} {str(result)}")
+
+            if len(self) > 9 and i >= 8:
+                index_value_space = ' ' * (5 - len(str(i_last)))
+
+                if len(self) > 11:
+                    table_rows.append(
+                        f"{'.' * max_index_length}{index_value_space} "
+                        f"{'.' * len(str(self.get(i_last)))}")
+                elif len(self) == 11:
+                    table_rows.append(
+                        f"{str(i_last - 1)}{' ' * (5 - len(str(i_last - 1)))} "
+                        f"{str(self.get(i_last - 1))}")
+
+                table_rows.append(
+                    f"{str(i_last)}{index_value_space} {str(self.get(i_last))}"
+                )
+                break
+
+        return '\n'.join(table_rows)
 
     def _repr_html_(self):
 
