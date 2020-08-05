@@ -37,8 +37,8 @@ class Table(dict, Arithmetic):
                     hash_map[outcome] if outcome in hash_map
                     else 0
                 )
-
-    def _repr_html_(self):
+                
+    def ordered_keys(self):
         # get keys in order
         if self.outcomes is None:
             keys = list(self.keys())
@@ -49,6 +49,11 @@ class Table(dict, Arithmetic):
         else:
             # preserve ordering of outcomes, if specified
             keys = self.outcomes
+
+        return keys
+
+    def _repr_html_(self):
+        keys = self.ordered_keys()
 
         # get HTML for table body
         table_body = ""
