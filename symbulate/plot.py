@@ -135,8 +135,8 @@ def make_density2D(x, y, ax):
     density = gaussian_kde(res)
     xmax, xmin = max(x), min(x)
     ymax, ymin = max(y), min(y)
-    Xgrid, Ygrid = np.meshgrid(np.linspace(xmin, xmax, 100),
-                               np.linspace(ymin, ymax, 100))
+    Xgrid, Ygrid = np.meshgrid(np.linspace(xmin, xmax, 25),
+                               np.linspace(ymin, ymax, 25))
     Z = density.evaluate(np.vstack([Xgrid.ravel(), Ygrid.ravel()]))
     den = ax.imshow(Z.reshape(Xgrid.shape), origin='lower', cmap='Blues',
               aspect='auto', extent=[xmin, xmax, ymin, ymax]
