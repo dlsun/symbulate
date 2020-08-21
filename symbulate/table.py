@@ -37,8 +37,8 @@ class Table(dict, Arithmetic):
                     hash_map[outcome] if outcome in hash_map
                     else 0
                 )
-
-    def _repr_html_(self):
+                
+    def ordered_keys(self):
         # get keys in order
         if self.outcomes is None:
             keys = list(self.keys())
@@ -49,6 +49,49 @@ class Table(dict, Arithmetic):
         else:
             # preserve ordering of outcomes, if specified
             keys = self.outcomes
+
+        return keys
+    
+    def __repr__(self):
+        keys = self.ordered_keys()
+        keys_strings = [str(x) for x in keys]
+        max_key_length = len(max(keys_strings, key=len))
+        outcome_colname_length = len('Outcome')
+
+        table_rows = []
+
+        for i, key in enumerate(keys):
+            if len(str(key)) <= outcome_colname_length:
+                outcome_space = ' ' * (outcome_colname_length - len(str(key)))
+            else:
+                outcome_space = ' ' * (max_key_length - len(str(key)))
+            table_rows.append(f"{key}{outcome_space} {self[key]}")
+
+            if i >= 18:
+                last_outcome = str(keys[-1])
+                last_value = str(self[keys[-1]])
+                table_rows.append(f"{'.' * len(last_outcome)}{outcome_space} "
+                                  f"{'.' * len(last_value)}")
+                table_rows.append(f"{last_outcome}{outcome_space} "
+                                  f"{last_value}")
+                break
+
+        if max_key_length <= outcome_colname_length:
+            outcome_header_space = ' '
+            total_row_space = ' ' * (outcome_colname_length - len('Total'))
+        else:
+            outcome_header_space = ' ' * (max_key_length -
+                                          outcome_colname_length + 1)
+            total_row_space = ' ' * (max_key_length - len('Total'))
+
+        total = str(sum(self.values()))
+        table_rows.append(f"{total_row_space}Total {total}")
+        table_rows.insert(0, f"Outcome{outcome_header_space}Value")
+
+        return '\n'.join(table_rows)
+
+    def _repr_html_(self):
+        keys = self.ordered_keys()
 
         # get HTML for table body
         table_body = ""
