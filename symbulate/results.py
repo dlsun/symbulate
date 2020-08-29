@@ -571,6 +571,7 @@ class RVResults(Results):
                 if normalize:
                     caxes = add_colorbar(fig, type, histo[3], 'Density')
                     #change scale to density instead of counts
+                    plt.draw()
                     new_labels = []
                     for label in caxes.get_yticklabels():
                         new_labels.append(int(label.get_text()) / len(x))
