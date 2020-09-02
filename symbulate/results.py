@@ -495,7 +495,7 @@ class RVResults(Results):
             if 'rug' in type:
                 xs = self.array
                 if discrete:
-                    noise_level = .002 * (self.array.max() - self.array.min())
+                    noise_level = .002 * (xs.max() - xs.min())
                     xs = xs + np.random.normal(scale=noise_level, size=n)
                 ax.plot(xs, [0.001] * n, '|', linewidth=5, color='k')
                 if len(type) == 1:
