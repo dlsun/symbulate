@@ -507,10 +507,8 @@ class RVResults(Results):
 
             x_count = count_var(x)
             y_count = count_var(y)
-            x_height = x_count.values()
-            y_height = y_count.values()
-            discrete_x = is_discrete(x_height)
-            discrete_y = is_discrete(y_height)
+            discrete_x = is_discrete(x_count.values())
+            discrete_y = is_discrete(y_count.values())
 
             if type is None:
                 type = ("scatter",)
