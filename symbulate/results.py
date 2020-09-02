@@ -516,9 +516,10 @@ class RVResults(Results):
                 alpha = .5
             if bins is None:
                 bins = 10 if 'tile' in type else 30
+                
+            fig = plt.gcf()
 
             if 'marginal' in type:
-                fig = plt.gcf()
                 gs = GridSpec(4, 4)
                 ax = fig.add_subplot(gs[1:4, 0:3])
                 ax_marg_x = fig.add_subplot(gs[0, 0:3])
@@ -541,7 +542,6 @@ class RVResults(Results):
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
             else:
-                fig = plt.gcf()
                 ax = plt.gca()
                 color = get_next_color(ax)
 
