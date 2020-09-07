@@ -62,13 +62,12 @@ class Table(dict, Arithmetic):
         keys = self.ordered_keys()
         keys_strings = [str(x) for x in keys]
         max_key_length = len(max(keys_strings, key=len))
-        outcome_colname_length = len(self.outcome_column)
 
         table_rows = []
 
         for i, key in enumerate(keys):
-            if len(str(key)) <= outcome_colname_length:
-                outcome_space = ' ' * (outcome_colname_length - len(str(key)))
+            if len(str(key)) <= len(self.outcome_column):
+                outcome_space = ' ' * (len(self.outcome_column) - len(str(key)))
             else:
                 outcome_space = ' ' * (max_key_length - len(str(key)))
             table_rows.append(f"{key}{outcome_space} {self[key]}")
@@ -82,12 +81,12 @@ class Table(dict, Arithmetic):
                                   f"{last_value}")
                 break
 
-        if max_key_length <= outcome_colname_length:
+        if max_key_length <= len(self.outcome_column):
             outcome_header_space = ' '
-            total_row_space = ' ' * (outcome_colname_length - len('Total'))
+            total_row_space = ' ' * (len(self.outcome_column) - len('Total'))
         else:
             outcome_header_space = ' ' * (max_key_length -
-                                          outcome_colname_length + 1)
+                                          len(self.outcome_column) + 1)
             total_row_space = ' ' * (max_key_length - len('Total'))
 
         total = str(sum(self.values()))
