@@ -26,7 +26,7 @@ def _get_row_html(outcome, count):
 
 class Table(dict, Arithmetic):
 
-    def __init__(self, hash_map, outcomes=None):
+    def __init__(self, hash_map, outcomes=None, normalize=True):
         self.outcomes = outcomes
         if outcomes is None:
             for outcome, count in hash_map.items():
@@ -37,6 +37,10 @@ class Table(dict, Arithmetic):
                     hash_map[outcome] if outcome in hash_map
                     else 0
                 )
+                
+        if normalize:
+            for key in self.ordered_keys():
+                self[key] /= sum(hash_map.values())
                 
     def ordered_keys(self):
         # get keys in order
