@@ -26,8 +26,10 @@ def _get_row_html(outcome, count):
 
 class Table(dict, Arithmetic):
 
-    def __init__(self, hash_map, outcomes=None, normalize=True):
+    def __init__(self, hash_map, outcomes=None, normalize=True,
+                 outcome_column="Outcome"):
         self.outcomes = outcomes
+        self.outcome_column = outcome_column
         if outcomes is None:
             for outcome, count in hash_map.items():
                 self[outcome] = count
@@ -60,7 +62,7 @@ class Table(dict, Arithmetic):
         keys = self.ordered_keys()
         keys_strings = [str(x) for x in keys]
         max_key_length = len(max(keys_strings, key=len))
-        outcome_colname_length = len('Outcome')
+        outcome_colname_length = len(self.outcome_column)
 
         table_rows = []
 
@@ -90,7 +92,7 @@ class Table(dict, Arithmetic):
 
         total = str(sum(self.values()))
         table_rows.append(f"{total_row_space}Total {total}")
-        table_rows.insert(0, f"Outcome{outcome_header_space}Value")
+        table_rows.insert(0, f"{self.outcome_column}{outcome_header_space}Value")
 
         return '\n'.join(table_rows)
 

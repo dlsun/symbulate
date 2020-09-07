@@ -433,6 +433,9 @@ class RVResults(Results):
             return (self - self.mean()) / self.std()
         else:
             raise Exception("Could not standardize the given results.")
+        
+    def tabulate(self, outcomes=None, normalize=False):
+        return Table(self._get_counts(), outcomes, normalize, "Value")        
 
     def plot(self, type=None, alpha=None, normalize=True, jitter=False,
              bins=None, **kwargs):
