@@ -43,6 +43,9 @@ class Table(dict, Arithmetic):
         if normalize:
             for key in self.ordered_keys():
                 self[key] /= sum(hash_map.values())
+            self.value_column = 'Relative Frequency'
+        else:
+            self.value_column = 'Frequency'
                 
     def ordered_keys(self):
         # get keys in order
@@ -91,7 +94,8 @@ class Table(dict, Arithmetic):
 
         total = str(sum(self.values()))
         table_rows.append(f"{total_row_space}Total {total}")
-        table_rows.insert(0, f"{self.outcome_column}{outcome_header_space}Value")
+        table_rows.insert(0, f"{self.outcome_column}{outcome_header_space}"
+                             f"{self.value_column}")
 
         return '\n'.join(table_rows)
 
