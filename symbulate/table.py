@@ -26,7 +26,7 @@ def _get_row_html(outcome, count):
 
 class Table(dict, Arithmetic):
 
-    def __init__(self, hash_map, outcomes=None, normalize=True,
+    def __init__(self, hash_map, outcomes=None, normalize=False,
                  outcome_column="Outcome"):
         self.outcomes = outcomes
         self.outcome_column = outcome_column
