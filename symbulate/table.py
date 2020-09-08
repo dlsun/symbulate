@@ -10,8 +10,8 @@ from .base import Arithmetic
 TABLE_TEMPLATE = '''
 <table>
   <thead>
-    <th width="80%">Outcome</th>
-    <th width="20%">Value</th>
+    <th width="80%">{outcome_column}</th>
+    <th width="20%">{value_column}</th>
   </thead>
   <tbody>
     {table_body}
@@ -115,7 +115,9 @@ class Table(dict, Arithmetic):
         table_body += _get_row_html("<b>Total</b>", "<b>%s</b>" % total)
 
         # return HTML for entire table
-        return TABLE_TEMPLATE.format(table_body=table_body)
+        return TABLE_TEMPLATE.format(outcome_column = self.outcome_column,
+                                     value_column = self.value_column,
+                                     table_body=table_body)
 
     # The Arithmetic superclass will use this to define all of the
     # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
