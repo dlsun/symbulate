@@ -12,14 +12,13 @@ import matplotlib.pyplot as plt
 
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
-from matplotlib.transforms import Affine2D
 
 from .base import (Arithmetic, Statistical, Comparable,
                    Logical, Filterable, Transformable)
 from .plot import (configure_axes, get_next_color, is_discrete,
                    count_var, compute_density, add_colorbar,
                    setup_ticks, make_tile, make_violin,
-                   make_marginal_impulse, make_density2D)
+                   make_marginal_impulse, make_density, make_density2D)
 from .result import (Scalar, Vector, TimeFunction,
                      is_number, is_numeric_vector)
 from .table import Table
@@ -473,9 +472,7 @@ class RVResults(Results):
                     if len(type) == 1:
                         plt.ylabel('Relative Frequency')
                 else:
-                    density = compute_density(self.array)
-                    xs = np.linspace(self.array.min(), self.array.max(), 1000)
-                    ax.plot(xs, density(xs), linewidth=2, color=color)
+                    make_density(self.array, ax, color)
                     if len(type) == 1 or (len(type) == 2 and 'rug' in type):
                         plt.ylabel('Density')
 
@@ -498,7 +495,7 @@ class RVResults(Results):
             if 'rug' in type:
                 xs = self.array
                 if discrete:
-                    noise_level = .002 * (self.array.max() - self.array.min())
+                    noise_level = .002 * (xs.max() - xs.min())
                     xs = xs + np.random.normal(scale=noise_level, size=n)
                 ax.plot(xs, [0.001] * n, '|', linewidth=5, color='k')
                 if len(type) == 1:
@@ -510,10 +507,8 @@ class RVResults(Results):
 
             x_count = count_var(x)
             y_count = count_var(y)
-            x_height = x_count.values()
-            y_height = y_count.values()
-            discrete_x = is_discrete(x_height)
-            discrete_y = is_discrete(y_height)
+            discrete_x = is_discrete(x_count.values())
+            discrete_y = is_discrete(y_count.values())
 
             if type is None:
                 type = ("scatter",)
@@ -521,24 +516,18 @@ class RVResults(Results):
                 alpha = .5
             if bins is None:
                 bins = 10 if 'tile' in type else 30
+                
+            fig = plt.gcf()
 
             if 'marginal' in type:
-                fig = plt.gcf()
                 gs = GridSpec(4, 4)
                 ax = fig.add_subplot(gs[1:4, 0:3])
                 ax_marg_x = fig.add_subplot(gs[0, 0:3])
                 ax_marg_y = fig.add_subplot(gs[1:4, 3])
                 color = get_next_color(ax)
                 if 'density' in type:
-                    densityX = compute_density(x)
-                    densityY = compute_density(y)
-                    x_lines = np.linspace(min(x), max(x), 1000)
-                    y_lines = np.linspace(min(y), max(y), 1000)
-                    ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2,
-                                   color=get_next_color(ax))
-                    ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2,
-                                   color=get_next_color(ax),
-                                   transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
+                    make_density(x, ax_marg_x, get_next_color(ax))
+                    make_density(y, ax_marg_y, get_next_color(ax), 'y')
                 else:
                     if discrete_x:
                         make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
@@ -553,7 +542,6 @@ class RVResults(Results):
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
             else:
-                fig = plt.gcf()
                 ax = plt.gca()
                 color = get_next_color(ax)
 
