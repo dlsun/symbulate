@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
+from matplotlib.transforms import Affine2D
 
 figure = plt.figure
 
@@ -129,6 +130,15 @@ def make_marginal_impulse(count, color, ax_marg, alpha, axis):
         ax_marg.vlines(key, 0, val, color=color, alpha=alpha)
     elif axis == 'y':
         ax_marg.hlines(key, 0, val, color=color, alpha=alpha)
+        
+def make_density(x, ax, color, axis = 'x'):
+    density = compute_density(x)
+    xs = np.linspace(x.min(), x.max(), 1000)
+    if axis == 'x':
+        ax.plot(xs, density(xs), linewidth=2, color=color)
+    elif axis == 'y':
+        ax.plot(xs, density(xs), linewidth=2, color=color,
+                transform=Affine2D().rotate_deg(270) + ax.transData)
 
 def make_density2D(x, y, ax):
     res = np.vstack([x, y])
