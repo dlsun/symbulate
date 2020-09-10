@@ -1,6 +1,8 @@
 import numpy as np
+import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
+from cycler import cycler
 
 figure = plt.figure
 
@@ -11,6 +13,8 @@ xlim = plt.xlim
 ylim = plt.ylim
 
 def get_next_color(axes):
+    hex_list = [colors.rgb2hex(rgb) for rgb in plt.cm.get_cmap('tab10').colors]
+    plt.rcParams["axes.prop_cycle"] = cycler('color', hex_list)
     color_cycle = axes._get_lines.prop_cycler
     color = next(color_cycle)["color"]
     return color
