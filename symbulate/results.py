@@ -16,7 +16,7 @@ from matplotlib.transforms import Affine2D
 
 from .base import (Arithmetic, Statistical, Comparable,
                    Logical, Filterable, Transformable)
-from .plot import (configure_axes, get_next_color, is_discrete,
+from .plot import (configure_axes, init_color, get_next_color, is_discrete,
                    count_var, compute_density, add_colorbar,
                    setup_ticks, make_tile, make_violin,
                    make_marginal_impulse, make_density2D)
@@ -343,6 +343,7 @@ class RVResults(Results):
 
     def __init__(self, results, sim_id=None):
         super().__init__(results, sim_id)
+        init_color()
         # get type and dimension of the first result, if it exists
         iterresults = iter(self)
         try:
