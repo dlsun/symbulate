@@ -137,10 +137,7 @@ class Results(Arithmetic, Statistical, Comparable,
           Table: A Table with each of the observed
             outcomes and their freuencies.
         """
-        table = Table(self._get_counts(), outcomes)
-        if normalize:
-            table /= len(self)
-        return table
+        return Table(self._get_counts(), outcomes, normalize)
 
     # The Filterable superclass will use this to define all of the
     # .filter_*() and .count_*() methods.
@@ -436,6 +433,9 @@ class RVResults(Results):
             return (self - self.mean()) / self.std()
         else:
             raise Exception("Could not standardize the given results.")
+        
+    def tabulate(self, outcomes=None, normalize=False):
+        return Table(self._get_counts(), outcomes, normalize, "Value")        
 
     def plot(self, type=None, alpha=None, normalize=True, jitter=False,
              bins=None, **kwargs):
