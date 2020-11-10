@@ -1,6 +1,8 @@
 
 # Symbulate
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dlsun/symbulate/master?filepath=docs/)
+
 *Symbulate* is a Python package which provides a user friendly
  framework for specifying and conducting simulations from probability models.
 
@@ -18,3 +20,5 @@ command `pip install symbulate` at the command line.
 # Documentation
 
 Please see the [documentation](https://dlsun.github.io/symbulate/index.html) for examples of how to use Symbulate.
+
+Or try live examples with [Binder](https://mybinder.org/v2/gh/dlsun/symbulate/master?filepath=docs/)
