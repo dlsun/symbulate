@@ -150,7 +150,7 @@ class BoxModel(ProbabilitySpace):
 
         # If drawing without replacement, check that the number
         # of draws does not exceed the number of tickets in the box.
-        if not self.replace and self.size > len(self.box):
+        if not self.replace and self.size and self.size > len(self.box):
             raise Exception(
                 "Cannot draw more tickets (without replacement) "
                 "than there are tickets in the box."
