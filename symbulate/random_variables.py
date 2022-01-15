@@ -1,3 +1,5 @@
+from rich.progress import track
+
 from .base import Arithmetic, Transformable, Comparable
 from .probability_space import Event, Coin
 from .result import Vector, join, is_scalar, is_numeric_vector, is_vector
@@ -69,8 +71,7 @@ class RV(Arithmetic, Transformable, Comparable):
         Returns:
           RVResults: A list-like object containing the simulation results.
         """
-
-        return RVResults(self.draw() for _ in range(n))
+        return RVResults(self.draw() for _ in track(range(n), "Simulating..."))
 
     def __call__(self, outcome):
         print(

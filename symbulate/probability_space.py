@@ -2,6 +2,8 @@ import numpy as np
 from typing import List
 from typing import Optional
 
+from rich.progress import track
+
 from .base import Logical
 from .result import Vector, InfiniteVector, join
 from .results import Results
@@ -27,7 +29,7 @@ class ProbabilitySpace:
         Returns:
           Results: A list-like object containing the simulation results.
         """
-        return Results(self.draw() for _ in range(n))
+        return Results(self.draw() for _ in track(range(n), "Simulating..."))
 
     def check_same(self, other):
         if self != other:
@@ -152,7 +154,6 @@ class BoxModel(ProbabilitySpace):
         else:
             raise Exception("Box must be specified either as a list or a dict.")
         self.size = None if size == 1 else size
-        print(f"Size is {self.size}")
         self.replace = replace
         self.order_matters = order_matters
         self.output_type = Vector
