@@ -20,7 +20,7 @@ class ProbabilitySpace:
     def __init__(self, draw):
         self.draw = draw
 
-    def sim(self, n):
+    def sim(self, n: int, show_progress: Optional[bool] = True):
         """Simulate n draws from probability space.
 
         Args:
@@ -29,7 +29,12 @@ class ProbabilitySpace:
         Returns:
           Results: A list-like object containing the simulation results.
         """
-        return Results(self.draw() for _ in track(range(n), "Simulating..."))
+        f = (
+            lambda num_draws: track(range(n), "Simulating...")
+            if show_progress
+            else range(num_draws)
+        )
+        return Results(self.draw() for _ in f(n))
 
     def check_same(self, other):
         if self != other:

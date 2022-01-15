@@ -1,3 +1,4 @@
+from typing import Optional
 from rich.progress import track
 
 from .base import Arithmetic, Transformable, Comparable
@@ -61,7 +62,7 @@ class RV(Arithmetic, Transformable, Comparable):
         """
         return self.func(self.prob_space.draw())
 
-    def sim(self, n):
+    def sim(self, n: int, show_progress: Optional[bool] = True):
         """Simulate n draws from probability space described by the random
           variable.
 
@@ -71,7 +72,12 @@ class RV(Arithmetic, Transformable, Comparable):
         Returns:
           RVResults: A list-like object containing the simulation results.
         """
-        return RVResults(self.draw() for _ in track(range(n), "Simulating..."))
+        f = (
+            lambda num_draws: track(range(n), "Simulating...")
+            if show_progress
+            else range(num_draws)
+        )
+        return RVResults(self.draw() for _ in f(n))
 
     def __call__(self, outcome):
         print(
