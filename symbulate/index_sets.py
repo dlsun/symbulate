@@ -2,7 +2,6 @@ import numbers
 
 
 class IndexSet(object):
-
     def __init__(self):
         return
 
@@ -20,7 +19,6 @@ class IndexSet(object):
 
 
 class Reals(IndexSet):
-
     def __init__(self):
         return
 
@@ -32,23 +30,19 @@ class Reals(IndexSet):
 
 
 class Naturals(IndexSet):
-
     def __init__(self):
         return
 
     def __contains__(self, value):
         try:
-            return (
-                value >= 0 and
-                (isinstance(value, numbers.Integral) or
-                 value.is_integer())
+            return value >= 0 and (
+                isinstance(value, numbers.Integral) or value.is_integer()
             )
         except:
             return False
 
 
 class DiscreteTimeSequence(IndexSet):
-
     def __init__(self, fs):
         self.fs = fs
 
@@ -59,12 +53,9 @@ class DiscreteTimeSequence(IndexSet):
         return float(value * self.fs).is_integer()
 
     def __eq__(self, index):
-        return (
-            isinstance(index, DiscreteTimeSequence) and
-            (self.fs == index.fs)
-        )
+        return isinstance(index, DiscreteTimeSequence) and (self.fs == index.fs)
+
 
 class Integers(DiscreteTimeSequence):
-
     def __init__(self):
         self.fs = 1

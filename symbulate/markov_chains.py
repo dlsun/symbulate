@@ -4,15 +4,12 @@ from .distributions import Exponential
 from .math import inf
 from .probability_space import ProbabilitySpace
 from .random_variables import RV
-from .result import (
-    InfiniteVector, ContinuousTimeFunction, DiscreteValued
-)
+from .result import InfiniteVector, ContinuousTimeFunction, DiscreteValued
 
 EPS = 1e-15
 
 
 class MarkovChainResult(InfiniteVector, DiscreteValued):
-
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         # Check transition matrix
         for row in transition_matrix:
@@ -27,15 +24,18 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
         if m != n:
             raise Exception("Transition matrix must be square.")
         if len(initial_dist) != n:
-            raise Exception("Initial distribution must be a vector whose "
-                            "length matches the dimensions of the "
-                            "transition matrix.")
+            raise Exception(
+                "Initial distribution must be a vector whose "
+                "length matches the dimensions of the "
+                "transition matrix."
+            )
         self.initial_dist = initial_dist
         # Process state labels
         if state_labels is not None:
             if len(state_labels) != n:
-                raise Exception("There must be as many state labels as "
-                                "there are states.")
+                raise Exception(
+                    "There must be as many state labels as " "there are states."
+                )
             self.state_labels = state_labels
         else:
             self.state_labels = range(n)
@@ -54,8 +54,7 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
                 state = self.states[m - 1]
                 for _ in range(m, n + 1):
                     state = np.random.choice(
-                        range(self.n_states),
-                        p=self.transition_matrix[state, :]
+                        range(self.n_states), p=self.transition_matrix[state, :]
                     )
                     self.states.append(state)
             else:
@@ -69,7 +68,6 @@ class MarkovChainResult(InfiniteVector, DiscreteValued):
 
 
 class MarkovChainProbabilitySpace(ProbabilitySpace):
-
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         """Initialize probability space for a (discrete-time) Markov chain.
 
@@ -81,15 +79,12 @@ class MarkovChainProbabilitySpace(ProbabilitySpace):
         """
 
         def _draw():
-            return MarkovChainResult(transition_matrix,
-                                     initial_dist,
-                                     state_labels)
+            return MarkovChainResult(transition_matrix, initial_dist, state_labels)
 
         super().__init__(_draw)
 
 
 class MarkovChain(RV):
-
     def __init__(self, transition_matrix, initial_dist, state_labels=None):
         """Initialize a (discrete-time) Markov chain.
 
@@ -101,18 +96,13 @@ class MarkovChain(RV):
         """
 
         prob_space = MarkovChainProbabilitySpace(
-            transition_matrix,
-            initial_dist,
-            state_labels)
+            transition_matrix, initial_dist, state_labels
+        )
         super().__init__(prob_space)
 
 
-class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
-                                      DiscreteValued):
-
-    def __init__(self, states, rates,
-                 unscaled_interarrival_times,
-                 state_labels):
+class ContinuousTimeMarkovChainResult(ContinuousTimeFunction, DiscreteValued):
+    def __init__(self, states, rates, unscaled_interarrival_times, state_labels):
         self.states = states
         self.rates = rates
         self.times = unscaled_interarrival_times
@@ -124,6 +114,7 @@ class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
                 state = self.states[i]
                 interarrival_time = self.times[i] / self.rates[state]
             return interarrival_time
+
         self.interarrival_times = InfiniteVector(interarrival_times)
 
         def _func(t):
@@ -135,11 +126,11 @@ class ContinuousTimeMarkovChainResult(ContinuousTimeFunction,
                 if total_time > t:
                     return self.state_labels[state]
                 n += 1
+
         super().__init__(_func)
 
 
 class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
-
     def __init__(self, generator_matrix, initial_dist, state_labels=None):
         """Initialize a probability space for a continuous-time Markov chain.
 
@@ -157,27 +148,34 @@ class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
             for j, q in enumerate(row):
                 if j == i:
                     if q > 0:
-                        raise Exception("Diagonal elements of a generator matrix " +
-                                        "cannot be positive.")
+                        raise Exception(
+                            "Diagonal elements of a generator matrix "
+                            + "cannot be positive."
+                        )
                 else:
                     if q < 0:
-                        raise Exception("Off-diagonal elements of a generator matrix " +
-                                        "cannot be negative.")
+                        raise Exception(
+                            "Off-diagonal elements of a generator matrix "
+                            + "cannot be negative."
+                        )
         # Check that dimensions agree
         self.generator_matrix = np.array(generator_matrix)
         m, n = self.generator_matrix.shape
         if m != n:
             raise Exception("Transition matrix must be square.")
         if len(initial_dist) != n:
-            raise Exception("Initial distribution must be a vector whose "
-                            "length matches the dimensions of the "
-                            "transition matrix.")
+            raise Exception(
+                "Initial distribution must be a vector whose "
+                "length matches the dimensions of the "
+                "transition matrix."
+            )
         self.initial_dist = initial_dist
         # Process state labels
         if state_labels is not None:
             if len(state_labels) != n:
-                raise Exception("There must be as many state labels as "
-                                "there are states.")
+                raise Exception(
+                    "There must be as many state labels as " "there are states."
+                )
             self.state_labels = state_labels
         else:
             self.state_labels = range(n)
@@ -195,21 +193,17 @@ class ContinuousTimeMarkovChainProbabilitySpace(ProbabilitySpace):
         # A continuous-time Markov chain is specified by the
         # sequence of states and the unscaled interarrival times.
         def _draw():
-            states = MarkovChain(self.transition_matrix,
-                                 self.initial_dist).draw()
+            states = MarkovChain(self.transition_matrix, self.initial_dist).draw()
             rates = -np.diag(self.generator_matrix)
             unscaled_interarrival_times = (Exponential(1) ** inf).draw()
             return ContinuousTimeMarkovChainResult(
-                states,
-                rates,
-                unscaled_interarrival_times,
-                self.state_labels)
+                states, rates, unscaled_interarrival_times, self.state_labels
+            )
 
         super().__init__(_draw)
 
 
 class ContinuousTimeMarkovChain(RV):
-
     def __init__(self, generator_matrix, initial_dist, state_labels=None):
         """Initialize a continuous-time Markov chain.
 
@@ -221,7 +215,6 @@ class ContinuousTimeMarkovChain(RV):
         """
 
         prob_space = ContinuousTimeMarkovChainProbabilitySpace(
-            generator_matrix,
-            initial_dist,
-            state_labels)
+            generator_matrix, initial_dist, state_labels
+        )
         super().__init__(prob_space)

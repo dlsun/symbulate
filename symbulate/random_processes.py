@@ -26,8 +26,9 @@ class RandomProcess(RV):
         the value of the process is simply x(t).)
     """
 
-    def __init__(self, prob_space, index_set=Naturals(),
-                 func=lambda outcome, t: outcome[t]):
+    def __init__(
+        self, prob_space, index_set=Naturals(), func=lambda outcome, t: outcome[t]
+    ):
         self.index_set = index_set
         # This dict stores random variables at specific times.
         self.rvs = {}
@@ -39,6 +40,7 @@ class RandomProcess(RV):
                 if t in self.rvs:
                     return self.rvs[t].func(outcome)
                 return func(outcome, t)
+
             return TimeFunction.from_index_set(self.index_set, x)
 
         super().__init__(prob_space, _func)
@@ -46,8 +48,7 @@ class RandomProcess(RV):
     def __setitem__(self, t, value):
         if t not in self.index_set:
             raise KeyError(
-                "Time %s is not in the index set for this "
-                "random process." % str(t)
+                "Time %s is not in the index set for this " "random process." % str(t)
             )
         # If value is a RV, store it in self.rvs.
         if isinstance(value, RV):

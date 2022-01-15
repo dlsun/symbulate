@@ -1,4 +1,8 @@
 import numpy as np
+from typing import List
+from typing import Optional
+
+from rich.progress import track
 
 from .base import Logical
 from .result import Vector, InfiniteVector, join
@@ -16,7 +20,7 @@ class ProbabilitySpace:
     def __init__(self, draw):
         self.draw = draw
 
-    def sim(self, n):
+    def sim(self, n: int, show_progress: Optional[bool] = True):
         """Simulate n draws from probability space.
 
         Args:
@@ -25,7 +29,12 @@ class ProbabilitySpace:
         Returns:
           Results: A list-like object containing the simulation results.
         """
-        return Results(self.draw() for _ in range(n))
+        f = (
+            lambda num_draws: track(range(n), "Simulating...")
+            if show_progress
+            else range(num_draws)
+        )
+        return Results(self.draw() for _ in f(n))
 
     def check_same(self, other):
         if self != other:
@@ -41,29 +50,36 @@ class ProbabilitySpace:
           A new ProbabilitySpace where each realization is func applied to
           a realization from the current probability space.
         """
+
         def draw():
             return func(self.draw())
+
         return ProbabilitySpace(draw)
 
     def __mul__(self, other):
         def draw():
             return join(self.draw(), other.draw())
+
         return ProbabilitySpace(draw)
 
     def __pow__(self, exponent):
         if exponent == float("inf"):
+
             def draw():
                 def _func(_):
                     return self.draw()
+
                 return InfiniteVector(_func)
+
         else:
+
             def draw():
                 return Vector(self.draw() for _ in range(exponent))
+
         return ProbabilitySpace(draw)
 
 
 class Event(Logical):
-
     def __init__(self, prob_space, func):
         self.prob_space = prob_space
         self.func = func
@@ -74,12 +90,10 @@ class Event(Logical):
     # The Logical superclass will use this to define the three
     # logical operations: and (&), or (|), not (~).
     def _logical_factory(self, op):
-
         def _op_func(self, other=None):
             # other will be None when op is the "not" operator
             if other is None:
-                return Event(self.prob_space,
-                             lambda outcome: op(self.func(outcome)))
+                return Event(self.prob_space, lambda outcome: op(self.func(outcome)))
             else:
                 if isinstance(other, Event):
                     self.check_same_prob_space(other)
@@ -87,10 +101,12 @@ class Event(Logical):
                     raise TypeError(
                         "Logical operations are only defined "
                         "between two Events, not between an Event "
-                        "and a %s." % type(other).__name__)
-                return Event(self.prob_space,
-                             lambda outcome: op(self.func(outcome),
-                                                other.func(outcome)))
+                        "and a %s." % type(other).__name__
+                    )
+                return Event(
+                    self.prob_space,
+                    lambda outcome: op(self.func(outcome), other.func(outcome)),
+                )
 
         return _op_func
 
@@ -98,10 +114,12 @@ class Event(Logical):
     # which evaluate to ((2 < X) and (X < 5)). This unfortunately
     # is not well-defined in Python and cannot be overloaded.
     def __bool__(self):
-        raise Exception("Cannot cast an Event to a boolean. "
-                        "You may be getting this error if you "
-                        "wrote an expression like (2 < X < 5). "
-                        "Try ((2 < X) & (X < 5)) instead.")
+        raise Exception(
+            "Cannot cast an Event to a boolean. "
+            "You may be getting this error if you "
+            "wrote an expression like (2 < X < 5). "
+            "Try ((2 < X) & (X < 5)) instead."
+        )
 
     def draw(self):
         return self.func(self.prob_space.draw())
@@ -139,9 +157,7 @@ class BoxModel(ProbabilitySpace):
                 self.box.extend([ticket] * count)
             self.probs = None
         else:
-            raise Exception(
-                "Box must be specified either as a list or a dict."
-            )
+            raise Exception("Box must be specified either as a list or a dict.")
         self.size = None if size == 1 else size
         self.replace = replace
         self.order_matters = order_matters
@@ -150,7 +166,7 @@ class BoxModel(ProbabilitySpace):
 
         # If drawing without replacement, check that the number
         # of draws does not exceed the number of tickets in the box.
-        if not self.replace and self.size > len(self.box):
+        if not self.replace and self.size and self.size > len(self.box):
             raise Exception(
                 "Cannot draw more tickets (without replacement) "
                 "than there are tickets in the box."
@@ -176,8 +192,10 @@ class BoxModel(ProbabilitySpace):
         if self.size is None:
             return self.box[draw_inds(None)]
         elif self.size == float("inf"):
+
             def _func(_):
                 return self.box[draw_inds(None)]
+
             return self.infinite_output_type(_func)
         else:
             draws = [self.box[i] for i in draw_inds(self.size)]
@@ -201,5 +219,41 @@ class DeckOfCards(BoxModel):
         for rank in list(range(2, 11)) + ["J", "Q", "K", "A"]:
             for suit in ["Diamonds", "Hearts", "Clubs", "Spades"]:
                 box.append((rank, suit))
-        super().__init__(box, size, replace,
-                         probs=None, order_matters=order_matters)
+        super().__init__(box, size, replace, probs=None, order_matters=order_matters)
+
+
+class Dice(BoxModel):
+    def __init__(
+        self,
+        sides: Optional[List[int]] = [1, 2, 3, 4, 5, 6],
+        probs: Optional[List[float]] = [1 / 6] * 6,
+        size: Optional[int] = None,
+        order_matters: Optional[bool] = True,
+        replace: Optional[bool] = False,
+    ):
+        BoxModel.__init__(
+            self,
+            box=sides,
+            probs=probs,
+            size=size,
+            replace=replace,
+            order_matters=order_matters,
+        )
+
+
+class Coin(BoxModel):
+    def __init__(
+        self,
+        probs: Optional[List[float]] = [0.5, 0.5],
+        size: Optional[int] = None,
+        order_matters: Optional[bool] = True,
+        replace: Optional[bool] = False,
+    ):
+        BoxModel.__init__(
+            self,
+            ["T", "H"],
+            probs=probs,
+            size=size,
+            replace=replace,
+            order_matters=order_matters,
+        )
