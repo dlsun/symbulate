@@ -1,18 +1,12 @@
 from .distributions import Exponential
 from .math import inf
 from .probability_space import ProbabilitySpace
-from .result import (
-    InfiniteVector,
-    ContinuousTimeFunction,
-    DiscreteValued
-)
+from .result import InfiniteVector, ContinuousTimeFunction, DiscreteValued
 from .random_variables import RV
 from .random_processes import RandomProcess
 
 
-class PoissonProcessResult(ContinuousTimeFunction,
-                           DiscreteValued):
-
+class PoissonProcessResult(ContinuousTimeFunction, DiscreteValued):
     def __init__(self, interarrival_times):
         self.interarrival_times = interarrival_times
 
@@ -30,7 +24,6 @@ class PoissonProcessResult(ContinuousTimeFunction,
 
 
 class PoissonProcessProbabilitySpace(ProbabilitySpace):
-
     def __init__(self, rate):
         """Initialize probability space for a Poisson process.
 
@@ -47,7 +40,6 @@ class PoissonProcessProbabilitySpace(ProbabilitySpace):
 
 
 class PoissonProcess(RandomProcess, RV):
-
     def __init__(self, rate):
         """Initialize a Poisson process.
 

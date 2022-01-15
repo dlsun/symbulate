@@ -1,16 +1,13 @@
 import numpy as np
 
-from .index_sets import (
-    DiscreteTimeSequence,
-    Reals
-)
+from .index_sets import DiscreteTimeSequence, Reals
 from .probability_space import ProbabilitySpace
 from .result import (
     DiscreteTimeFunction,
     ContinuousTimeFunction,
     Vector,
     is_number,
-    is_numeric_vector
+    is_numeric_vector,
 )
 from .random_variables import RV
 from .random_processes import RandomProcess
@@ -27,12 +24,10 @@ def get_gaussian_process_result(mean_func, cov_func, index_set=Reals()):
         base_class = ContinuousTimeFunction
     else:
         raise Exception(
-            "Index set for Gaussian process must be Reals or "
-            "DiscreteTimeSequence."
+            "Index set for Gaussian process must be Reals or " "DiscreteTimeSequence."
         )
 
     class GaussianProcessResult(base_class):
-
         def __init__(self, mean_func, cov_func):
 
             self.mean = np.empty(shape=0)
@@ -89,14 +84,11 @@ def get_gaussian_process_result(mean_func, cov_func, index_set=Reals()):
                     for j, t in enumerate(ts):
                         cov22[i, j] = cov_func(s, t)
 
-                cond_mean = (mean2 + (
-                    cov12.T @
-                    np.linalg.solve(cov11, list(self.observed.values()) - self.mean)
-                ))
-                cond_var = (cov22 - (
-                    cov12.T @
-                    np.linalg.solve(cov11, cov12)
-                ))
+                cond_mean = mean2 + (
+                    cov12.T
+                    @ np.linalg.solve(cov11, list(self.observed.values()) - self.mean)
+                )
+                cond_var = cov22 - (cov12.T @ np.linalg.solve(cov11, cov12))
 
                 # update mean vector and covariance matrix
                 self.mean = np.append(self.mean, mean2)
@@ -109,14 +101,14 @@ def get_gaussian_process_result(mean_func, cov_func, index_set=Reals()):
                 for t, v in zip(ts, new_values):
                     self.observed[t] = v
                 values[np.isnan(values)] = new_values
-                
+
                 return values
 
             self.vfunc = _vfunc
 
             def _func(t):
                 return _vfunc([t])[0]
-            
+
             super().__init__(func=_func)
             self.index_set = index_set
 
@@ -124,7 +116,6 @@ def get_gaussian_process_result(mean_func, cov_func, index_set=Reals()):
 
 
 class GaussianProcessProbabilitySpace(ProbabilitySpace):
-
     def __init__(self, mean_func, cov_func, index_set=Reals()):
         """Initialize probability space for a Gaussian process.
 
@@ -136,16 +127,12 @@ class GaussianProcessProbabilitySpace(ProbabilitySpace):
         """
 
         def draw():
-            return get_gaussian_process_result(
-                mean_func,
-                cov_func,
-                index_set)
+            return get_gaussian_process_result(mean_func, cov_func, index_set)
 
         super().__init__(draw)
 
 
 class GaussianProcess(RandomProcess, RV):
-
     def __init__(self, mean_func, cov_func, index_set=Reals()):
         """Initialize Gaussian process.
 
@@ -156,16 +143,13 @@ class GaussianProcess(RandomProcess, RV):
                      (by default, all real numbers)
         """
 
-        prob_space = GaussianProcessProbabilitySpace(mean_func,
-                                                     cov_func,
-                                                     index_set)
+        prob_space = GaussianProcessProbabilitySpace(mean_func, cov_func, index_set)
         RandomProcess.__init__(self, prob_space)
         RV.__init__(self, prob_space)
 
 
 # Define convenience class for Brownian motion
 class BrownianMotionProbabilitySpace(GaussianProcessProbabilitySpace):
-
     def __init__(self, drift=0, scale=1):
         """Initialize probability space for Brownian motion.
 
@@ -175,12 +159,11 @@ class BrownianMotionProbabilitySpace(GaussianProcessProbabilitySpace):
         """
         super().__init__(
             mean_func=lambda t: drift * t,
-            cov_func=lambda s, t: (scale ** 2) * min(s, t)
+            cov_func=lambda s, t: (scale ** 2) * min(s, t),
         )
 
 
 class BrownianMotion(RandomProcess, RV):
-
     def __init__(self, drift=0, scale=1):
         """Initialize Brownian motion.
 
@@ -188,8 +171,6 @@ class BrownianMotion(RandomProcess, RV):
           drift: drift parameter of Brownian motion
           scale: scale parameter of Brownian motion
         """
-        prob_space = BrownianMotionProbabilitySpace(
-            drift=drift, scale=scale
-        )
+        prob_space = BrownianMotionProbabilitySpace(drift=drift, scale=scale)
         RandomProcess.__init__(self, prob_space)
         RV.__init__(self, prob_space)

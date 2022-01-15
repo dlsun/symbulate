@@ -3,6 +3,7 @@ from .probability_space import Event
 from .result import Vector, join, is_scalar, is_numeric_vector
 from .results import RVResults
 
+
 class RV(Arithmetic, Transformable, Comparable):
     """Defines a random variable.
 
@@ -72,10 +73,12 @@ class RV(Arithmetic, Transformable, Comparable):
         return RVResults(self.draw() for _ in range(n))
 
     def __call__(self, outcome):
-        print("Warning: Calling an RV as a function simply applies the "
-              "function that defines the RV to the input, regardless of "
-              "whether that input is a possible outcome in the underlying "
-              "probability space.")
+        print(
+            "Warning: Calling an RV as a function simply applies the "
+            "function that defines the RV to the input, regardless of "
+            "whether that input is a possible outcome in the underlying "
+            "probability space."
+        )
         return self.func(outcome)
 
     def check_same_prob_space(self, other):
@@ -103,8 +106,10 @@ class RV(Arithmetic, Transformable, Comparable):
             return log(x ** 2)
           Y = X.apply(g)
         """
+
         def _func(outcome):
             return func(self.func(outcome))
+
         return RV(self.prob_space, _func)
 
     # This allows us to unpack a random vector,
@@ -123,32 +128,29 @@ class RV(Arithmetic, Transformable, Comparable):
     def __getitem__(self, n):
         # if n is an RV, return a new random variable
         if isinstance(n, RV):
-            return RV(self.prob_space,
-                      lambda x: self.func(x)[n.func(x)])
+            return RV(self.prob_space, lambda x: self.func(x)[n.func(x)])
         # if the indices are a list, return a random vector
         elif is_numeric_vector(n):
-            return self.apply(
-                lambda x: Vector(x[i] for i in n)
-            )
+            return self.apply(lambda x: Vector(x[i] for i in n))
         # if the indices are a slice, return a random vector
         elif isinstance(n, slice):
             return self.apply(
-                lambda x: Vector(x[i] for i in
-                                 range(n.start, n.stop, n.step or 1))
-                )
+                lambda x: Vector(x[i] for i in range(n.start, n.stop, n.step or 1))
+            )
         # otherwise, return the nth value
         return self.apply(lambda x: x[n])
 
     # The Arithmetic superclass will use this to define all of the
     # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.)
     def _operation_factory(self, op):
-
         def _op_func(self, other):
             # operations between this RV and another RV
             if isinstance(other, RV):
                 self.check_same_prob_space(other)
+
                 def _func(outcome):
                     return op(self.func(outcome), other.func(outcome))
+
                 return RV(self.prob_space, _func)
             # operations between this RV and a scalar
             return self.apply(lambda x: op(x, other))
@@ -159,15 +161,12 @@ class RV(Arithmetic, Transformable, Comparable):
     # usual comparison operations (e.g., <, >, ==, !=, etc.).
     # Note that a comparison of a random variable returns an Event.
     def _comparison_factory(self, op):
-
         def _op_func(self, other):
             if is_scalar(other):
-                return Event(self.prob_space,
-                             lambda x: op(self.func(x), other))
+                return Event(self.prob_space, lambda x: op(self.func(x), other))
             elif isinstance(other, RV):
                 self.check_same_prob_space(other)
-                return Event(self.prob_space,
-                             lambda x: op(self.func(x), other.func(x)))
+                return Event(self.prob_space, lambda x: op(self.func(x), other.func(x)))
             raise NotImplementedError(
                 "Comparisons are only defined between two RVs or "
                 "between an RV and a scalar."
@@ -175,16 +174,19 @@ class RV(Arithmetic, Transformable, Comparable):
 
         return _op_func
 
-
     # Define a joint distribution of two random variables: e.g., X & Y
     def __and__(self, other):
         self.check_same_prob_space(other)
         if isinstance(other, RV):
+
             def _func(outcome):
                 return join(self.func(outcome), other.func(outcome))
+
         elif is_scalar(other):
+
             def _func(outcome):
                 return join(self.func(outcome), other)
+
         else:
             raise Exception("Joint distributions are only defined for RVs.")
         return RV(self.prob_space, _func)
@@ -192,8 +194,10 @@ class RV(Arithmetic, Transformable, Comparable):
     def __rand__(self, other):
         self.check_same_prob_space(other)
         if is_scalar(other):
+
             def _func(outcome):
                 return join(other, self.func(outcome))
+
         return RV(self.prob_space, _func)
 
     # Define conditional distribution of random variable.
@@ -231,8 +235,7 @@ class RVConditional(RV):
 
     def __init__(self, random_variable, condition_event):
         self.condition_event = condition_event
-        super().__init__(random_variable.prob_space,
-                         random_variable.func)
+        super().__init__(random_variable.prob_space, random_variable.func)
 
     def draw(self):
         """A function that takes no arguments and returns a value from
