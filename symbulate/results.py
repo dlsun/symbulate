@@ -14,6 +14,8 @@ from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import NullFormatter
 from matplotlib.transforms import Affine2D
 
+from rich.table import Table as RichTable
+
 from .base import (
     Arithmetic,
     Statistical,
@@ -261,6 +263,21 @@ class Results(Arithmetic, Statistical, Comparable, Logical, Filterable, Transfor
             "Then call .plot() on those simulations."
         )
 
+    def __rich__(self) -> str:
+        rich_table = RichTable("Index", "Result")
+        results_len = len(self.results)
+        for i, result in enumerate(self.results):
+            if results_len >= 12 and i == 9:
+                rich_table.add_row("..", ".")
+                break
+            else:
+                rich_table.add_row(str(i), str(result))
+
+        if results_len >= 12:
+            rich_table.add_row(str(results_len - 1), str(self.results[-1]))
+
+        return rich_table
+
     def __repr__(self):
 
         i_last = len(self) - 1
@@ -300,41 +317,6 @@ class Results(Arithmetic, Statistical, Comparable, Logical, Filterable, Transfor
                 break
 
         return "\n".join(table_rows)
-
-    def _repr_html_(self):
-
-        table_template = """
-    <table>
-      <thead>
-        <th width="10%">Index</th>
-        <th width="90%">Result</th>
-      </thead>
-      <tbody>
-        {table_body}
-      </tbody>
-    </table>
-        """
-        row_template = """
-        <tr>
-          <td>%s</td><td>%s</td>
-        </tr>
-        """
-
-        def _truncate(result):
-            if len(result) > 100:
-                return result[:100] + "..."
-            return result
-
-        table_body = ""
-        for i, result in enumerate(self.results):
-            table_body += row_template % (i, _truncate(str(result)))
-            # if we've already printed 9 rows, skip to end
-            if i >= 8:
-                table_body += "<tr><td>...</td><td>...</td></tr>"
-                i_last = len(self) - 1
-                table_body += row_template % (i_last, _truncate(str(self.get(i_last))))
-                break
-        return table_template.format(table_body=table_body)
 
 
 class RVResults(Results):

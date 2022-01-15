@@ -5,28 +5,16 @@ output of a .tabulate() operation.  Typically, Table stores
 the possible outcomes and their counts or relative frequencies.
 """
 from .base import Arithmetic
-
-
-TABLE_TEMPLATE = """
-<table>
-  <thead>
-    <th width="80%">{outcome_column}</th>
-    <th width="20%">{value_column}</th>
-  </thead>
-  <tbody>
-    {table_body}
-  </tbody>
-</table>
-"""
-
-
-def _get_row_html(outcome, count):
-    return "<tr><td>%s</td><td>%s</td></tr>" % (outcome, count)
+from rich.table import Table as RichTable
 
 
 class Table(dict, Arithmetic):
     def __init__(
-        self, hash_map, outcomes=None, normalize=False, outcome_column="Outcome"
+        self,
+        hash_map,
+        outcomes=None,
+        normalize=False,
+        outcome_column="Outcome",
     ):
         self.outcomes = outcomes
         self.outcome_column = outcome_column
@@ -97,27 +85,18 @@ class Table(dict, Arithmetic):
 
         return "\n".join(table_rows)
 
-    def _repr_html_(self):
+    def __rich__(self):
         keys = self.ordered_keys()
 
-        # get HTML for table body
-        table_body = ""
-        for i, key in enumerate(keys):
-            table_body += _get_row_html(key, self[key])
-            # if we've already printed 19 rows, skip to end
-            if i >= 18:
-                table_body += _get_row_html("...", "...")
-                table_body += _get_row_html(keys[-1], self[keys[-1]])
-                break
-        total = str(sum(self.values()))
-        table_body += _get_row_html("<b>Total</b>", "<b>%s</b>" % total)
+        rich_table = RichTable(self.outcome_column, self.value_column)
 
-        # return HTML for entire table
-        return TABLE_TEMPLATE.format(
-            outcome_column=self.outcome_column,
-            value_column=self.value_column,
-            table_body=table_body,
-        )
+        num_of_entries = len(keys)
+        for i, key in enumerate(keys):
+            last_section = i == num_of_entries - 1
+            rich_table.add_row(str(key), str(self[key]), end_section=last_section)
+
+        rich_table.add_row("Total", str(sum(self.values())))
+        return rich_table
 
     # The Arithmetic superclass will use this to define all of the
     # usual arithmetic operations (e.g., +, -, *, /, **, ^, etc.).
