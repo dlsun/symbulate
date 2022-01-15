@@ -1,4 +1,6 @@
 import numpy as np
+from typing import List
+from typing import Optional
 
 from .base import Logical
 from .result import Vector, InfiniteVector, join
@@ -150,6 +152,7 @@ class BoxModel(ProbabilitySpace):
         else:
             raise Exception("Box must be specified either as a list or a dict.")
         self.size = None if size == 1 else size
+        print(f"Size is {self.size}")
         self.replace = replace
         self.order_matters = order_matters
         self.output_type = Vector
@@ -211,3 +214,40 @@ class DeckOfCards(BoxModel):
             for suit in ["Diamonds", "Hearts", "Clubs", "Spades"]:
                 box.append((rank, suit))
         super().__init__(box, size, replace, probs=None, order_matters=order_matters)
+
+
+class Dice(BoxModel):
+    def __init__(
+        self,
+        sides: Optional[List[int]] = [1, 2, 3, 4, 5, 6],
+        probs: Optional[List[float]] = [1 / 6] * 6,
+        size: Optional[int] = None,
+        order_matters: Optional[bool] = True,
+        replace: Optional[bool] = False,
+    ):
+        BoxModel.__init__(
+            self,
+            box=sides,
+            probs=probs,
+            size=size,
+            replace=replace,
+            order_matters=order_matters,
+        )
+
+
+class Coin(BoxModel):
+    def __init__(
+        self,
+        probs: Optional[List[float]] = [0.5, 0.5],
+        size: Optional[int] = None,
+        order_matters: Optional[bool] = True,
+        replace: Optional[bool] = False,
+    ):
+        BoxModel.__init__(
+            self,
+            ["T", "H"],
+            probs=probs,
+            size=size,
+            replace=replace,
+            order_matters=order_matters,
+        )

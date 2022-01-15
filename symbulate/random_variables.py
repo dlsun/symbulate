@@ -1,6 +1,6 @@
 from .base import Arithmetic, Transformable, Comparable
-from .probability_space import Event
-from .result import Vector, join, is_scalar, is_numeric_vector
+from .probability_space import Event, Coin
+from .result import Vector, join, is_scalar, is_numeric_vector, is_vector
 from .results import RVResults
 
 
@@ -249,3 +249,16 @@ class RVConditional(RV):
             outcome = self.prob_space.draw()
             if self.condition_event.func(outcome):
                 return self.func(outcome)
+
+
+def _coin_rv_map(x):
+    if not isinstance(x, str) and is_vector(x):
+        return tuple(map(lambda v: 1 if v == "H" else 0, x))
+    return 1 if x == "H" else 0
+
+
+class CoinRV(RV):
+    def __init__(self, prob_space: Coin):
+        if not isinstance(prob_space, Coin):
+            raise ValueError("prob_sapce must of type Coin or Coin's subtypes")
+        RV.__init__(self, prob_space, func=_coin_rv_map)

@@ -1,5 +1,5 @@
-from .probability_space import ProbabilitySpace, BoxModel, DeckOfCards
-from .random_variables import RV
+from .probability_space import ProbabilitySpace, BoxModel, DeckOfCards, Dice, Coin
+from .random_variables import RV, CoinRV
 from .random_processes import RandomProcess
 from .distributions import (
     Bernoulli,
