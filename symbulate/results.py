@@ -5,6 +5,7 @@ results of a simulation, either outcomes from a
 probability space or realizations of a random variable /
 random process.
 """
+import difflib
 import time
 
 import numpy as np
@@ -25,7 +26,15 @@ from .result import (Scalar, Vector, TimeFunction,
 from .table import Table
 
 
-plt.style.use('seaborn-colorblind')
+try:
+    seaborn_colorblind_closest = difflib.get_close_matches(
+        'seaborn-colorblind', plt.style.available, cutoff=0.7
+    )
+    stylesheet = seaborn_colorblind_closest[0]
+except IndexError:
+    stylesheet = 'ggplot'
+
+plt.style.use(stylesheet)
 
 
 def _is_hashable(obj):
