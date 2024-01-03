@@ -129,7 +129,7 @@ class BoxModel(ProbabilitySpace):
         sorted before returning or not.
     """
 
-    def __init__(self, box, size=None, replace=True, probs=None, order_matters=True):
+    def __init__(self, box, size=1, replace=True, probs=None, order_matters=True):
         if isinstance(box, list):
             self.box = box
             self.probs = probs
@@ -142,7 +142,7 @@ class BoxModel(ProbabilitySpace):
             raise Exception(
                 "Box must be specified either as a list or a dict."
             )
-        self.size = None if size == 1 else size
+        self.size = size
         self.replace = replace
         self.order_matters = order_matters
         self.output_type = Vector
@@ -155,6 +155,7 @@ class BoxModel(ProbabilitySpace):
                 "Cannot draw more tickets (without replacement) "
                 "than there are tickets in the box."
             )
+        self.size = None if size == 1 else size
 
     def draw(self):
         """
