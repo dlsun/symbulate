@@ -28,7 +28,7 @@ from .table import Table
 
 try:
     seaborn_colorblind_closest = difflib.get_close_matches(
-        'seaborn-colorblind', plt.style.available, cutoff=0.7
+        'seaborn-v0_8-colorblind', plt.style.available, cutoff=0.7
     )
     stylesheet = seaborn_colorblind_closest[0]
 except IndexError:
