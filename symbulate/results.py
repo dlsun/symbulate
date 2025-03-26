@@ -473,7 +473,7 @@ class RVResults(Results):
             # initialize figure
             fig = plt.gcf()
             ax = plt.gca()
-            color = get_next_color(ax)
+            color = get_next_color()
 
             if 'density' in type:
                 if discrete:
@@ -545,27 +545,27 @@ class RVResults(Results):
                     x_lines = np.linspace(min(x), max(x), 1000)
                     y_lines = np.linspace(min(y), max(y), 1000)
                     ax_marg_x.plot(x_lines, densityX(x_lines), linewidth=2,
-                                   color=get_next_color(ax))
+                                   color=get_next_color())
                     ax_marg_y.plot(y_lines, densityY(y_lines), linewidth=2,
-                                   color=get_next_color(ax),
+                                   color=get_next_color(),
                                    transform=Affine2D().rotate_deg(270) + ax_marg_y.transData)
                 else:
                     if discrete_x:
-                        make_marginal_impulse(x_count, get_next_color(ax), ax_marg_x, alpha, 'x')
+                        make_marginal_impulse(x_count, get_next_color(), ax_marg_x, alpha, 'x')
                     else:
-                        ax_marg_x.hist(x, color=get_next_color(ax), density=normalize,
+                        ax_marg_x.hist(x, color=get_next_color(), density=normalize,
                                        alpha=alpha, bins=bins)
                     if discrete_y:
-                        make_marginal_impulse(y_count, get_next_color(ax), ax_marg_y, alpha, 'y')
+                        make_marginal_impulse(y_count, get_next_color(), ax_marg_y, alpha, 'y')
                     else:
-                        ax_marg_y.hist(y, color=get_next_color(ax), density=normalize,
+                        ax_marg_y.hist(y, color=get_next_color(), density=normalize,
                                        alpha=alpha, bins=bins, orientation='horizontal')
                 plt.setp(ax_marg_x.get_xticklabels(), visible=False)
                 plt.setp(ax_marg_y.get_yticklabels(), visible=False)
             else:
                 fig = plt.gcf()
                 ax = plt.gca()
-                color = get_next_color(ax)
+                color = get_next_color()
 
             nullfmt = NullFormatter() #removes labels on fig
 
@@ -605,7 +605,7 @@ class RVResults(Results):
             if alpha is None:
                 alpha = np.log(2) / np.log(len(self) + 1)
             ax = plt.gca()
-            color = get_next_color(ax)
+            color = get_next_color()
             for result in self.results:
                 result.plot(alpha=alpha, color=color, **kwargs)
             plt.xlabel("Index")

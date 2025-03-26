@@ -12,13 +12,17 @@ ylabel = plt.ylabel
 xlim = plt.xlim
 ylim = plt.ylim
 
+color_index=0
+color_cycle = [c['color'] for c in plt.rcParams['axes.prop_cycle']]
+
 def init_color():
     hex_list = [colors.rgb2hex(rgb) for rgb in plt.cm.get_cmap('tab10').colors]
     plt.rcParams["axes.prop_cycle"] = cycler('color', hex_list)
 
-def get_next_color(axes):
-    color_cycle = axes._get_lines.prop_cycler
-    color = next(color_cycle)["color"]
+def get_next_color():
+    global color_index
+    color = color_cycle[color_index]
+    color_index = (color_index + 1) % len(color_cycle)
     return color
 
 def configure_axes(axes, xdata, ydata, xlabel = None, ylabel = None):

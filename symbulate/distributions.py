@@ -85,7 +85,8 @@ class Distribution(ProbabilitySpace):
         ax.set_ylim(*ylim)
         
         # get next color in cycle
-        color = get_next_color(ax)
+        
+        color = get_next_color()
 
         # plot points for discrete distributions
         if self.discrete:
